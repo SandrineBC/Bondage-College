@@ -63,7 +63,6 @@ function DialogChatRoomPlayerIsAdmin() { return (ChatRoomPlayerIsAdmin() && (Cur
 
 // Returns TRUE if the dialog prerequisite condition is met
 function DialogPrerequisite(D) {
-	// if (CurrentCharacter.Dialog[D].Prerequisite != null) console.log (	CurrentCharacter.Dialog[D].Prerequisite);
 	if (CurrentCharacter.Dialog[D].Prerequisite == null)
 		return true;
 	else
@@ -313,40 +312,41 @@ function DialogInventoryBuild(C) {
 	DialogInventoryOffset = 0;
 	DialogInventory = [];
 
-
 	if (C.FocusGroup != null) {
 
-		let currentFocus = C.FocusGroup.Name;
-
 		// Always use the lowest free slot for a gag, if a free gag slot is selected
-		if (currentFocus == "ItemMouth2" || currentFocus == "ItemMouth3") {
+		if (C.FocusGroup.Name == "ItemMouth2" || C.FocusGroup.Name == "ItemMouth3") {
 			var gagSlotFree = true;
 			for(var i = 0; i < C.Appearance.length; i++ ) {
-				if(C.Appearance[i].Asset.Group.Name == currentFocus) {
+				if(C.Appearance[i].Asset.Group.Name == C.FocusGroup.Name) {
 					gagSlotFree = false;
 				} // if
 			} // for
 
 			if (gagSlotFree) {
-				currentFocus = "ItemMouth";
+				var newFocusName = "ItemMouth";
 				for(var i = 0; i < C.Appearance.length; i++) {
 					if (C.Appearance[i].Asset.Group.Name == "ItemMouth") {
-						DrawAssetGroupZone(C, C.FocusGroup.Zone, CharacterAppearanceGetCurrentValue(C, "Height", "Zoom"), X, Y, "#80808040");
-						currentFocus = "ItemMouth2";
-						focusChanged = true;
+						newFocusName = "ItemMouth2";
 					} else if (C.Appearance[i].Asset.Group.Name == "ItemMouth2") {
-						currentFocus = "ItemMouth3";
-						focusChanged = true;
-					} // if
+						newFocusName = "ItemMouth3";
+					}// if
 				} // for
+
+				if (C.FocusGroup.Name != newFocusName) {
+					// A lower gag slot has been found. Change the focus
+					for (var A = 0; A < AssetGroup.length; A++) {
+						if (AssetGroup[A].Name == newFocusName) C.FocusGroup = AssetGroup[A];							
+					} // for
+				} // if
 			} // if (gagSlotFree)
-		} // if
+		} // if (C.FocusGroup.Name == "ItemMouth2" || C.FocusGroup.Name == "ItemMouth3")
 
 		// First, we add anything that's currently equipped
 		var Item = null;
 		var CurItem = null;
 		for(var A = 0; A < C.Appearance.length; A++)
-			if ((C.Appearance[A].Asset.Group.Name == currentFocus) && C.Appearance[A].Asset.DynamicAllowInventoryAdd(C)) {
+			if ((C.Appearance[A].Asset.Group.Name == C.FocusGroup.Name) && C.Appearance[A].Asset.DynamicAllowInventoryAdd(C)) {
 				DialogInventoryAdd(C, C.Appearance[A], true, 1);
 				CurItem = C.Appearance[A];
 				break;
@@ -355,22 +355,22 @@ function DialogInventoryBuild(C) {
 		// In item permission mode, we add all the enabled items, except the one already on
 		if (DialogItemPermissionMode) {
 			for (var A = 0; A < Asset.length; A++)
-				if (Asset[A].Enable && (Asset[A].Wear || Asset[A].IsLock) && Asset[A].Group.Name == currentFocus)
+				if (Asset[A].Enable && (Asset[A].Wear || Asset[A].IsLock) && Asset[A].Group.Name == C.FocusGroup.Name)
 					if ((CurItem == null) || (CurItem.Asset.Name != Asset[A].Name) || (CurItem.Asset.Group.Name != Asset[A].Group.Name))
 						DialogInventory.push({ Asset: Asset[A], Worn: false, Icon: "", SortOrder: "1" + Asset[A].Description });
 		} else {
 			// Second, we add everything from the victim inventory
 			for(var A = 0; A < C.Inventory.length; A++)
-				if ((C.Inventory[A].Asset != null) && (C.Inventory[A].Asset.Group.Name == currentFocus) && C.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
+				if ((C.Inventory[A].Asset != null) && (C.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && C.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
 					DialogInventoryAdd(C, C.Inventory[A], false, 2);
 
 			// Third, we add everything from the player inventory if the player isn't the victim
 			if (C.ID != 0)
 				for(var A = 0; A < Player.Inventory.length; A++)
-					if ((Player.Inventory[A].Asset != null) && (Player.Inventory[A].Asset.Group.Name == currentFocus) && Player.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
+					if ((Player.Inventory[A].Asset != null) && (Player.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && Player.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
 						DialogInventoryAdd(C, Player.Inventory[A], false, 2);
 
-		}
+		} // if (DialogItemPermissionMode)
 
 		// Rebuilds the dialog menu and it's buttons
 		DialogInventorySort();
