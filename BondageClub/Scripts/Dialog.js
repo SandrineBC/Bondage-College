@@ -60,6 +60,7 @@ function DialogSetPose(C, NewPose) { CharacterSetActivePose((C.toUpperCase().tri
 function DialogSkillGreater(SkillType, Value) { return (parseInt(SkillGetLevel(Player, SkillType)) >= parseInt(Value)) } // Returns TRUE if a specific reputation type is less or equal than a given value
 function DialogInventoryAvailable(InventoryName, InventoryGroup) { return InventoryAvailable(Player, InventoryName, InventoryGroup) }
 function DialogChatRoomPlayerIsAdmin() { return (ChatRoomPlayerIsAdmin() && (CurrentScreen == "ChatRoom")) }
+function DialogChatRoomCanSafeword() { return (CurrentScreen == "ChatRoom") }
 
 // Returns TRUE if the dialog prerequisite condition is met
 function DialogPrerequisite(D) {
@@ -1327,4 +1328,10 @@ function DialogChatRoomAdminAction(ActionType, Publish) {
 // Checks if a chat room player swap is in progress
 function DialogChatRoomHasSwapTarget() {
 	return ChatRoomHasSwapTarget();
+}
+
+// When the player uses her safeword
+function DialogChatRoomSafeword() {
+	DialogLeave();
+	ChatRoomSafeword();
 }
