@@ -10,8 +10,7 @@ var MagicAssistantAppearance = null;
 var MagicPlayerAppearance = null;
 
 var MagicTrick = null;
-// var MagicTrickList = ["ChangeBinds", "Dance", "BindAsstant", "BoxTiedLight", "GetCoin", "BoxTiedHeavy", "MilkCan", "WaterCell", "Song", "AsstantChange"];
-var MagicTrickList = ["ChangeBinds", "BindAsstant", "AsstantChange"];
+var MagicTrickList = ["ChangeBinds", "Dance", "BindAsstant", "BoxTiedLight", "GetCoin", "BoxTiedHeavy", "MilkCan", "WaterCell", "Song", "AsstantChange"];
 var MagicRestraintList = ["ItemMouth", "ItemMouth2", "ItemMouth3", "ItemArms", "ItemFeet", "ItemLegs", "ItemHead", "ItemMisc", "ItemDevices"];
 var MagicTrickCounter = 0;
 var MagicShowIncome = 0;
