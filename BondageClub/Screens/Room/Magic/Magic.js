@@ -19,9 +19,9 @@ var MagicShowState = 1;
 ////////////////////////////////////////////////////////////////////////////////////////////
 //General Room function
 ////////////////////////////////////////////////////////////////////////////////////////////
-// functions for Dialogs
+
 /**
- * @description CHecks, if the magic show currently has the given state
+ * Checks, if the magic show currently has the given state
  * 1 - No Show
  * 2 - Before Assist Redress
  * 3 - After Assist Redress
@@ -30,58 +30,47 @@ var MagicShowState = 1;
  * 6 - To Sing a Song
  * 7 - To Bind for Change
  * 8 - After Change
-	
  * @param {number} QState - The state that is queried
-	
  * @returns {boolean} - Returns true, if the queried state matches with the current state of the magic show, flase otherwise
  */
 function MagicShowIsState(QState) { return ((QState == MagicShowState) ? true : false) }
 
 /**
- * @description Checks, if the magician's assistant has been released
- * 
+ * Checks, if the magician's assistant has been released
  * @returns {boolean} - Returns true, if the assistant has been released, false otherwise
  */
 function MagicAssistantIsReleased() { return (MagicShowIsState(4) && !MagicAssistant.IsRestrained()) }
 
 /**
- * @description Checks, if the magician is bound by the minal required number of items (gag, arms, feet, legs, head)
- * 
+ * Checks, if the magician is bound by the minal required number of items (gag, arms, feet, legs, head)
  * @param {number} MinItem - The minimal number of items that must be used on the magician
- * 
  * @returns {boolean} - Returns true, if the required number of items is reached or exceeded, false otherwise
  */
 function MagicRestrainPerformerMinItem(MinItem) { return MagicRestrainMinItem(MagicPerformer, MinItem) }
 
 /**
- * @description Checks, if the magician's assistant is bound by the minal required number of items (gag, arms, feet, legs, head)
- *
+ * Checks, if the magician's assistant is bound by the minal required number of items (gag, arms, feet, legs, head)
  * @param {number} MinItem - The minimal number of items that must be used on the magician's assistant
- *
  * @returns {boolean} - Returns true, if the required number of items is reached or exceeded, false otherwise
  */
 function MagicRestrainAssistantMinItem(MinItem) { return MagicRestrainMinItem(MagicAssistant, MinItem) }
 
 /**
- * @description Checks wether the assistant is restrained and should redress
- * 
+ * Checks wether the assistant is restrained and should redress
  * @returns {boolean} - Returns true, if the assistant should redress and is currently restrained
  */
 function MagicAssistantIsDressRestrain() { return (MagicShowIsState(8) && MagicAssistant.IsRestrained()) }
 
 /**
- * @description Checks wether the assistant is free and should redress
- *
+ * Checks wether the assistant is free and should redress
  * @returns {boolean} - Returns true, if the assistant should redress and is currently free
  */
 function MagicAssistantIsntDressRestrain() { return (MagicShowIsState(8) && !MagicAssistant.IsRestrained()) }
 
 /**
- * @description Checks, wether a given character is bound by the minal required number of items (gag, arms, feet, legs, head)
- * 
+ * Checks, wether a given character is bound by the minal required number of items (gag, arms, feet, legs, head)
  * @param {Character} C - The character to check
  * @param {number} MinItem - The minimal required number of items
- * 
  * @returns {boolean} - - Returns true, if the required number of items is reached or exceeded, false otherwise
  */
 function MagicRestrainMinItem(C, MinItem) {
@@ -98,10 +87,8 @@ function MagicRestrainMinItem(C, MinItem) {
 	return (CurItem + (GagApplied ? 1 : 0)) >= MinItem;
 }
 
-
 /**
- * @description Loads the room characters, saves their inventories and starts the show
- * 
+ * Loads the room characters, saves their inventories and starts the show
  * @returns {void} - Nothing
  */
 function MagicLoad() {
@@ -120,8 +107,7 @@ function MagicLoad() {
 }
 
 /**
- * @description Runs the magic screen, draws the player, the magician and the assistant as well as all required buttons
- * 
+ * Runs the magic screen, draws the player, the magician and the assistant as well as all required buttons
  * @returns {void} - Nothing
  */
 function MagicRun() {
@@ -134,10 +120,8 @@ function MagicRun() {
 	//DrawButton(1885, 265, 90, 90, "", "White", "Icons/Magic.png");
 }
 
-// When the user clicks in the Magic
 /**
- * @description Handles the click events in the magic screen
- * 
+ * Handles the click events in the magic screen
  * @returns {void} - Nothing
  */
 function MagicClick() {
@@ -152,8 +136,7 @@ function MagicClick() {
 //Tricks
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**
- * @description Changes the dresses of the player and the assistants and progresses the show state
- * 
+ * Changes the dresses of the player and the assistants and progresses the show state
  * @returns {void} - Nothing
  */
 function MagicTrickChangeDresses() {
@@ -165,8 +148,7 @@ function MagicTrickChangeDresses() {
 }
 
 /**
- * @description Changes the dresses of player and assistant back and goes back to state 1
- * 
+ * Changes the dresses of player and assistant back and goes back to state 1
  * @returns {void} - Nothing
  */
 function MagicTrickChangeDressesBack() {
@@ -178,8 +160,7 @@ function MagicTrickChangeDressesBack() {
 }
 
 /**
- * @description Randomly dresses the assistant and sets the show's state to 3
- * 
+ * Randomly dresses the assistant and sets the show's state to 3
  * @returns {void} - Nothing
  */
 function MagicAssistantDress() {
@@ -196,8 +177,7 @@ function MagicAssistantDress() {
 }
 
 /**
- * @description Starts the magic show and sets all counters to 0
- * 
+ * Starts the magic show and sets all counters to 0
  * @returns {void} - Nothing
  */
 function MagicShowStart() {
@@ -206,8 +186,7 @@ function MagicShowStart() {
 }
 
 /**
- * @description Adds money to the player's account. The longer she performs, the more money she earns
- * 
+ * Adds money to the player's account. The longer she performs, the more money she earns
  * @returns {void} - Nothing
  */
 function MagicShowIncomeAdd() {
@@ -216,8 +195,7 @@ function MagicShowIncomeAdd() {
 }
 
 /**
- * @description When the player leaves the show, she get's her money and is redressed in the things she wore at the start of the show
- * 
+ * When the player leaves the show, she get's her money and is redressed in the things she wore at the start of the show
  * @returns {void} - Nothing
  */
 function MagicShowPayoff() {
@@ -231,8 +209,7 @@ function MagicShowPayoff() {
 }
 
 /**
- * @description Randomly selects the next magic trick and prepares the appropriate dialog
- * 
+ * Randomly selects the next magic trick and prepares the appropriate dialog
  * @returns {void} - Nothing
  */
 function MagicSelectTrick() {
@@ -287,9 +264,8 @@ function MagicSelectTrick() {
 }
 
 /**
- * @description Copies the restraints currently on the magician randomly 
+ * Copies the restraints currently on the magician randomly 
  * either to the player or the assistant and gets the appropriate dialog option
- * 
  * @returns {void} - Nothing
  */
 function MagicTrickChangeBinds() {
@@ -308,9 +284,8 @@ function MagicTrickChangeBinds() {
 }
 
 /**
- * @description Copies the restraints from the assistant to the player and
+ * Copies the restraints from the assistant to the player and
  * picks the appropriate dialog options
- * 
  * @returns {void} - Nothing
  */
 function MagicTrickBindAsstant() {
@@ -321,8 +296,7 @@ function MagicTrickBindAsstant() {
 }
 
 /**
- * @description Binds the player lightly and places her in a wooden box
- * 
+ * Binds the player lightly and places her in a wooden box
  * @returns {void} - Nothing
  */
 function MagicTrickBoxTiedLight() {
@@ -337,8 +311,7 @@ function MagicTrickBoxTiedLight() {
 }
 
 /**
- * @description Binds the player heavily and places her in a wooden box
- * 
+ * Binds the player heavily and places her in a wooden box
  * @returns {void} - Nothing
  */
 function MagicTrickBoxTiedHeavy() {
@@ -353,8 +326,7 @@ function MagicTrickBoxTiedHeavy() {
 }
 
 /**
- * @description Places the player in the water filled milk can
- * 
+ * Places the player in the water filled milk can
  * @returns {void} - Nothing
  */
 function MagicTrickBoxMilkCan() {
@@ -367,8 +339,7 @@ function MagicTrickBoxMilkCan() {
 }
 
 /**
- * @description Places the player in the water torture cell
- * 
+ * Places the player in the water torture cell
  * @returns {void} - Nothing
  */
 function MagicTrickBoxWaterCell() {
@@ -381,8 +352,7 @@ function MagicTrickBoxWaterCell() {
 }
 
 /**
- * @description If the player chooses to keep the magic coins, add them to her account
- * 
+ * If the player chooses to keep the magic coins, add them to her account
  * @returns {void} - Nothing
  */
 function MagicTrickGetCoin() {
@@ -392,8 +362,7 @@ function MagicTrickGetCoin() {
 }
 
 /**
- * @description If the player has to sing a song end the dialog and wait, what the player does with the assistant
- * 
+ * If the player has to sing a song end the dialog and wait, what the player does with the assistant
  * @returns {void} - Nothing
  */
 function MagicSongLeavePerformer() {
@@ -402,8 +371,7 @@ function MagicSongLeavePerformer() {
 }
 
 /**
- * @description Bind the player and the assistant during the 'Sweet, sweet Gwendoline" song
- * 
+ * Bind the player and the assistant during the 'Sweet, sweet Gwendoline" song
  * @returns {void} - Nothing
  */
 function MagicSongGwendoyn() {
@@ -419,8 +387,7 @@ function MagicSongGwendoyn() {
 }
 
 /**
- * @description The player earns money with the performance of "Bad girl"
- * 
+ * The player earns money with the performance of "Bad girl"
  * @returns {void} - Nothing
  */
 function MagicSongBadGirl() {
@@ -431,8 +398,7 @@ function MagicSongBadGirl() {
 }
 
 /**
- * @description Change the show's state after the assistant was released
- * 
+ * Change the show's state after the assistant was released
  * @returns {void} - Nothing
  */
 function MagicAssistantRelese() {
@@ -440,8 +406,7 @@ function MagicAssistantRelese() {
 }
 
 /**
- * @description Dress the assistant in the player's clothes
- * 
+ * Dress the assistant in the player's clothes
  * @returns {void} - Nothing
  */
 function MagicTrickAsstantChange() {
@@ -453,9 +418,8 @@ function MagicTrickAsstantChange() {
 }
 
 /**
- * @description Ends the show. Release everybody, dress everybody back to their clothes 
+ * Ends the show. Release everybody, dress everybody back to their clothes 
  * from the start and bring the player back to the mein hall
- * 
  * @returns {void} - Nothing
  */
 function MagicTrickEndPerformance() {
@@ -473,11 +437,9 @@ function MagicTrickEndPerformance() {
 }
 
 /**
- * @description Removes a defined set of restraints from the character. If the adult baby harness chains are removed,
+ * Removes a defined set of restraints from the character. If the adult baby harness chains are removed,
  * mittens and harness are removed as well
- * 
  * @param {Character} C - The character whose items should be removed
- * 
  * @returns	{void} - Nothing
  */
 function MagicRestrainRemove(C) {
@@ -492,11 +454,9 @@ function MagicRestrainRemove(C) {
 }
 
 /**
- * @description Copies restraints from one character to another
- * 
+ * Copies restraints from one character to another
  * @param {Character} FromC - The source for all restraints
  * @param {Character} ToC - The target of all restraints
- * 
  * @returns	{void} - Nothing
  */
 function MagicRestrainCopyTransfer(FromC, ToC) {
@@ -515,7 +475,7 @@ function MagicRestrainCopyTransfer(FromC, ToC) {
 		}
 	}
 	if (chainFound) {
-		// If the arms are restrained was the adult baby harness, add the harness and the mittens as well
+		// If the arms are restrained by the adult baby harness, add the harness and the mittens as well
 		InventoryWear(ToC, InventoryGet(FromC, "ItemTorso").Asset.Name, "ItemTorso");
 		InventoryWear(ToC, InventoryGet(FromC, "ItemHands").Asset.Name, "ItemHands");
 	}
