@@ -17,23 +17,23 @@ var CutsceneStage = 0;
  * @type {string[]}
  */
 var CommonBackgroundList = [
-	"Introduction", "KidnapLeague", "MaidQuarters", "MainHall", "Management", "Private", "Shibari", "MaidCafe", 
+	"Introduction", "KidnapLeague", "MaidQuarters", "MainHall", "Management", "Private", "Shibari", "MaidCafe",
 	"HorseStable", "Nursery", "Bedroom", "PrisonHall", "Kennels",
 	"BDSMRoomBlue", "BDSMRoomPurple", "BDSMRoomRed", "BondageBedChamber",
 	"CeremonialVenue", "WeddingRoom", "WeddingArch", "WeddingBeach",
 	"ParkDay", "ParkNight", "Gardens", "ParkWinter", "XmasEve", "XmasDay", "StreetNight", "SnowyStreet", "DystopianCity",
 	"IndoorPool", "OutdoorPool", "PublicBath", "Onsen", "Beach", "BeachCafe", "BeachHotel",
-	"PirateIsland", "PirateIslandNight", "ShipDeck", "CaptainCabin", "Shipwreck", 
+	"PirateIsland", "PirateIslandNight", "ShipDeck", "CaptainCabin", "Shipwreck",
 	"UnderwaterOne",
-	"MedinaMarket",	"SheikhPrivate", "SheikhTent",
+	"MedinaMarket", "SheikhPrivate", "SheikhTent",
 	"ForestPath", "WoodenCabin", "DeepForest", "ForestCave", "SpookyForest", "WitchWood", "DesolateVillage",
 	"ThroneRoom", "SecretChamber", "Dungeon", "DungeonRuin", "Confessions",
 	"AncientRuins", "JungleTemple", "SunTemple",
 	"AlchemistOffice", "ResearchPrep", "ResearchProgress",
-	"MiddletownSchool", "SlipperyClassroom", "LockerRoom", "SchoolHospital", "SchoolRuins", "SlumRuins", 
+	"MiddletownSchool", "SlipperyClassroom", "LockerRoom", "SchoolHospital", "SchoolRuins", "SlumRuins",
 	"SlumApartment", "AbandonedBuilding", "AbandonedSideRoom", "Industrial", "BackAlley", "CreepyBasement", "Cellar", "SlumCellar",
 	"VaultCorridor", "SciFiCell", "SpaceCaptainBedroom",
-	"HellEntrance", "HeavenEntrance", 
+	"HellEntrance", "HeavenEntrance",
 	"BarRestaurant", "LostVages",
 	"ChillRoom", "Boudoir", "Kitchen", "DiningRoom", "CozyLivingRoom", "TiledBathroom",
 	"RooftopParty", "PartyBasement", "CosyChalet", "BalconyNight"
@@ -78,7 +78,7 @@ function CommonDetectMobile() {
 
 	// Second check
 	if (sessionStorage.desktop) return false;
-	else if (localStorage.mobile) return true;	
+	else if (localStorage.mobile) return true;
 
 	// If nothing is found, we assume desktop
 	return false;
@@ -172,7 +172,7 @@ function CommonReadCSV(Array, Path, Screen, File) {
 	// If a translation file is available, we open the txt file and keep it in cache
 	var TranslationPath = FullPath.replace(".csv", "_" + TranslationLanguage + ".txt");
 	if (TranslationAvailable(TranslationPath))
-		CommonGet(TranslationPath, function() {
+		CommonGet(TranslationPath, function () {
 			if (this.status == 200) TranslationCache[TranslationPath] = TranslationParseTXT(this.responseText);
 		});
 
@@ -357,7 +357,7 @@ function CommonRandomItemFromList(ItemPrevious, ItemList) {
 function CommonConvertStringToArray(s) {
 	var arr = [];
 	if (s != "") {
-		arr = s.split(',').map(Number).reduce((list,curr) => {
+		arr = s.split(',').map(Number).reduce((list, curr) => {
 			if (!((curr === false) || Number.isNaN(curr))) list.push(curr);
 			return list;
 		}, []);
@@ -385,5 +385,35 @@ function CommonConvertArrayToString(Arr) {
  */
 function CommonWait(MS) {
 	var waitUntil = new Date().getTime() + MS;
-	while(new Date().getTime() < waitUntil) true;
+	while (new Date().getTime() < waitUntil) true;
 }
+
+/**
+ * Creates a simple memoizer for use with single parameter functions to serve as a PoC. 
+ * The memoized function does calculate its result exactly once and from that point on, uses
+ * the result stored in a local cache to speed up things.
+ * @param {function} func - The function to meoize
+ * @returns {any} - The result of the memoized function
+ */
+function CommonMemoize(func) {
+	var memo = {};
+	var slice = Array.prototype.slice;
+
+	return function () {
+		var index = [];
+		for (var i = 0; i < arguments.length; i++) {
+			if (typeof arguments[i] === "object") {
+				index.push(JSON.stringify(arguments[i]));
+			} else {
+				index.push(slice.call(arguments[i]));
+			}
+		}
+		if (index in memo) {
+			console.log("Cache hit!");
+			return memo[index];
+		} else {
+			console.log("New value!");
+			return (memo[index] = func.apply(this, arguments));
+		}
+	} // function
+} // CommonMemoize

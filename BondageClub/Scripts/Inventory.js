@@ -93,13 +93,15 @@ function InventoryAvailable(C, InventoryName, InventoryGroup) {
 	return false;
 }
 
+var InventoryPrerequisiteMessage = CommonMemoize(InventoryPrerequisiteMessageMemo);
+
 /**
 * Returns an error message if a prerequisite clashes with the character items and clothes
 * @param {Character} C - The character on which we check for prerequisites
 * @param {String} Prerequisite - The name of the prerequisite
 * @returns {String} - The error tag, can be converted to an error message
 */
-function InventoryPrerequisiteMessage(C, Prerequisite) {
+function InventoryPrerequisiteMessageMemo(C, Prerequisite) {
 
 	// Basic prerequisites that can apply to many items
 	if (Prerequisite == "NoItemFeet") return (InventoryGet(C, "ItemFeet") != null) ? "MustFreeFeetFirst" : "";
@@ -111,7 +113,7 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 	if (Prerequisite == "CanKneel") return (C.Effect.indexOf("BlockKneel") >= 0) ? "MustBeAbleToKneel" : "";
 	if (Prerequisite == "NotMounted") return (C.Effect.indexOf("Mounted") >= 0) ? "CannotBeUsedWhenMounted" : "";
 	if (Prerequisite == "NotHorse") return (C.Pose.indexOf("Horse") >= 0) ? "CannotBeUsedWhenMounted" : "";
-	if (Prerequisite == "NotSuspended") return ((C.Pose.indexOf("Suspension") >= 0) || (C.Pose.indexOf("SuspensionHogtied") >=0)) ? "RemoveSuspensionForItem" : "";
+	if (Prerequisite == "NotSuspended") return ((C.Pose.indexOf("Suspension") >= 0) || (C.Pose.indexOf("SuspensionHogtied") >= 0)) ? "RemoveSuspensionForItem" : "";
 	if (Prerequisite == "NotHogtied") return (C.Pose.indexOf("Hogtied") >= 0) ? "ReleaseHogtieForItem" : "";
 	if (Prerequisite == "CanUseAlphaHood") return (C.Appearance.find(A => A.Asset.Prerequisite && A.Asset.Prerequisite.includes("CannotUseWithAlphaHood"))) ? "ReleaseAlphaBlockingItem" : "";
 	if (Prerequisite == "NotYoked") return (C.Pose.indexOf("Yoked") >= 0) ? "CannotBeUsedWhenYoked" : "";
@@ -134,15 +136,15 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 
 	// Breast items can be blocked by clothes
 	if ((Prerequisite == "AccessBreast") && (((Cloth != null) && !Cloth.Asset.Expose.includes("ItemBreast"))
-			|| (InventoryGet(C, "Bra") != null && !InventoryGet(C, "Bra").Asset.Expose.includes("ItemBreast")))) return "RemoveClothesForItem";
+		|| (InventoryGet(C, "Bra") != null && !InventoryGet(C, "Bra").Asset.Expose.includes("ItemBreast")))) return "RemoveClothesForItem";
 	if ((Prerequisite == "AccessBreastSuitZip") && (((Cloth != null) && !Cloth.Asset.Expose.includes("ItemNipplesPiercings"))
-		    || (InventoryGet(C, "Suit") != null && !InventoryGet(C, "Suit").Asset.Expose.includes("ItemNipplesPiercings")))) return "UnZipSuitForItem";
+		|| (InventoryGet(C, "Suit") != null && !InventoryGet(C, "Suit").Asset.Expose.includes("ItemNipplesPiercings")))) return "UnZipSuitForItem";
 
 	// Vulva/Butt items can be blocked by clothes, panties and some socks
 	if ((Prerequisite == "AccessVulva") && (((Cloth != null) && Cloth.Asset.Block != null && Cloth.Asset.Block.includes("ItemVulva"))
-			|| (InventoryGet(C, "ClothLower") != null && !InventoryGet(C, "ClothLower").Asset.Expose.includes("ItemVulva"))
-			|| (InventoryGet(C, "Panties") != null && !InventoryGet(C, "Panties").Asset.Expose.includes("ItemVulva"))
-			|| (InventoryGet(C, "Socks") != null && (InventoryGet(C, "Socks").Asset.Block != null) && InventoryGet(C, "Socks").Asset.Block.includes("ItemVulva")))) return "RemoveClothesForItem";
+		|| (InventoryGet(C, "ClothLower") != null && !InventoryGet(C, "ClothLower").Asset.Expose.includes("ItemVulva"))
+		|| (InventoryGet(C, "Panties") != null && !InventoryGet(C, "Panties").Asset.Expose.includes("ItemVulva"))
+		|| (InventoryGet(C, "Socks") != null && (InventoryGet(C, "Socks").Asset.Block != null) && InventoryGet(C, "Socks").Asset.Block.includes("ItemVulva")))) return "RemoveClothesForItem";
 	if ((Prerequisite == "AccessVulvaSuitZip") && (
 		(InventoryGet(C, "SuitLower") != null && !InventoryGet(C, "SuitLower").Asset.Expose.includes("ItemVulvaPiercings")))) return "UnZipSuitForItem";
 
@@ -162,11 +164,11 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 
 	// Gas mask (Or face covering items going below the chin)
 	if (Prerequisite == "GasMask" && (InventoryGet(C, "ItemArms") != null && InventoryGet(C, "ItemArms").Asset.Name == "Pillory" || InventoryGet(C, "ItemDevices") != null && InventoryGet(C, "ItemDevices").Asset.Name == "TheDisplayFrame")) return "RemoveRestraintsFirst";
-	if (Prerequisite == "NotMasked"  && (InventoryGet(C, "ItemHead") != null) && (InventoryGet(C, "ItemHead").Asset.Name == "OldGasMask")) return "RemoveFaceMaskFirst";
-	
+	if (Prerequisite == "NotMasked" && (InventoryGet(C, "ItemHead") != null) && (InventoryGet(C, "ItemHead").Asset.Name == "OldGasMask")) return "RemoveFaceMaskFirst";
+
 	// Blocked remotes on self
 	if (Prerequisite == "RemotesAllowed" && LogQuery("BlockRemoteSelf", "OwnerRule") && C.ID == 0) return "OwnerBlockedRemotes";
-		
+
 	// Layered Gags, Prevent gags marked with "GagUnique" from being equipped over gags with "GagFlat" and "GagCorset"
 	if (Prerequisite == "GagUnique" && C.FocusGroup) {
 		// Index of the gag we're trying to add (1-indexed)
