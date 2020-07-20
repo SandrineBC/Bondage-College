@@ -11,6 +11,10 @@ var CurrentOnlinePlayers = 0;
 var CommonIsMobile = false;
 var CommonCSVCache = {};
 var CutsceneStage = 0;
+
+var CommonMemoizeValue = 0;
+var CommonMemoizeCacheHit = 0;
+
 /**
  * List of all the common backgrounds.
  * @constant 
@@ -409,10 +413,10 @@ function CommonMemoize(func) {
 			}
 		}
 		if (index in memo) {
-			console.log("Cache hit!");
+			CommonMemoizeCacheHit++;
 			return memo[index];
 		} else {
-			console.log("New value!");
+			CommonMemoizeValue++;
 			return (memo[index] = func.apply(this, arguments));
 		}
 	} // function
