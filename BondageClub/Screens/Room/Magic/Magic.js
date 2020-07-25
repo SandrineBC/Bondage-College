@@ -80,7 +80,7 @@ function MagicRestrainMinItem(C, MinItem) {
 		if ((C.Appearance[E].Asset.Group.Name == "ItemMouth") || (C.Appearance[E].Asset.Group.Name == "ItemMouth2") || (C.Appearance[E].Asset.Group.Name == "ItemMouth3")) {
 			GagApplied = true;
 		}
-		else if ((C.Appearance[E].Asset.Group.Name == "ItemArms") || (C.Appearance[E].Asset.Group.Name == "ItemFeet") || (C.Appearance[E].Asset.Group.Name == "ItemLegs") || (C.Appearance[E].Asset.Group.Name == "ItemHead") || (C.Appearance[E].Asset.Group.Name == "ItemMisc")) {
+		else if ((C.Appearance[E].Asset.Group.Name == "ItemArms") || (C.Appearance[E].Asset.Group.Name == "ItemFeet") || (C.Appearance[E].Asset.Group.Name == "ItemLegs") || (C.Appearance[E].Asset.Group.Name == "ItemHead") || (C.Appearance[E].Asset.Group.Name == "ItemMisc")|| (C.Appearance[E].Asset.Group.Name == "ItemHood")) {
 			CurItem++
 		}
 	}
