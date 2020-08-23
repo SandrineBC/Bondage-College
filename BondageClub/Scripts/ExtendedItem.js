@@ -134,7 +134,14 @@ function ExtendedItemSetType(Options, Option) {
 
 	// An extendable item may provide a validation function. Returning false from the validation function will drop out of
 	// this function, and the new type will not be applied.
-	if (CommonCallFunctionByName(FunctionPrefix + "Validate", Option) === false) {
+	if (typeof window[FunctionPrefix + "Validate"] === "function") {
+		if (CommonCallFunctionByName(FunctionPrefix + "Validate", Option) === false) {
+			return;
+		}
+	}
+	// Otherwise use the standard prerequisite check
+	else if (Option.Prerequisite != null && !InventoryAllow(C, Option.Prerequisite, true)) {
+		DialogExtendedMessage = DialogText;
 		return;
 	}
 
