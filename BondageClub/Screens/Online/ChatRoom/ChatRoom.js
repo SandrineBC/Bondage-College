@@ -84,10 +84,10 @@ function ChatRoomGiveMoney(money) {
 	CharacterChangeMoney(Player, money * -1);
 	// The transfer to the sub can not be done directly, so we have to send her a message
 	ServerSend("ChatRoomChat", {
-		Content: "ActionMoneyRecieved", Type: "Action", Dictionary: [
+		Content: "ActionMoneyReceived", Type: "Action", Dictionary: [
 			{ Tag: "TargetCharacterName", Text: CurrentCharacter.Name }, { Tag: "SourceCharacterName", Text: Player.Name }]
 	});
-	ServerSend("ChatRoomChat", { Content: "MoneyGift" + money.toString(), Type: "Hidden", Target: CurrentCharacter.MemberNumber });
+	ServerSend("ChatRoomChat", { Content: "MoneyGift" + money.toString(), Type: "Hidden", Sender: Player.MemberNumber, Target: CurrentCharacter.MemberNumber });
 }
 
 /**
@@ -787,7 +787,7 @@ function ChatRoomMessage(data) {
 				if (msg == "MaidDrinkPick10") MaidQuartersOnlineDrinkPick(data.Sender, 10);
 				if (msg.substring(0, 8) == "PayQuest") ChatRoomPayQuest(data);
 				if (msg.substring(0, 9) == "OwnerRule") data = ChatRoomSetRule(data);
-				if (msg.substring(0, 9) == "MoneyGift") CahtRoomMoneyGift(data);
+				if (msg.substring(0, 9) == "MoneyGift") ChatRoomMoneyGift(data);
 				if (data.Type == "Hidden") return;
 			}
 
@@ -1432,22 +1432,31 @@ function ChatRoomPayQuest(data) {
 	}
 }
 
-function CahtRoomMoneyGift(data) {
-	if (data != null) {
+/**
+ * Receiving funcrion for the moeny giving. Checks, if the target player is eligible to receive money
+ * and blocks moey spamming.
+ * @param {*} data - The data, we receive from the server
+ * @param {string} data.Content - A strin in the format MoneyGiftXXX where XXX is the amount of monney that is given
+ * @param {string} data.Sender - The MemberID of the sending character. used to ensure, only the Owner sends money
+ * @returns {void} - Nothing
+ */
+function ChatRoomMoneyGift(data) {
+	console.log(Player.Ownership.MemberNumber == data.Sender);
+	if ((data != null) && (data.Sender != null) && (Player.Ownership.MemberNumber == data.Sender)) {
 		// Extract the dollars from the message
 		let money = parseInt(data.Content.substring(9));
 		// make sure, no money spamming happens on the client side
 		let canReceive = false;
-		let logEntryValue = LogValue("ReceivedMoneValue", "OwnerRule"); 
+		let logEntryValue = LogValue("ReceivedMoneyValue", "OwnerRule"); 
 		let logEntryTime = LogValue("ReceivedMoneyTime", "OwnerRule"); 
 		if ((logEntryValue == null) || (logEntryTime + 86400000 <= CurrentTime)) {
 			// The player has nver received money from her owner or the last donation is older than 24 hours, 
 			// we log the amount and the current time of the gift
-			LogAdd("ReceivedMoneValue", "OwnerRule", money);
+			LogAdd("ReceivedMoneyValue", "OwnerRule", money);
 			LogAdd("ReceivedMoneyTime", "OwnerRule", CurrentTime);
 			canReceive = true;
 		} else if (logEntryTime + 86400000 > CurrentTime && logEntryValue + money <= 100) {
-			LogAdd("ReceivedMoneValue", "OwnerRule", money + logEntryValue);
+			LogAdd("ReceivedMoneyValue", "OwnerRule", money + logEntryValue);
 			canReceive = true;
 		}
 		// Give the money to the player
