@@ -41,6 +41,56 @@ function ChatRoomCurrentCharacterIsAdmin() { return ((CurrentCharacter != null) 
 function ChatRoomHasSwapTarget() { return (ChatRoomSwapTarget != null) }
 function ChatRoomCanAssistStruggle() { return CurrentCharacter.AllowItem && !CurrentCharacter.CanInteract() }
 /**
+ * Checks, if the player is allowes to give money to another player. Current rules are:
+ * - Only an owner can give money to her sub
+ * - She cannot give more than 100$ a day
+ * @param {number} money - The amount of money to check for
+ * @returns {boolean}
+ */
+function ChatRoomCanGiveMoney(money) {
+	// You can only give money, if you have anything and can use your arms
+	if (Player.Money < money || !Player.CanInteract()) return false;
+	// Only owners can give money to their subs
+	if (CurrentCharacter == null || !CurrentCharacter.IsOwnedByPlayer()) return false;
+
+	let logEntryValue = LogValue("GaveMoneyToValue" + CurrentCharacter.MemberNumber, "OwnerRule"); 
+	let logEntryTime = LogValue("GaveMoneyToTime" + CurrentCharacter.MemberNumber, "OwnerRule"); 
+	// The player did never give money to her sub
+	if (logEntryValue == null) return true;
+	// The last donation was 24h ago or the player does not want to give more than 100$
+	if ((logEntryTime + 86400000 <= CurrentTime) || (logEntryValue + parseInt(money) <= 100)) return true;
+	return false;
+}
+
+/**
+ * Transfers the given amount of money from an owner to her sub
+ * @param {number} money - The amount of money to transfer
+ * @returns {void} - Nothing 
+ */
+function ChatRoomGiveMoney(money) {
+	// Log the transfer
+	let logEntryValue = LogValue("GaveMoneyToValue" + CurrentCharacter.MemberNumber, "OwnerRule"); 
+	let logEntryTime = LogValue("GaveMoneyToTime" + CurrentCharacter.MemberNumber, "OwnerRule"); 
+	if ((logEntryValue == null) || (logEntryTime + 24 * 3600 * 1000 <= CurrentTime)) {
+		// The player has nver given money to her sub or the last donation is older than 24 hours, 
+		// we log the amount and the current time of the gift
+		LogAdd("GaveMoneyToValue" + CurrentCharacter.MemberNumber, "OwnerRule", money);
+		LogAdd("GaveMoneyToTime" + CurrentCharacter.MemberNumber, "OwnerRule",CurrentTime); 
+	} else if (logEntryTime + 24 * 3600 * 1000 > CurrentTime) {
+		// The last gift was given within the last 24 hours
+		LogAdd("GaveMoneyToValue" + CurrentCharacter.MemberNumber, "OwnerRule", money + logEntryValue);
+	}
+	// Transfer the money
+	CharacterChangeMoney(Player, money * -1);
+	// The transfer to the sub can not be done directly, so we have to send her a message
+	ServerSend("ChatRoomChat", {
+		Content: "ActionMoneyRecieved", Type: "Action", Dictionary: [
+			{ Tag: "TargetCharacterName", Text: CurrentCharacter.Name }, { Tag: "SourceCharacterName", Text: Player.Name }]
+	});
+	ServerSend("ChatRoomChat", { Content: "MoneyGift" + money.toString(), Type: "Hidden", Target: CurrentCharacter.MemberNumber });
+}
+
+/**
  * Checks if the character options menu is available.
  * @returns {boolean} - Whether or not the player can interact with the target character
  */
@@ -737,6 +787,7 @@ function ChatRoomMessage(data) {
 				if (msg == "MaidDrinkPick10") MaidQuartersOnlineDrinkPick(data.Sender, 10);
 				if (msg.substring(0, 8) == "PayQuest") ChatRoomPayQuest(data);
 				if (msg.substring(0, 9) == "OwnerRule") data = ChatRoomSetRule(data);
+				if (msg.substring(0, 9) == "MoneyGift") CahtRoomMoneyGift(data);
 				if (data.Type == "Hidden") return;
 			}
 
@@ -771,7 +822,7 @@ function ChatRoomMessage(data) {
 								msg = msg.replace(dictionary[D].Tag, ((SenderCharacter.MemberNumber == dictionary[D].MemberNumber) && (dictionary[D].Tag == "TargetCharacter")) ? DialogFind(Player, "Herself") : (PreferenceIsPlayerInSensDep() && dictionary[D].MemberNumber != Player.MemberNumber ? DialogFind(Player, "Someone").toLowerCase() : ChatRoomHTMLEntities(dictionary[D].Text)));
 								TargetMemberNumber = dictionary[D].MemberNumber;
 							}
-							else if (dictionary[D].Tag == "SourceCharacter") {
+							else if ((dictionary[D].Tag == "SourceCharacter") || (dictionary [D].Tag === "SourceCharacterName")){
 								msg = msg.replace(dictionary[D].Tag, (PreferenceIsPlayerInSensDep() && (dictionary[D].MemberNumber != Player.MemberNumber)) ? DialogFind(Player, "Someone") : ChatRoomHTMLEntities(dictionary[D].Text));
 								for (let T = 0; T < ChatRoomCharacter.length; T++)
 									if (ChatRoomCharacter[T].MemberNumber == dictionary[D].MemberNumber)
@@ -1381,6 +1432,28 @@ function ChatRoomPayQuest(data) {
 	}
 }
 
+function CahtRoomMoneyGift(data) {
+	if (data != null) {
+		// Extract the dollars from the message
+		let money = parseInt(data.Content.substring(9));
+		// make sure, no money spamming happens on the client side
+		let canReceive = false;
+		let logEntryValue = LogValue("ReceivedMoneValue", "OwnerRule"); 
+		let logEntryTime = LogValue("ReceivedMoneyTime", "OwnerRule"); 
+		if ((logEntryValue == null) || (logEntryTime + 86400000 <= CurrentTime)) {
+			// The player has nver received money from her owner or the last donation is older than 24 hours, 
+			// we log the amount and the current time of the gift
+			LogAdd("ReceivedMoneValue", "OwnerRule", money);
+			LogAdd("ReceivedMoneyTime", "OwnerRule", CurrentTime);
+			canReceive = true;
+		} else if (logEntryTime + 86400000 > CurrentTime && logEntryValue + money <= 100) {
+			LogAdd("ReceivedMoneValue", "OwnerRule", money + logEntryValue);
+			canReceive = true;
+		}
+		// Give the money to the player
+		if (canReceive) CharacterChangeMoney(Player, money);		
+	}
+}
 // When a game message comes in, we forward it to the current online game being played
 function ChatRoomGameResponse(data) {
 	if (OnlineGameName == "LARP") GameLARPProcess(data);

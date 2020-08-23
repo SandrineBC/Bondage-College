@@ -83,7 +83,13 @@ PlayerGagged,,,(You don't have access to use or remove items on her.),,!DialogDo
 40,0,(Help her stand.),(You help her up on her feet.),KneelStandAssist(),CanAssistStand()
 40,0,(Help her kneel.),(You help her down on her knees.),KneelStandAssist(),CanAssistKneel()
 40,0,(Help her to struggle free.),,StruggleAssist(),CanAssistStruggle()
+40,50, (Give her some money),(You open your purse and ponder...),,CanGiveMoney(10)
 40,0,(Back to main menu.),(Main menu.),,
+50,0, (Give her 10 dollar), (You get out some coins and give her 10$),GiveMoney(10),CanGiveMoney(10)
+50,0, (Give her 25 dollar), (You get out a bit of money and hand her 25$),GiveMoney(25),CanGiveMoney(25)
+50,0, (Give her 50 dollar), (Looking at your sub you smile and give her 50$),GiveMoney(50),CanGiveMoney(50)
+50,0, (Give her 100 dollar), (You feel really generous and give her 100$),GiveMoney(100),CanGiveMoney(100)
+50,0,(Back to main menu.),(Main menu.),,
 100,110,(Wardrobe access.),(Select her wardrobe access.),,
 100,120,(Whisper rules.),(Select her rules for whispering when you're in the same room.),,
 100,130,(Key and locks restrictions.),(Select her restrictions for keys and locks.),,
