@@ -55,7 +55,7 @@ function AsylumTherapyClick() {
 	}
 	if (MouseIn(1885, 145, 90, 90)) InformationSheetLoadCharacter(Player);
 	if (MouseIn(1885, 265, 90, 90) && Player.CanChange() && (LogValue("Committed", "Asylum") >= CurrentTime)) AsylumEntranceWearPatientClothes(Player);
-	if (MouseIn(1885, 385, 90, 90) && Player.CanChange() && (LogValue("Committed", "Asylum") >= CurrentTime)) CharacterNaked(Player);
+	if (MouseIn(1885, 385, 90, 90) && Player.CanChange() && (LogValue("Committed", "Asylum") >= CurrentTime)) CharacterNaked(Player, true);
 }
 
 /**
@@ -77,7 +77,7 @@ function AsylumTherapyPlayerUngag() {
  */
 function AsylumTherapyStripPlayer() {
 	CharacterRelease(Player);
-	CharacterNaked(Player);
+	CharacterNaked(Player, true);
 }
 
 /**

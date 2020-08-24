@@ -155,7 +155,7 @@ function ManagementClick() {
 function ManagementPlayerStrip() {
 	ManagementPlayerAppearance = Player.Appearance.slice();
 	CharacterRelease(Player);
-	CharacterNaked(Player);
+	CharacterNaked(Player, true);
 }
 
 // Straps a tight armbinder on the player for 2 players
@@ -238,8 +238,6 @@ function ManagementReleaseFromOwner(RepChange) {
 	Player.Owner = "";
 	ServerPlayerSync();
 	InventoryRemove(Player, "ItemNeck");
-	InventoryRemove(Player, "ItemNeckAccessories");
-	InventoryRemove(Player, "ItemNeckRestraints");
 	ReputationProgress("Dominant", RepChange);
 	LogAdd("ReleasedFromOwner", "Management");
 	if ((Player.Ownership != null) && (Player.Ownership.MemberNumber != null)) ServerSend("AccountOwnership", { MemberNumber: Player.Ownership.MemberNumber, Action: "Break" });
