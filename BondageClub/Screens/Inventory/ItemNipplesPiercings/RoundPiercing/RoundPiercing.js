@@ -74,14 +74,10 @@ function InventoryItemNipplesPiercingsRoundPiercingClick() {
  * @returns {void} - Nothing
  */
 function InventoryItemNipplesPiercingsRoundPiercingPublishAction(C, Option, PreviousOption) {
-	var NewIndex = InventoryItemNipplesPiercingsRoundPiercingOptions.indexOf(Option);
-	var PreviousIndex = InventoryItemNipplesPiercingsRoundPiercingOptions.indexOf(PreviousOption);
 	var msg = InventoryItemNipplesPiercingsRoundPiercingPose + Option.Name;
-	// var ActionDialog = DialogFind(Player, NewIndex > PreviousIndex ? "tightens" : "loosens", "ItemArms");
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
-		//{ Tag: "Action", Text: ActionDialog },
 	];
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
