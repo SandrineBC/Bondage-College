@@ -80,7 +80,7 @@ function InventoryItemNipplesPiercingsRoundPiercingPublishAction(C, Option, Prev
 	// var ActionDialog = DialogFind(Player, NewIndex > PreviousIndex ? "tightens" : "loosens", "ItemArms");
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
-		{ Tag: "TargetCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
+		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
 		//{ Tag: "Action", Text: ActionDialog },
 	];
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
