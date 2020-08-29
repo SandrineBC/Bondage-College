@@ -6,6 +6,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 	{
 		Name: "Base",
 		BondageLevel: 0,
+		Prerequisite: ["AccessBreast", "AccessBreastSuitZip"],
 		Property: {
 			Type: null,
 			Difficulty: 0,
@@ -15,7 +16,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 	{
 		Name: "Chain",
 		BondageLevel: 0,
-		Prerequisite: ["Collared"],
+		Prerequisite: ["AccessBreast", "AccessBreastSuitZip", "Collared"],
 		Property: {
 			Type: "Chain",
 			Difficulty: 0,
@@ -25,6 +26,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 	{
 		Name: "Weighted",
 		BondageLevel: 0,
+		Prerequisite: ["AccessBreast", "AccessBreastSuitZip"],
 		Property: {
 			Type: "Weighted",
 			Difficulty: 0,
@@ -34,7 +36,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 	{
 		Name: "WeightedChain",
 		BondageLevel: 0,
-		Prerequisite: ["Collared"],
+		Prerequisite: ["AccessBreast", "AccessBreastSuitZip", "Collared"],
 		Property: {
 			Type: "WeightedChain",
 			Difficulty: 0,
