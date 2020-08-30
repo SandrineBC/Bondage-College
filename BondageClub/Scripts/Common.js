@@ -10,8 +10,11 @@ var CommonIsMobile = false;
 var CommonCSVCache = {};
 var CutsceneStage = 0;
 
+// variables used for memoization stats
 var CommonMemoizeValue = 0;
 var CommonMemoizeCacheHit = 0;
+var CommonMemoizeValueAvgTime = 0;
+var CommonMemoizeCacheHitAvgTime = 0;
 
 /**
  * List of all the common backgrounds.
@@ -386,33 +389,46 @@ function CommonWait(MS) {
  * @returns {any} - The result of the memoized function
  */
 function CommonMemoize(func) {
+	var startTime = 0;
 	var memo = {};
 	var slice = Array.prototype.slice;
 
 	var memoized = function () {
 		var index = [];
+		startTime = Date.now();
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] === "object") {
 				index.push(JSON.stringify(arguments[i]));
 			} else {
 				index.push(slice.call(arguments[i]));
 			}
-		}
+		} // for
 		if (index in memo) {
 			CommonMemoizeCacheHit++;
-			return memo[index];
+			CommonMemoizeCacheHitAvgTime += (Date.now() - startTime);
 		} else {
 			CommonMemoizeValue++;
-			return (memo[index] = func.apply(this, arguments));
+			memo[index] = func.apply(this, arguments);
+			CommonMemoizeValueAvgTime += (Date.now() - startTime);
 		}
+		return memo[index];
 	}; // function
 
 	// add a clear cache method
 	memoized.clearCache = function () {
+		// print some stats
+		console.log("Memoized values: " + CommonMemoizeValue);
+		console.log("Avg. value computation time: " + (CommonMemoizeValueAvgTime / CommonMemoizeValue));
+		console.log("Cache hits: " + CommonMemoizeCacheHit);
+		console.log("Avg. cache access time: " + (CommonMemoizeCacheHitAvgTime / CommonMemoizeCacheHit));
+		console.log("Cache size: " + JSON.stringify(memo).length);
+
 		CommonMemoizeCacheHit = 0;
 		CommonMemoizeValue = 0;
+		CommonMemoizeValueAvgTime = 0;
+		CommonMemoizeCacheHitAvgTime = 0;
+
 		memo = {};
 	}
-
 	return memoized;
 } // CommonMemoize
