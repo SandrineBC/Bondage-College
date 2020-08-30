@@ -42,7 +42,7 @@ function WardrobeLoadCharacters(Fast) {
 	var W = null;
 	WardrobeLoadCharacterNames();
 	if (Player.Wardrobe == null) Player.Wardrobe = [];
-	for (var P = 0; P < WardrobeSize; P++) {
+	for (let P = 0; P < WardrobeSize; P++) {
 		if (WardrobeCharacter.length <= P && ((W == null) || !Fast)) {
 
 			// Creates a character
@@ -103,7 +103,7 @@ function WardrobeRun() {
 	DrawButton(1000, 25, 60, 60, "", "White", "Icons/Small/Next.png");
 	DrawButton(1750, 25, 225, 60, TextGet("Return"), "White");
 	DrawText(TextGet("SelectAppareance"), 1405, 60, "White", "Gray");
-	for (var C = 0; C < 12; C++)
+	for (let C = 0; C < 12; C++)
 		if (C < 6) {
 			DrawCharacter(WardrobeCharacter[C + WardrobeOffset], 500 + C * 250, 100, 0.45);
 			if (WardrobeSelection == C + WardrobeOffset) DrawEmptyRect(500 + C * 250, 105, 225, 440, "Cyan");
@@ -140,7 +140,7 @@ function WardrobeClick() {
 
 	// If we must select a different wardrobe
 	if ((MouseX >= 500) && (MouseX < 2000) && (MouseY >= 100) && (MouseY < 1000))
-		for (var C = 0; C < 12; C++)
+		for (let C = 0; C < 12; C++)
 			if (C < 6) {
 				if ((MouseX >= 500 + C * 250) && (MouseX <= 725 + C * 250) && (MouseY >= 100) && (MouseY <= 450))
 					WardrobeSelection = C + WardrobeOffset;
@@ -210,14 +210,19 @@ function WardrobeFastLoad(C, W, Update) {
 					&& (AddAll || a.Group.Clothing)
 					&& a.Name == w.Name
 					&& (a.Value == 0 || InventoryAvailable(Player, a.Name, a.Group.Name)));
-				if (A != null) CharacterAppearanceSetItem(C, w.Group, A, w.Color, 0, false);
+				if (A != null) CharacterAppearanceSetItem(C, w.Group, A, w.Color, 0, null, false);
 			});
 		// Adds any critical appearance asset that could be missing, adds the default one
 		AssetGroup
 			.filter(g => g.Category == "Appearance" && !g.AllowNone)
 			.forEach(g => {
 				if (C.Appearance.find(a => a.Asset.Group.Name == g.Name) == null) {
-					C.Appearance.push({ Asset: Asset.find(a => a.Group.Name == g.Name), Difficulty: 0, Color: "Default" });
+					// For a group with a mirrored group, we copy the opposite if it exists
+					if (g.MirrorGroup && InventoryGet(C, g.MirrorGroup)) {
+						C.Appearance.push({ Asset: Asset.find(a => a.Group.Name == g.Name && a.Name == InventoryGet(C, g.MirrorGroup).Asset.Name), Difficulty: 0, Color: InventoryGet(C, g.MirrorGroup).Color });
+					} else {
+						C.Appearance.push({ Asset: Asset.find(a => a.Group.Name == g.Name), Difficulty: 0, Color: "Default" });
+					}
 				}
 			});
 		// Restores the expressions the player had previously per item in the appearance

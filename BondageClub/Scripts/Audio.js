@@ -86,6 +86,15 @@ function AudioPlayContent(data) {
 				case "DuctTape" : audioFile = "Audio/DuctTape18.mp3"; break;
 				case "InflatableBodyBag":
 				case "BurlapSack": audioFile = "Audio/Bag.mp3"; break;
+				case "RopeGag": 
+				case "NeckRope": 
+				case "HempRopeHarness": 
+				case "HempRopeBelt": 
+				case "NylonRopeHarness": 
+				case "RopeBlindfold": 
+				case "BedRopes": 
+				case "ToeTie": 
+				case "NylonRope":
 				case "HempRope": audioFile = "Audio/RopeShort.mp3"; break;
 				case "CollarChainShort":
 				case "CollarChainLong":
@@ -145,6 +154,7 @@ function AudioPlayContent(data) {
 			if (!isNaN(vibrationLevel)) noiseLevelModifier += vibrationLevel * 3;
 			var assetName = data.Content.substring(0, data.Content.length - "IncreaseTo1".length);
 			switch (assetName) {
+				case "Vibe":
 				case "VibeHeartClitPiercing":
 				case "NippleHeart":
 				case "Nipple":

@@ -5,6 +5,7 @@ var DialogTextDefaultTimer = -1;
 var DialogProgress = -1;
 var DialogColor = null;
 var DialogColorSelect = null;
+var DialogPreviousCharacterData = {};
 var DialogProgressStruggleCount = 0;
 var DialogProgressAuto = 0;
 var DialogProgressOperation = "...";
@@ -29,6 +30,11 @@ var DialogItemPermissionMode = false;
 var DialogExtendedMessage = "";
 var DialogActivityMode = false;
 var DialogActivity = [];
+var DialogSortOrderEnabled = 1;
+var DialogSortOrderEquipped = 2;
+var DialogSortOrderUsable = 3;
+var DialogSortOrderUnusable = 4;
+var DialogSortOrderBlocked = 5;
 
 /**
  * Compares the player's reputation with a given value 
@@ -239,7 +245,7 @@ function DialogChatRoomPlayerIsAdmin() { return (ChatRoomPlayerIsAdmin() && (Cur
  * Checks, if a safe word can be used.
  * @returns {boolean} - Returns true, if the player is currently within a chat room
  */
-function DialogChatRoomCanSafeword() { return (CurrentScreen == "ChatRoom") }
+function DialogChatRoomCanSafeword() { return (CurrentScreen == "ChatRoom" && Player.GameplaySettings.EnableSafeword) }
 
 /**
  * Checks the prerequisite for a given dialog
@@ -289,7 +295,7 @@ function DialogCanUnlock(C, Item) {
 	if (C.IsLoverOfPlayer() && InventoryAvailable(Player, "LoversPadlockKey", "ItemMisc") && Item.Asset.Enable && Item.Property && !Item.Property.LockedBy.startsWith("Owner")) return true;
 	var UnlockName = "Unlock-" + Item.Asset.Name;
 	if ((Item != null) && (Item.Property != null) && (Item.Property.LockedBy != null)) UnlockName = "Unlock-" + Item.Property.LockedBy;
-	for (var I = 0; I < Player.Inventory.length; I++)
+	for (let I = 0; I < Player.Inventory.length; I++)
 		if (InventoryItemHasEffect(Player.Inventory[I], UnlockName)) {
 			var Lock = InventoryGetLock(Item);
 			if (Lock != null) {
@@ -306,7 +312,7 @@ function DialogCanUnlock(C, Item) {
  * @returns {string} - The name of the current dialog, if such a dialog exists, any empty string otherwise
  */
 function DialogIntro() {
-	for (var D = 0; D < CurrentCharacter.Dialog.length; D++)
+	for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
 		if ((CurrentCharacter.Dialog[D].Stage == CurrentCharacter.Stage) && (CurrentCharacter.Dialog[D].Option == null) && (CurrentCharacter.Dialog[D].Result != null) && DialogPrerequisite(D))
 			return CurrentCharacter.Dialog[D].Result;
 	return "";
@@ -333,7 +339,7 @@ function DialogLeave() {
  */
 function DialogRemove() {
 	var pos = 0;
-	for (var D = 0; D < CurrentCharacter.Dialog.length; D++)
+	for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
 		if ((CurrentCharacter.Dialog[D].Stage == CurrentCharacter.Stage) && (CurrentCharacter.Dialog[D].Option != null) && DialogPrerequisite(D)) {
 			if ((MouseX >= 1025) && (MouseX <= 1975) && (MouseY >= 160 + pos * 105) && (MouseY <= 250 + pos * 105)) {
 				CurrentCharacter.Dialog.splice(D, 1);
@@ -350,7 +356,7 @@ function DialogRemove() {
  */
 function DialogRemoveGroup(GroupName) {
 	GroupName = GroupName.trim().toUpperCase();
-	for (var D = 0; D < CurrentCharacter.Dialog.length; D++)
+	for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
 		if ((CurrentCharacter.Dialog[D].Group != null) && (CurrentCharacter.Dialog[D].Group.trim().toUpperCase() == GroupName)) {
 			CurrentCharacter.Dialog.splice(D, 1);
 			D--;
@@ -395,6 +401,7 @@ function DialogLeaveItemMenu() {
 	DialogActivityMode = false;
 	DialogTextDefault = "";
 	DialogTextDefaultTimer = 0;
+	DialogPreviousCharacterData = {};
 	ElementRemove("InputColor");
 	AudioDialogStop();
 	ColorPickerEndPick();
@@ -423,7 +430,7 @@ function DialogLeaveFocusItem() {
  * @param {Item} NewInv - The item that should be added to the player's inventory
  * @param {boolean} NewInvWorn - Should be true, if the item is worn, false otherwise
  * @param {number} SortOrder - Defines the group the item is added to. 
- * @returns {boolean} - Returns true, if the item could be added to the player's inventory, false otherwise
+ * @returns {void} - Nothing
  */
 function DialogInventoryAdd(C, NewInv, NewInvWorn, SortOrder) {
 
@@ -432,19 +439,20 @@ function DialogInventoryAdd(C, NewInv, NewInvWorn, SortOrder) {
 		if ((C.ID != 0) || ((C.Owner == "") && (C.Ownership == null)) || !NewInv.Asset.IsLock || ((C.ID == 0) && LogQuery("BlockOwnerLockSelf", "OwnerRule")))
 			return;
 	if (NewInv.Asset.LoverOnly && !NewInvWorn && !C.IsLoverOfPlayer())
-		if ((C.ID != 0) || (C.Lovership.length < 0) || !NewInv.Asset.IsLock)
+		if ((C.ID != 0) || (C.Lovership.length == 0) || !NewInv.Asset.IsLock || ((C.ID == 0) && C.GetLoversNumbers(true).length == 0))
 			return;
 
 	// Do not show keys if they are in the deposit
-	if (LogQuery("KeyDeposit", "Cell") && InventoryIsKey(NewInv)) return false;
+	if (LogQuery("KeyDeposit", "Cell") && InventoryIsKey(NewInv)) return;
 
 	// Make sure we do not duplicate the non-blocked item
-	for (var I = 0; I < DialogInventory.length; I++)
+	for (let I = 0; I < DialogInventory.length; I++)
 		if ((DialogInventory[I].Asset.Group.Name == NewInv.Asset.Group.Name) && (DialogInventory[I].Asset.Name == NewInv.Asset.Name))
 			return;
 
 	// If the item is blocked, we show it at the end of the list
-	if (InventoryIsPermissionBlocked(C, NewInv.Asset.Name, NewInv.Asset.Group.Name) || !InventoryCheckLimitedPermission(C, NewInv)) SortOrder++;
+	if (InventoryIsPermissionBlocked(C, NewInv.Asset.Name, NewInv.Asset.Group.Name) || !InventoryCheckLimitedPermission(C, NewInv))
+		SortOrder = DialogSortOrderBlocked;
 
 	// Creates a new dialog inventory item
 	var DI = {
@@ -467,6 +475,27 @@ function DialogInventoryAdd(C, NewInv, NewInvWorn, SortOrder) {
  */
 function DialogAlwaysAllowRestraint() {
 	return (CurrentScreen == "Photographic");
+}
+
+/**
+ * Checks whether the player can use a remote on the given character and item
+ * @param {Character} C - the character that the item is equipped on
+ * @param {Item} Item - the item to check for remote usage against
+ * @return {boolean} - Returns true if the player is able to use a remote for the given character and item. Returns false otherwise.
+ */
+function DialogCanUseRemote(C, Item) {
+	// Can't use remotes if there is no item, the item doesn't have the "Egged" effect, or the player cannot interact
+	// with remotes in the first place
+	if (!Item || !InventoryItemHasEffect(Item, "Egged") || !Player.CanInteract()) return false;
+	// Can't use remotes on self if the player is owned and their remotes have been blocked by an owner rule
+	if (C.ID === 0 && Player.Ownership && Player.Ownership.Stage === 1 && LogQuery("BlockRemoteSelf", "OwnerRule")) return false;
+	if (Item.Asset.LoverOnly) {
+		// If the item is lover-only, the player must have the appropriate remote, be a lover of the character, and match the member number on the item
+		return C.IsLoverOfPlayer() && Item.Property && Item.Property.ItemMemberNumber === Player.MemberNumber && InventoryAvailable(Player, "LoversVibratorRemote", "ItemVulva");
+	} else {
+		// Otherwise, the player must have a vibrator remote
+		return InventoryAvailable(Player, "VibratorRemote", "ItemVulva");
+	}
 }
 
 /**
@@ -503,16 +532,18 @@ function DialogMenuButtonBuild(C) {
 		if ((Item != null) && !IsItemLocked && !InventoryItemHasEffect(Item, "Mounted", true) && !InventoryItemHasEffect(Item, "Enclose", true) && Player.CanInteract() && InventoryAllow(C, Item.Asset.Prerequisite) && !IsGroupBlocked) DialogMenuButton.push("Remove");
 		if ((Item != null) && !IsItemLocked && InventoryItemHasEffect(Item, "Mounted", true) && Player.CanInteract() && InventoryAllow(C, Item.Asset.Prerequisite) && !IsGroupBlocked) DialogMenuButton.push("Dismount");
 		if ((Item != null) && !IsItemLocked && InventoryItemHasEffect(Item, "Enclose", true) && Player.CanInteract() && InventoryAllow(C, Item.Asset.Prerequisite) && !IsGroupBlocked) DialogMenuButton.push("Escape");
-		if (InventoryItemHasEffect(Item, "Egged") && InventoryAvailable(Player, "VibratorRemote", "ItemVulva") && Player.CanInteract() && !(LogQuery("BlockRemoteSelf", "OwnerRule") &&(Player.Ownership != null && Player.Ownership.Stage == 1) && (C.ID == 0))) DialogMenuButton.push("Remote");
+		if (DialogCanUseRemote(C, Item)) DialogMenuButton.push("Remote");
 		if ((Item != null) && Item.Asset.Extended && ((Player.CanInteract()) || DialogAlwaysAllowRestraint() || Item.Asset.AlwaysInteract) && (!IsGroupBlocked || Item.Asset.AlwaysExtend) && (!Item.Asset.OwnerOnly || (C.IsOwnedByPlayer())) && (!Item.Asset.LoverOnly || (C.IsLoverOfPlayer()))) DialogMenuButton.push("Use");
 		if ((Player.CanInteract()) || DialogAlwaysAllowRestraint()) DialogMenuButton.push("ColorPick");
 
 		// Make sure the target player zone is allowed for an activity
-		if ((C.FocusGroup.Activity != null) && !IsGroupBlocked && ActivityAllowed() && (C.ArousalSettings != null) && (C.ArousalSettings.Zone != null) && (C.ArousalSettings.Active != null) && (C.ArousalSettings.Active != "Inactive"))
-			for (var Z = 0; Z < C.ArousalSettings.Zone.length; Z++)
-				if ((C.ArousalSettings.Zone[Z].Name == C.FocusGroup.Name) && (C.ArousalSettings.Zone[Z].Factor != null) && (C.ArousalSettings.Zone[Z].Factor > 0))
-					DialogMenuButton.push("Activity");
-
+		if ((C.FocusGroup.Activity != null) && ((!C.IsEnclose() && !Player.IsEnclose()) || C.ID == 0) && ActivityAllowed() && (C.ArousalSettings != null) && (C.ArousalSettings.Zone != null) && (C.ArousalSettings.Active != null) && (C.ArousalSettings.Active != "Inactive"))
+			for (let Z = 0; Z < C.ArousalSettings.Zone.length; Z++)
+				if ((C.ArousalSettings.Zone[Z].Name == C.FocusGroup.Name) && (C.ArousalSettings.Zone[Z].Factor != null) && (C.ArousalSettings.Zone[Z].Factor > 0)) {
+					ActivityDialogBuild(C);
+					if (DialogActivity.length > 0) DialogMenuButton.push("Activity");
+				}
+		
 		// Item permission enter/exit
 		if (C.ID == 0) {
 			if (DialogItemPermissionMode) DialogMenuButton.push("DialogNormalMode");
@@ -537,49 +568,63 @@ function DialogInventorySort() {
  * Build the inventory listing for the dialog which is what's equipped, 
  * the player's inventory and the character's inventory for that group
  * @param {Character} C - The character whose inventory must be built
+ * @param {number} [Offset] - The offset to be at, if specified.
  * @returns {void} - Nothing
  */
-function DialogInventoryBuild(C) {
+function DialogInventoryBuild(C, Offset) {
 
 	// Make sure there's a focused group
-	DialogInventoryOffset = 0;
+	DialogInventoryOffset = Offset;
+	if (DialogInventoryOffset == null) DialogInventoryOffset = 0;
 	DialogInventory = [];
 	if (C.FocusGroup != null) {
 
 		// First, we add anything that's currently equipped
 		var CurItem = null;
-		for (var A = 0; A < C.Appearance.length; A++)
+		for (let A = 0; A < C.Appearance.length; A++)
 			if ((C.Appearance[A].Asset.Group.Name == C.FocusGroup.Name) && C.Appearance[A].Asset.DynamicAllowInventoryAdd(C)) {
-				DialogInventoryAdd(C, C.Appearance[A], true, 1);
+				DialogInventoryAdd(C, C.Appearance[A], true, DialogSortOrderEnabled);
 				CurItem = C.Appearance[A];
 				break;
 			}
 
 		// In item permission mode, we add all the enable items, except the ones already on
 		if (DialogItemPermissionMode) {
-			for (var A = 0; A < Asset.length; A++)
+			for (let A = 0; A < Asset.length; A++)
 				if (Asset[A].Enable && Asset[A].Group.Name == C.FocusGroup.Name) {
 					if (Asset[A].Wear) {
 						if ((CurItem == null) || (CurItem.Asset.Name != Asset[A].Name) || (CurItem.Asset.Group.Name != Asset[A].Group.Name))
-							DialogInventory.push({ Asset: Asset[A], Worn: false, Icon: "", SortOrder: "1" + Asset[A].Description });
+							DialogInventory.push({ Asset: Asset[A], Worn: false, Icon: "", SortOrder: DialogSortOrderEnabled.toString() + Asset[A].Description });
 					}
 					else if (Asset[A].IsLock) {
 						var LockIsWorn = InventoryCharacterIsWearingLock(C, Asset[A].Name);
-						DialogInventory.push({ Asset: Asset[A], Worn: LockIsWorn, Icon: "", SortOrder: "1" + Asset[A].Description });
+						DialogInventory.push({ Asset: Asset[A], Worn: LockIsWorn, Icon: "", SortOrder: DialogSortOrderEnabled.toString() + Asset[A].Description });
 					}
 				}
-					
+
 		} else {
+
 			// Second, we add everything from the victim inventory
-			for (var A = 0; A < C.Inventory.length; A++)
-				if ((C.Inventory[A].Asset != null) && (C.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && C.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
-					DialogInventoryAdd(C, C.Inventory[A], false, 2);
+			for (let A = 0; A < C.Inventory.length; A++)
+				if ((C.Inventory[A].Asset != null) && (C.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && C.Inventory[A].Asset.DynamicAllowInventoryAdd(C)) {
+					var DialogSortOrder = C.Inventory[A].Asset.DialogSortOverride != null ? C.Inventory[A].Asset.DialogSortOverride : (InventoryAllow(C, C.Inventory[A].Asset.Prerequisite, false)) ? DialogSortOrderUsable : DialogSortOrderUnusable;
+					DialogInventoryAdd(C, C.Inventory[A], false, DialogSortOrder);
+				}
 
 			// Third, we add everything from the player inventory if the player isn't the victim
 			if (C.ID != 0)
-				for (var A = 0; A < Player.Inventory.length; A++)
-					if ((Player.Inventory[A].Asset != null) && (Player.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && Player.Inventory[A].Asset.DynamicAllowInventoryAdd(C))
-						DialogInventoryAdd(C, Player.Inventory[A], false, 2);
+				for (let A = 0; A < Player.Inventory.length; A++)
+					if ((Player.Inventory[A].Asset != null) && (Player.Inventory[A].Asset.Group.Name == C.FocusGroup.Name) && Player.Inventory[A].Asset.DynamicAllowInventoryAdd(C)) {
+						var DialogSortOrder = Player.Inventory[A].Asset.DialogSortOverride != null ? Player.Inventory[A].Asset.DialogSortOverride : (InventoryAllow(C, Player.Inventory[A].Asset.Prerequisite, false)) ? DialogSortOrderUsable : DialogSortOrderUnusable;
+						DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrder);
+					}
+
+			// Fourth, we add all free items (especially useful for clothes)
+			for (let A = 0; A < Asset.length; A++)
+				if ((Asset[A].Group.Name == C.FocusGroup.Name) && (Asset[A].Value == 0) && Asset[A].DynamicAllowInventoryAdd(C)) {
+					var DialogSortOrder = Asset[A].DialogSortOverride != null ? Asset[A].DialogSortOverride : (InventoryAllow(C, Asset[A].Prerequisite, false)) ? DialogSortOrderUsable : DialogSortOrderUnusable;
+					DialogInventoryAdd(C, { Asset: Asset[A] }, false, DialogSortOrder);
+				}
 
 		}
 
@@ -596,12 +641,13 @@ function DialogInventoryBuild(C) {
  */
 function DialogFacialExpressionsBuild() {
 	DialogFacialExpressions = [];
-	for (var I = 0; I < Player.Appearance.length; I++) {
+	for (let I = 0; I < Player.Appearance.length; I++) {
 		var PA = Player.Appearance[I];
 		var ExpressionList = PA.Asset.Group.AllowExpression;
-		if (!ExpressionList || !ExpressionList.length) continue;
+		if (!ExpressionList || !ExpressionList.length || PA.Asset.Group.Name == "Eyes2") continue;
 		var Item = {};
 		Item.Appearance = PA;
+		Item.Group = PA.Asset.Group.Name;
 		Item.CurrentExpression = (PA.Property == null) ? null : PA.Property.Expression;
 		var Index = ExpressionList.indexOf(Item.CurrentExpression);
 		Item.MenuExpression1 = (Index < 0) ? ExpressionList[ExpressionList.length - 1] : (Index == 0) ? null : ExpressionList[Index - 1];
@@ -703,7 +749,7 @@ function DialogProgressStart(C, PrevItem, NextItem) {
 		if (!InventoryItemHasEffect(PrevItem, "Block", true)) S = S - 4; // Non-blocking items become harder to struggle out when already blocked
 		if ((PrevItem.Asset.Group.Name != "ItemArms") && InventoryItemHasEffect(InventoryGet(C, "ItemArms"), "Block", true)) S = S - 4; // Harder If we don't target the arms while arms are restrained
 		if ((PrevItem.Asset.Group.Name != "ItemHands") && InventoryItemHasEffect(InventoryGet(C, "ItemHands"), "Block", true)) S = S - 4; // Harder If we don't target the hands while hands are restrained
-		if ((PrevItem.Asset.Group.Name != "ItemMouth") && (PrevItem.Asset.Group.Name != "ItemMouth2") && (PrevItem.Asset.Group.Name != "ItemMouth3") && (PrevItem.Asset.Group.Name != "ItemHead") && !C.CanTalk()) S = S - 2; // A little harder if we don't target the head while gagged
+		if ((PrevItem.Asset.Group.Name != "ItemMouth") && (PrevItem.Asset.Group.Name != "ItemMouth2") && (PrevItem.Asset.Group.Name != "ItemMouth3") && (PrevItem.Asset.Group.Name != "ItemHead") && (PrevItem.Asset.Group.Name != "ItemHood") && !C.CanTalk()) S = S - 2; // A little harder if we don't target the head while gagged
 		if ((ChatRoomStruggleAssistTimer >= CurrentTime) && (ChatRoomStruggleAssistBonus >= 1) && (ChatRoomStruggleAssistBonus <= 6)) S = S + ChatRoomStruggleAssistBonus; // If assisted by another player, the player can get a bonus to struggle out
 	}
 
@@ -769,11 +815,11 @@ function DialogKeyDown() {
 function DialogMenuButtonClick() {
 
 	// Finds the current icon
-	for (var I = 0; I < DialogMenuButton.length; I++)
+	for (let I = 0; I < DialogMenuButton.length; I++)
 		if ((MouseX >= 1885 - I * 110) && (MouseX <= 1975 - I * 110)) {
 
 			// Gets the current character and item
-			var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
+			var C = CharacterGetCurrent();
 			var Item = InventoryGet(C, C.FocusGroup.Name);
 
 			// Exit Icon - Go back to the character dialog
@@ -797,9 +843,8 @@ function DialogMenuButtonClick() {
 			}
 
 			// Remote Icon - Pops the item extension
-			else if ((DialogMenuButton[I] == "Remote") && (Item != null)) {
-				if (InventoryItemHasEffect(Item, "Egged") && InventoryAvailable(Player, "VibratorRemote", "ItemVulva"))
-					DialogExtendItem(Item);
+			else if ((DialogMenuButton[I] == "Remote") && DialogCanUseRemote(C, Item)) {
+				DialogExtendItem(Item);
 				return;
 			}
 
@@ -809,7 +854,7 @@ function DialogMenuButtonClick() {
 				if (C.FocusGroup.Name == "ItemMouth") NewLayerName = "ItemMouth2";
 				if (C.FocusGroup.Name == "ItemMouth2") NewLayerName = "ItemMouth3";
 				if (C.FocusGroup.Name == "ItemMouth3") NewLayerName = "ItemMouth";
-				for (var A = 0; A < AssetGroup.length; A++)
+				for (let A = 0; A < AssetGroup.length; A++)
 					if (AssetGroup[A].Name == NewLayerName) {
 						C.FocusGroup = AssetGroup[A];
 						DialogInventoryBuild(C);
@@ -823,9 +868,9 @@ function DialogMenuButtonClick() {
 						DialogInventoryOffset = 0;
 						DialogInventory = [];
 						DialogItemToLock = Item;
-						for (var A = 0; A < Player.Inventory.length; A++)
+						for (let A = 0; A < Player.Inventory.length; A++)
 							if ((Player.Inventory[A].Asset != null) && Player.Inventory[A].Asset.IsLock)
-								DialogInventoryAdd(C, Player.Inventory[A], false, 2);
+								DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
 						DialogInventorySort();
 					}
 				} else {
@@ -905,7 +950,6 @@ function DialogMenuButtonClick() {
 				DialogInventoryOffset = 0;
 				DialogTextDefault = "";
 				DialogTextDefaultTimer = 0;
-				ActivityDialogBuild(C);
 				return;
 			}
 
@@ -1034,8 +1078,10 @@ function DialogItemClick(ClickItem) {
 					} else {
 
 						// The vibrating egg remote can open the vibrating egg's extended dialog
-						if (ClickItem.Asset.Name == "VibratorRemote" && InventoryItemHasEffect(InventoryGet(C, C.FocusGroup.Name), "Egged"))
+						var Item = InventoryGet(C, C.FocusGroup.Name);
+						if ((ClickItem.Asset.Name === "VibratorRemote" || ClickItem.Asset.Name === "LoversVibratorRemote") && DialogCanUseRemote(C, CurrentItem)) {
 							DialogExtendItem(InventoryGet(C, C.FocusGroup.Name));
+						}
 
 						// Runs the activity arousal process if activated, & publishes the item action text to the chatroom
 						DialogPublishAction(C, ClickItem);
@@ -1085,9 +1131,9 @@ function DialogClick() {
 		if ((Player != null) && (Player.VisualSettings != null) && (Player.VisualSettings.ForceFullHeight != null) && Player.VisualSettings.ForceFullHeight) HeightRatio = 1.0;
 		var XOffset = 500 * (1 - HeightRatio) / 2;
 		var YOffset = ((C.Pose.indexOf("Suspension") < 0) && (C.Pose.indexOf("SuspensionHogtied") < 0)) ? 1000 * (1 - HeightRatio) : 0;
-		for (var A = 0; A < AssetGroup.length; A++)
+		for (let A = 0; A < AssetGroup.length; A++)
 			if ((AssetGroup[A].Category == "Item") && (AssetGroup[A].Zone != null))
-				for (var Z = 0; Z < AssetGroup[A].Zone.length; Z++)
+				for (let Z = 0; Z < AssetGroup[A].Zone.length; Z++)
 					if (((C.Pose.indexOf("Suspension") < 0) && (MouseX - X >= ((AssetGroup[A].Zone[Z][0] * HeightRatio) + XOffset)) && (MouseY >= (((AssetGroup[A].Zone[Z][1] - C.HeightModifier) * HeightRatio) + YOffset)) && (MouseX - X <= (((AssetGroup[A].Zone[Z][0] + AssetGroup[A].Zone[Z][2]) * HeightRatio) + XOffset)) && (MouseY <= (((AssetGroup[A].Zone[Z][1] + AssetGroup[A].Zone[Z][3] - C.HeightModifier) * HeightRatio) + YOffset)))
 						|| ((C.Pose.indexOf("Suspension") >= 0) && (MouseX - X >= ((AssetGroup[A].Zone[Z][0] * HeightRatio) + XOffset)) && (MouseY >= HeightRatio * ((1000 - (AssetGroup[A].Zone[Z][1] + AssetGroup[A].Zone[Z][3])) - C.HeightModifier)) && (MouseX - X <= (((AssetGroup[A].Zone[Z][0] + AssetGroup[A].Zone[Z][2]) * HeightRatio) + XOffset)) && (MouseY <= HeightRatio * (1000 - ((AssetGroup[A].Zone[Z][1])) - C.HeightModifier)))) {
 						C.FocusGroup = AssetGroup[A];
@@ -1107,12 +1153,12 @@ function DialogClick() {
 
 	// In activity mode, we check if the user clicked on an activity box
 	if (DialogActivityMode && (DialogProgress < 0) && (DialogColor == null) && ((Player.FocusGroup != null) || ((CurrentCharacter.FocusGroup != null) && CurrentCharacter.AllowItem)))
-		if ((MouseX >= 1000) && (MouseX <= 1975) && (MouseY >= 125) && (MouseY <= 1000) && !InventoryGroupIsBlocked((Player.FocusGroup != null) ? Player : CurrentCharacter)) {
+		if ((MouseX >= 1000) && (MouseX <= 1975) && (MouseY >= 125) && (MouseY <= 1000)) {
 
 			// For each activities in the list
 			var X = 1000;
 			var Y = 125;
-			for (var A = DialogInventoryOffset; (A < DialogActivity.length) && (A < DialogInventoryOffset + 12); A++) {
+			for (let A = DialogInventoryOffset; (A < DialogActivity.length) && (A < DialogInventoryOffset + 12); A++) {
 
 				// If this specific activity is clicked, we run it
 				if ((MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275)) {
@@ -1155,7 +1201,7 @@ function DialogClick() {
 				// For each items in the player inventory
 				var X = 1000;
 				var Y = 125;
-				for (var I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 12); I++) {
+				for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 12); I++) {
 
 					// If the item is clicked
 					if ((MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275))
@@ -1184,7 +1230,7 @@ function DialogClick() {
 		// If the user clicked on a text dialog option, we trigger it
 		if ((MouseX >= 1025) && (MouseX <= 1975) && (MouseY >= 100) && (MouseY <= 990) && (CurrentCharacter != null)) {
 			var pos = 0;
-			for (var D = 0; D < CurrentCharacter.Dialog.length; D++)
+			for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
 				if ((CurrentCharacter.Dialog[D].Stage == CurrentCharacter.Stage) && (CurrentCharacter.Dialog[D].Option != null) && DialogPrerequisite(D)) {
 					if ((MouseX >= 1025) && (MouseX <= 1975) && (MouseY >= 160 + pos * 105) && (MouseY <= 250 + pos * 105)) {
 
@@ -1211,14 +1257,22 @@ function DialogClick() {
 
 	// If the user clicked in the facial expression menu
 	if ((CurrentCharacter != null) && (CurrentCharacter.ID == 0) && (MouseX >= 0) && (MouseX <= 500)) {
-		if (CommonIsClickAt(15, 15, 90, 90)) {
+		if (MouseIn(20, 50, 90, 90)) {
 			DialogFacialExpressions.forEach(FE => {
 				CharacterSetFacialExpression(Player, FE.Appearance.Asset.Group.Name);
 				FE.CurrentExpression = null;
 			});
-		} else for (var I = 0; I < DialogFacialExpressions.length; I++) {
+		} else if (MouseIn(120, 50, 90, 90)) { 
+			var EyesExpression = WardrobeGetExpression(Player);
+			var CurrentExpression = DialogFacialExpressions.find(FE => FE.Group == "Eyes").CurrentExpression;
+			CharacterSetFacialExpression(Player, "Eyes1", (EyesExpression.Eyes !== "Closed") ? "Closed" : (CurrentExpression !== "Closed" ? CurrentExpression : null));
+		} else if (MouseIn(220, 50, 90, 90)) { 
+			var EyesExpression = WardrobeGetExpression(Player);
+			var CurrentExpression = DialogFacialExpressions.find(FE => FE.Group == "Eyes").CurrentExpression;
+			CharacterSetFacialExpression(Player, "Eyes2", (EyesExpression.Eyes2 !== "Closed") ? "Closed" : (CurrentExpression !== "Closed" ? CurrentExpression : null));
+		} else for (let I = 0; I < DialogFacialExpressions.length; I++) {
 			var FE = DialogFacialExpressions[I];
-			if ((MouseY >= 125 + 120 * I) && (MouseY <= (125 + 120 * I) + 90)) {
+			if ((MouseY >= 160 + 120 * I) && (MouseY <= (160 + 120 * I) + 90)) {
 
 				// Left arrow button
 				if (MouseX >= 0 && MouseX <= 45) {
@@ -1316,7 +1370,6 @@ function DialogChangeItemColor(C, Color) {
 
 }
 
-// 
 /**
  * Draw the activity selection dialog
  * @param {Character} C - The character for whom the activity selection dialog is drawn. That can be the player or another character.
@@ -1332,13 +1385,13 @@ function DialogDrawActivityMenu(C) {
 	// Draws the top menu text & icons
 	if (DialogMenuButton == null) DialogMenuButtonBuild((Player.FocusGroup != null) ? Player : CurrentCharacter);
 	if (DialogMenuButton.length < 8) DrawTextWrap(DialogText, 1000, 0, 975 - DialogMenuButton.length * 110, 125, "White");
-	for (var I = DialogMenuButton.length - 1; I >= 0; I--)
+	for (let I = DialogMenuButton.length - 1; I >= 0; I--)
 		DrawButton(1885 - I * 110, 15, 90, 90, "", "White", "Icons/" + DialogMenuButton[I] + ".png", DialogFind(Player, DialogMenuButton[I]));
 
 	// Prepares a 4x3 square selection with all activities in the buffer
 	var X = 1000;
 	var Y = 125;
-	for (var A = DialogInventoryOffset; (A < DialogActivity.length) && (A < DialogInventoryOffset + 12); A++) {
+	for (let A = DialogInventoryOffset; (A < DialogActivity.length) && (A < DialogInventoryOffset + 12); A++) {
 		var Act = DialogActivity[A];
 		var Hover = (MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile;
 		DrawRect(X, Y, 225, 275, (Hover) ? "cyan" : "white");
@@ -1368,7 +1421,7 @@ function DialogDrawItemMenu(C) {
 	// Draws the top menu text & icons
 	if (DialogMenuButton == null) DialogMenuButtonBuild((Player.FocusGroup != null) ? Player : CurrentCharacter);
 	if ((DialogColor == null) && Player.CanInteract() && (DialogProgress < 0) && !InventoryGroupIsBlocked(C) && DialogMenuButton.length < 8) DrawTextWrap((!DialogItemPermissionMode) ? DialogText : DialogFind(Player, "DialogPermissionMode"), 1000, 0, 975 - DialogMenuButton.length * 110, 125, "White", null, 3);
-	for (var I = DialogMenuButton.length - 1; I >= 0; I--)
+	for (let I = DialogMenuButton.length - 1; I >= 0; I--)
 		DrawButton(1885 - I * 110, 15, 90, 90, "", ((DialogMenuButton[I] == "ColorPick") && (DialogColorSelect != null)) ? DialogColorSelect : "White", "Icons/" + DialogMenuButton[I] + ".png", (DialogColor == null) ? DialogFind(Player, DialogMenuButton[I]) : null);
 
 	// Draws the color picker
@@ -1385,17 +1438,20 @@ function DialogDrawItemMenu(C) {
 		if (DialogInventory == null) DialogInventoryBuild(C);
 		var X = 1000;
 		var Y = 125;
-		for (var I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 12); I++) {
+		for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 12); I++) {
 			var Item = DialogInventory[I];
 			var Hover = (MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile;
 			var Block = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName);
 			var Limit = InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name);
-			var Blocked = DialogInventory[I].SortOrder.startsWith("3");
+			var Unusable = DialogInventory[I].SortOrder.startsWith(DialogSortOrderUnusable.toString());
+			var Blocked = DialogInventory[I].SortOrder.startsWith(DialogSortOrderBlocked.toString());
 			DrawRect(X, Y, 225, 275, (DialogItemPermissionMode && C.ID == 0) ?
-				(DialogInventory[I].Worn ? "gray" : Block ? Hover ? "red" : "pink" : Limit ? Hover ? "orange" : "#fed8b1" : Hover ? "green" : "lime") :
-				((Hover && !Blocked) ? "cyan" : DialogInventory[I].Worn ? "pink" : Blocked ? "gray" : "white"));
-			if (Item.Worn && InventoryItemHasEffect(InventoryGet(C, Item.Asset.Group.Name), "Vibrating", true)) DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.Group.Name + "/Preview/" + Item.Asset.Name + ".png", X + Math.floor(Math.random() * 3) + 1, Y + Math.floor(Math.random() * 3) + 1, 221, 221);
-			else DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.DynamicGroupName + "/Preview/" + Item.Asset.Name + Item.Asset.DynamicPreviewIcon(CharacterGetCurrent()) + ".png", X + 2, Y + 2, 221, 221);
+				(Item.Worn ? "gray" : Block ? Hover ? "red" : "pink" : Limit ? Hover ? "orange" : "#fed8b1" : Hover ? "green" : "lime") :
+				((Hover && !Blocked) ? "cyan" : Item.Worn ? "pink" : Blocked ? "red" : Unusable ? "gray" : "white"));
+			if (!CharacterAppearanceItemIsHidden(Item.Asset.Name, Item.Asset.Group.Name))
+				if (Item.Worn && InventoryItemHasEffect(InventoryGet(C, Item.Asset.Group.Name), "Vibrating", true)) DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.Group.Name + "/Preview/" + Item.Asset.Name + ".png", X + Math.floor(Math.random() * 3) + 1, Y + Math.floor(Math.random() * 3) + 1, 221, 221);
+				else DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.DynamicGroupName + "/Preview/" + Item.Asset.Name + Item.Asset.DynamicPreviewIcon(CharacterGetCurrent()) + ".png", X + 2, Y + 2, 221, 221);
+			else DrawImageResize("Icons/HiddenItem.png", X + 2, Y + 2, 221, 221);
 			DrawTextFit(Item.Asset.DynamicDescription(Player), X + 112, Y + 250, 221, "black");
 			if (Item.Icon != "") DrawImage("Icons/" + Item.Icon + ".png", X + 2, Y + 110);
 			X = X + 250;
@@ -1405,7 +1461,6 @@ function DialogDrawItemMenu(C) {
 			}
 		}
 		return;
-
 	}
 
 	// If the player is progressing
@@ -1421,6 +1476,16 @@ function DialogDrawItemMenu(C) {
 		// Add or subtract to the automatic progression, doesn't move in color picking mode
 		DialogProgress = DialogProgress + DialogProgressAuto;
 		if (DialogProgress < 0) DialogProgress = 0;
+		
+		// We cancel out if at least one of the following cases apply: a new item conflicts with this, the player can no longer interact, something else was added first, the item was already removed
+		if (InventoryGroupIsBlocked(C) || (C != Player && !Player.CanInteract()) || (DialogProgressNextItem == null && !InventoryGet(C, DialogProgressPrevItem.Asset.Group.Name)) || (DialogProgressNextItem != null && !InventoryAllow(C, DialogProgressNextItem.Asset.Prerequisite)) || (DialogProgressNextItem != null && DialogProgressPrevItem != null && ((InventoryGet(C, DialogProgressPrevItem.Asset.Group.Name) && InventoryGet(C, DialogProgressPrevItem.Asset.Group.Name).Asset.Name != DialogProgressPrevItem.Asset.Name) || !InventoryGet(C, DialogProgressPrevItem.Asset.Group.Name))) || (DialogProgressNextItem != null && DialogProgressPrevItem == null && InventoryGet(C, DialogProgressNextItem.Asset.Group.Name))) {
+			if (DialogProgress > 0)
+				ChatRoomPublishAction(C, DialogProgressPrevItem, DialogProgressNextItem, true, "interrupted");
+			else
+				DialogLeave();
+			DialogProgress = -1;
+			return;
+		}
 
 		// Draw the current operation and progress
 		if (DialogProgressAuto < 0) DrawText(DialogFind(Player, "Challenge") + " " + ((DialogProgressStruggleCount >= 50) ? DialogProgressChallenge.toString() : "???"), 1500, 150, "White", "Black");
@@ -1436,9 +1501,7 @@ function DialogDrawItemMenu(C) {
 
 			// Removes the item & associated items if needed, then wears the new one 
 			InventoryRemove(C, C.FocusGroup.Name);
-			if (InventoryGet(C, "ItemNeck") == null) InventoryRemove(C, "ItemNeckAccessories");
-			if (InventoryGet(C, "ItemNeck") == null) InventoryRemove(C, "ItemNeckRestraints");
-			if (DialogProgressNextItem != null) InventoryWear(C, DialogProgressNextItem.Asset.Name, DialogProgressNextItem.Asset.Group.Name, (DialogColorSelect == null) ? "Default" : DialogColorSelect, SkillGetWithRatio("Bondage"));
+			if (DialogProgressNextItem != null) InventoryWear(C, DialogProgressNextItem.Asset.Name, DialogProgressNextItem.Asset.Group.Name, (DialogColorSelect == null) ? "Default" : DialogColorSelect, SkillGetWithRatio("Bondage"), Player.MemberNumber);
 
 			// The player can use another item right away, for another character we jump back to her reaction
 			if (C.ID == 0) {
@@ -1507,11 +1570,11 @@ function DialogDrawItemMenu(C) {
  * An empty string is returned, if neither keyword was found and no previous dialog was given.
  */
 function DialogFind(C, KeyWord1, KeyWord2, ReturnPrevious) {
-	for (var D = 0; D < C.Dialog.length; D++)
+	for (let D = 0; D < C.Dialog.length; D++)
 		if (C.Dialog[D].Stage == KeyWord1)
 			return C.Dialog[D].Result.trim();
 	if (KeyWord2 != null)
-		for (var D = 0; D < C.Dialog.length; D++)
+		for (let D = 0; D < C.Dialog.length; D++)
 			if (C.Dialog[D].Stage == KeyWord2)
 				return C.Dialog[D].Result.trim();
 	return ((ReturnPrevious == null) || ReturnPrevious) ? C.CurrentDialog : "";
@@ -1535,7 +1598,7 @@ function DialogFindAutoReplace(C, KeyWord1, KeyWord2, ReturnPrevious) {
 }
 
 /**
- * Draws the initial Dialod screen. That screen is entered, when the player clicks on herself or another player
+ * Draws the initial Dialog screen. That screen is entered, when the player clicks on herself or another player
  * @returns {void} - Nothing
  */
 function DialogDraw() {
@@ -1550,19 +1613,35 @@ function DialogDraw() {
 	// If we must show the item/inventory menu
 	if (((Player.FocusGroup != null) || ((CurrentCharacter.FocusGroup != null) && CurrentCharacter.AllowItem)) && (DialogIntro() != "")) {
 
+		var C = CharacterGetCurrent();
+		// We leave if the dialog focus item is no longer there
+		if (DialogFocusItem != null && (InventoryGet(C, DialogFocusItem.Asset.Group.Name) == null || InventoryGet(C, DialogFocusItem.Asset.Group.Name).Asset.Name != DialogFocusItem.Asset.Name) && !DialogFocusItem.Asset.IsLock) {
+			DialogLeaveFocusItem();
+			DialogFocusItem = null;
+		}
+
+		// We rebuild the menu if things changed
+		if (DialogPreviousCharacterData.Appearance !== JSON.stringify(ServerAppearanceBundle(C.Appearance)) || JSON.stringify(DialogPreviousCharacterData.Limited) !== JSON.stringify(C.LimitedItems) || JSON.stringify(DialogPreviousCharacterData.Blocked) !== JSON.stringify(C.BlockItems) || DialogPreviousCharacterData.ActivePose !== C.ActivePose) {
+			DialogInventoryBuild(C, DialogInventoryOffset);
+			ActivityDialogBuild(C);
+			DialogPreviousCharacterData.Appearance = JSON.stringify(ServerAppearanceBundle(C.Appearance));
+			DialogPreviousCharacterData.Limited = C.LimitedItems;
+			DialogPreviousCharacterData.Blocked = C.BlockItems;
+			DialogPreviousCharacterData.ActivePose = C.ActivePose;
+		}
+
 		// The view can show one specific extended item or the list of all items for a group
 		if (DialogFocusItem != null) {
 			CommonDynamicFunction("Inventory" + DialogFocusItem.Asset.Group.Name + DialogFocusItem.Asset.Name + "Draw()");
 			DrawButton(1885, 25, 90, 90, "", "White", "Icons/Exit.png");
 		} else {
-			if (DialogActivityMode) DialogDrawActivityMenu((Player.FocusGroup != null) ? Player : CurrentCharacter);
-			else DialogDrawItemMenu((Player.FocusGroup != null) ? Player : CurrentCharacter);
+			if (DialogActivityMode) DialogDrawActivityMenu(C);
+			else DialogDrawItemMenu(C);
 		}
 
 		// Draw the 'Up' reposition button if some zones are offscreen
-		if (CurrentCharacter != null && CurrentCharacter.HeightModifier != null && CurrentCharacter.HeightModifier < -90 && CurrentCharacter.FocusGroup != null) {
+		if (CurrentCharacter != null && CurrentCharacter.HeightModifier != null && CurrentCharacter.HeightModifier < -90 && CurrentCharacter.FocusGroup != null)
 			DrawButton(510, 25, 90, 90, "", "White", "Icons/Up.png", DialogFind(Player, "UpPosition"));
-		}
 
 	} else {
 
@@ -1574,7 +1653,7 @@ function DialogDraw() {
 
 		// Draws the possible answers
 		var pos = 0;
-		for (var D = 0; D < CurrentCharacter.Dialog.length; D++)
+		for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
 			if ((CurrentCharacter.Dialog[D].Stage == CurrentCharacter.Stage) && (CurrentCharacter.Dialog[D].Option != null) && DialogPrerequisite(D)) {
 				DrawTextWrap(SpeechGarble(Player, CurrentCharacter.Dialog[D].Option), 1025, 160 + 105 * pos, 950, 90, "black", ((MouseX >= 1025) && (MouseX <= 1975) && (MouseY >= 160 + pos * 105) && (MouseY <= 250 + pos * 105) && !CommonIsMobile) ? "cyan" : "white", 2);
 				pos++;
@@ -1594,12 +1673,14 @@ function DialogDraw() {
 function DialogDrawExpressionMenu() {
 
 	// Draw the expression groups
-	DrawText(DialogFind(Player, "FacialExpression"), 265, 62, "White", "Black");
-	DrawButton(15, 15, 90, 90, "", "White", "Icons/Reset.png", DialogFind(Player, "ClearFacialExpressions"));
+	DrawText(DialogFind(Player, "FacialExpression"), 165, 25, "White", "Black");
+	DrawButton(220, 50, 90, 90, "", "White", "Icons/WinkL.png", DialogFind(Player, "WinkLFacialExpressions"));
+	DrawButton(120, 50, 90, 90, "", "White", "Icons/WinkR.png", DialogFind(Player, "WinkRFacialExpressions"));
+	DrawButton(20, 50, 90, 90, "", "White", "Icons/Reset.png", DialogFind(Player, "ClearFacialExpressions"));
 	if (!DialogFacialExpressions || !DialogFacialExpressions.length) DialogFacialExpressionsBuild();
-	for (var I = 0; I < DialogFacialExpressions.length; I++) {
+	for (let I = 0; I < DialogFacialExpressions.length; I++) {
 		var FE = DialogFacialExpressions[I];
-		var OffsetY = 125 + 120 * I;
+		var OffsetY = 160 + 120 * I;
 
 		// Draw the back and forth arrow buttons
 		DrawButton(0, OffsetY, 45, 90, "", "White");
@@ -1657,7 +1738,16 @@ function DialogChatRoomHasSwapTarget() {
  * Leave the dialog and revert back to a safe state, when the player uses her safe word
  * @returns {void} - Nothing
  */
-function DialogChatRoomSafeword() {
+function DialogChatRoomSafewordRevert() {
 	DialogLeave();
-	ChatRoomSafeword();
+	ChatRoomSafewordRevert();
 }
+
+/**
+ * Leave the dialog and release the player of all restraints before returning them to the Main Lobby
+ * @returns {void} - Nothing
+ */
+ function DialogChatRoomSafewordRelease() {
+ 	DialogLeave();
+ 	ChatRoomSafewordRelease();
+ }

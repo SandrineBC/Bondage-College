@@ -90,7 +90,10 @@ var SpankingPlayerInventory;
 // Loads the item extension properties
 function InventoryItemHandsSpankingToysLoad() {
 	SpankingPlayerInventory = SpankingInventory.filter(x => Player.Inventory.map(i => i.Name).includes("SpankingToys" + x.Name));
-	if (DialogFocusItem.Property == null) DialogFocusItem.Property = { Type: "Crop" };
+	if (DialogFocusItem.Property == null) {
+		DialogFocusItem.Property = { Type: "Crop" };
+		CharacterRefresh(CharacterGetCurrent(), false);
+	}
 	if (SpankingPlayerInventory.length > 6) SpankingNextButton = true;
 }
 
@@ -105,7 +108,7 @@ function InventoryItemHandsSpankingToysDraw() {
 	DrawText(DialogFind(Player, "SelectSpankingToysType"), 1500, 375, "white", "gray");
 
 	// Draw the buttons 6 at a time, in a 2x3 grid
-	for (var I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
+	for (let I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
 		var offset = I - SpankingInventoryOffset;
 		var X = 1080 + (offset % 3 * 305);
 		var Y = 430 + (Math.floor(offset / 3) * 300);
@@ -125,7 +128,7 @@ function InventoryItemHandsSpankingToysClick() {
 	if (SpankingInventoryOffset >= SpankingPlayerInventory.length) SpankingInventoryOffset = 0;
 
 	// Item buttons
-	for (var I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
+	for (let I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
 		var nextItem = SpankingPlayerInventory[I].Name;
 		var offset = I - SpankingInventoryOffset;
 		var X = 1080 + (offset % 3 * 305);
