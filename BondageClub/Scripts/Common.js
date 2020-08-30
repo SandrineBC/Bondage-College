@@ -379,17 +379,17 @@ function CommonWait(MS) {
 }
 
 /**
- * Creates a simple memoizer for use with single parameter functions to serve as a PoC. 
+ * Creates a simple memoizer to serve as a PoC. 
  * The memoized function does calculate its result exactly once and from that point on, uses
  * the result stored in a local cache to speed up things.
- * @param {function} func - The function to meoize
+ * @param {function} func - The function to memoize
  * @returns {any} - The result of the memoized function
  */
 function CommonMemoize(func) {
 	var memo = {};
 	var slice = Array.prototype.slice;
 
-	return function () {
+	var memoized = function () {
 		var index = [];
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] === "object") {
@@ -405,5 +405,14 @@ function CommonMemoize(func) {
 			CommonMemoizeValue++;
 			return (memo[index] = func.apply(this, arguments));
 		}
-	} // function
+	}; // function
+
+	// add a clear cache method
+	memoized.clearCache = function () {
+		CommonMemoizeCacheHit = 0;
+		CommonMemoizeValue = 0;
+		memo = {};
+	}
+
+	return memoized;
 } // CommonMemoize

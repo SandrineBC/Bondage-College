@@ -133,15 +133,13 @@ function InventoryAvailable(C, InventoryName, InventoryGroup) {
 	return false;
 }
 
-var InventoryPrerequisiteMessage = CommonMemoize(InventoryPrerequisiteMessageMemo);
-
 /**
 * Returns an error message if a prerequisite clashes with the character items and clothes
 * @param {Character} C - The character on which we check for prerequisites
 * @param {String} Prerequisite - The name of the prerequisite
 * @returns {String} - The error tag, can be converted to an error message
 */
-function InventoryPrerequisiteMessageMemo(C, Prerequisite) {
+function InventoryPrerequisiteMessage(C, Prerequisite) {
 
 	// Basic prerequisites that can apply to many items
 	if (Prerequisite == "NoItemFeet") return (InventoryGet(C, "ItemFeet") != null) ? "MustFreeFeetFirst" : "";

@@ -99,6 +99,15 @@ function ExtendedItemDraw(Options, DialogPrefix) {
 	}
 }
 
+function ExtendedItemExit() {
+	// print some stats
+	console.log("Memoized values: " + CommonMemoizeValue);
+	console.log("Cache hits: " + CommonMemoizeCacheHit);
+	
+	// invalidate the cache
+	ExtendedItemRequirementCheckMessage.clearCache();
+}
+
 /**
  * Handles clicks on the extended item type selection screen
  * @param {ExtendedItemOption[]} Options - An Array of type definitions for each allowed extended type. The first item in the array should
@@ -111,6 +120,7 @@ function ExtendedItemClick(Options, IsCloth) {
 	// Exit button
 	if (MouseIn(1885, 25, 90, 85)) {
 		DialogFocusItem = null;
+		ExtendedItemExit();
 		return;
 	}
 
@@ -134,6 +144,7 @@ function ExtendedItemSetType(Options, Option, IsCloth) {
 	var C = CharacterGetCurrent();
 	var FunctionPrefix = ExtendedItemFunctionPrefix();
 
+/*
 	// An extendable item may provide a validation function. Returning false from the validation function will drop out of
 	// this function, and the new type will not be applied.
 	if (typeof window[FunctionPrefix + "Validate"] === "function") {
@@ -146,7 +157,8 @@ function ExtendedItemSetType(Options, Option, IsCloth) {
 		DialogExtendedMessage = DialogText;
 		return;
 	}
-
+*/
+	
 	DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
 	if (CurrentScreen == "ChatRoom") {
 		// Call the item's load function
@@ -300,13 +312,17 @@ function ExtendedItemClickGrid(Options, IsSelfBondage, IsCloth) {
  * @returns {void} Nothing
  */
 function ExtendedItemHandleOptionClick(Options, Option, IsSelfBondage, IsCloth) {
-	var requirementMessage = ExtendedItemRequirementCheckMessage(Option, IsSelfBondage);
+	// use the unmemoized function to ensure we make a final check to the requirements
+	var requirementMessage = ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage);
 	if (requirementMessage) {
 		DialogExtendedMessage = requirementMessage;
 	} else {
 		ExtendedItemSetType(Options, Option, IsCloth);
+		ExtendedItemExit();
 	}
 }
+
+var ExtendedItemRequirementCheckMessage = CommonMemoize(ExtendedItemRequirementCheckMessageMemo);
 
 /**
  * Checks whether the player meets the requirements for an extended type option. This will check against their Bondage
@@ -316,11 +332,27 @@ function ExtendedItemHandleOptionClick(Options, Option, IsSelfBondage, IsCloth) 
  * @returns {string|null} null if the player meets the option requirements. Otherwise a string message informing them
  * of the requirements they do not meet
  */
-function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
+function ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage) {
+	var C = CharacterGetCurrent();
+	var FunctionPrefix = ExtendedItemFunctionPrefix();
+
 	if (IsSelfBondage && SkillGetLevelReal(Player, "SelfBondage") < Option.SelfBondageLevel) {
 		return DialogFind(Player, "RequireSelfBondage" + Option.SelfBondageLevel);
 	} else if (!IsSelfBondage && SkillGetLevelReal(Player, "Bondage") < Option.BondageLevel) {
 		return DialogFind(Player, "RequireBondageLevel").replace("ReqLevel", Option.BondageLevel);
+	} else {
+		// An extendable item may provide a validation function. Returning false from the validation function will drop out of
+		// this function, and the new type will not be applied.
+		if (typeof window[FunctionPrefix + "Validate"] === "function") {
+			if (CommonCallFunctionByName(FunctionPrefix + "Validate", Option) === false) {
+				return "Extended Requirement not met";
+			}
+		}
+		// Otherwise use the standard prerequisite check
+		else if (Option.Prerequisite != null && !InventoryAllow(C, Option.Prerequisite, true)) {
+			DialogExtendedMessage = DialogText;
+			return DialogText;
+		}
 	}
 	return null;
 }
