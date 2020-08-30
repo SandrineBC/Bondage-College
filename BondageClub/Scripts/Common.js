@@ -395,7 +395,7 @@ function CommonMemoize(func) {
 
 	var memoized = function () {
 		var index = [];
-		startTime = Date.now();
+		startTime = performance.now();
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] === "object") {
 				index.push(JSON.stringify(arguments[i]));
@@ -405,11 +405,11 @@ function CommonMemoize(func) {
 		} // for
 		if (index in memo) {
 			CommonMemoizeCacheHit++;
-			CommonMemoizeCacheHitAvgTime += (Date.now() - startTime);
+			CommonMemoizeCacheHitAvgTime += (performance.now() - startTime);
 		} else {
 			CommonMemoizeValue++;
 			memo[index] = func.apply(this, arguments);
-			CommonMemoizeValueAvgTime += (Date.now() - startTime);
+			CommonMemoizeValueAvgTime += (performance.now() - startTime);
 		}
 		return memo[index];
 	}; // function
