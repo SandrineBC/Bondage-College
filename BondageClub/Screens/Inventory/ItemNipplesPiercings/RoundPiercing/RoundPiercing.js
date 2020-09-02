@@ -20,6 +20,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 		Property: {
 			Type: "Chain",
 			Difficulty: 0,
+			Block: ["ItemNeck"],
 		},
 	},
 
@@ -40,6 +41,7 @@ var InventoryItemNipplesPiercingsRoundPiercingOptions = [
 		Property: {
 			Type: "WeightedChain",
 			Difficulty: 0,
+			Block: ["ItemNeck"],
 		},
 	},
 ]
