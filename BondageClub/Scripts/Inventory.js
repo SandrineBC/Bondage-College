@@ -367,7 +367,7 @@ function InventoryRemove(C, AssetGroup) {
 				if (!AssetToCheck.Name) {
 					// Just try to force remove a group, if no item is specified
 					InventoryRemove(C, AssetToCheck.Group);
-				} else if ((AssetToCheck.Name) && (InventoryGet(C, AssetToCheck.Group)) && (InventoryGet(C, AssetToCheck.Group).Asset.Name == AssetToCheck.Name)) {
+				} else if ((InventoryGet(C, AssetToCheck.Group)) && (InventoryGet(C, AssetToCheck.Group).Asset.Name == AssetToCheck.Name)) {
 					// If a name is specified and the item is worn, check if it's an extended item
 					if ((!InventoryGet(C, AssetToCheck.Group).Asset.Type) || (InventoryGet(C, AssetToCheck.Group).Asset.Type) && (InventoryGet(C, AssetToCheck.Group).Asset.Type === AssetToCheck.Type))
 						// if the item is not extended or the item is extended and the type matches, remove it
