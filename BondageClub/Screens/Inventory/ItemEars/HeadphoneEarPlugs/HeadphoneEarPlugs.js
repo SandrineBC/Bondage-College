@@ -65,7 +65,7 @@ function InventoryItemEarsHeadphoneEarPlugsPublishAction(C, Option, PreviousOpti
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
-		{ Tag: "AssetName", Text: DialogFocusItem.Asset.Description.toLowerCase() },
+		{ Tag: "AssetName", AssetName: DialogFocusItem.Asset.Name },
 	];
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
