@@ -204,6 +204,9 @@ function PreferenceInit(C) {
 	if (!C.VisualSettings) C.VisualSettings = { ForceFullHeight: false };
 
 	if (!C.OnlineSharedSettings) C.OnlineSharedSettings = {};
+	C.OnlineSharedSettings.AllowFullWardrobeAccess = false;
+	C.OnlineSharedSettings.BlockBodyCosplay = false;
+	
 	if (!C.OnlineSettings) C.OnlineSettings = {};
 	// TODO: The following preferences were migrated September 2020 in for R61 - replace with standard preference code after a few months
 	PreferenceMigrate(C.ChatSettings, C.OnlineSettings, "AutoBanBlackList", false);
@@ -572,6 +575,7 @@ function PreferenceSubscreenOnlineRun() {
 	DrawCheckbox(500, 625, 64, 64, TextGet("EnableAfkTimer"), Player.OnlineSettings.EnableAfkTimer);
 	DrawCheckbox(500, 705, 64, 64, TextGet("EnableWardrobeIcon"), Player.OnlineSettings.EnableWardrobeIcon);
 	DrawCheckbox(500, 785, 64, 64, TextGet("AllowFullWardrobeAccess"), Player.OnlineSharedSettings.AllowFullWardrobeAccess);
+	DrawCheckbox(500, 865, 64, 64, TextGet("BlockBodyCosplay"), Player.OnlineSharedSettings.BlockBodyCosplay);
 	DrawButton(1815, 75, 90, 90, "", "White", "Icons/Exit.png");
 	DrawCharacter(Player, 50, 50, 0.9);
 }
@@ -787,6 +791,7 @@ function PreferenceSubscreenOnlineClick() {
 	}
 	else if (MouseIn(500, 705, 64, 64)) OnlineSettings.EnableWardrobeIcon = !OnlineSettings.EnableWardrobeIcon;
 	else if (MouseIn(500, 785, 64, 64)) OnlineSharedSettings.AllowFullWardrobeAccess = !OnlineSharedSettings.AllowFullWardrobeAccess;
+	else if (MouseIn(500, 865, 64, 64)) OnlineSharedSettings.BlockBodyCosplay = !OnlineSharedSettings.BlockBodyCosplay;
 }
 
 /**
