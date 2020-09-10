@@ -155,9 +155,6 @@ function AudioPlayContent(data) {
 			var assetName = data.Content.substring(0, data.Content.length - "IncreaseTo1".length);
 			switch (assetName) {
 				case "Vibe":
-				case "VibeHeartClitPiercing":
-				case "NippleHeart":
-				case "Nipple":
 				case "NippleEgg":
 				case "TapedClitEgg":
 				case "Egg": audioFile = "Audio/VibrationTone4ShortLoop.mp3"; break;
