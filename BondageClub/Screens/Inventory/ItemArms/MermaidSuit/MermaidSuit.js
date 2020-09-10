@@ -67,6 +67,6 @@ function InventoryItemArmsMermaidSuitPublishAction(C, Option, PreviousOption) {
  * @param {Option} Option - The chosen option for this extended item
  * @returns {void} - Nothing
  */
-function InventoryItemArmsMermaidSuitNPCDialog(C, Option) {
+function InventoryItemArmsMermaidSuitNpcDialog(C, Option) {
 	C.CurrentDialog = DialogFind(C, "MermaidSuitNPCReaction" + Option.Name, "ItemArms");
 }
