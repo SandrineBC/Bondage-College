@@ -318,13 +318,13 @@ function VibratorModeScriptDraw(Data) {
  * @returns {void} - Nothing
  */
 function VibratorModeUpdateRandom(Item, C, PersistentData) {
-	var ThirtySeconds = 30000;
+	var OneMinute = 60000;
 	var OldIntensity = Item.Property.Intensity;
 	var Intensity = CommonRandomItemFromList(OldIntensity, [-1, 0, 1, 2, 3]);
 	var Effect = Intensity === -1 ? ["Egged"] : ["Egged", "Vibrating"];
 	Object.assign(Item.Property, { Intensity, Effect });
-	// Next update in 30 - 120 seconds
-	PersistentData.ChangeTime = Math.floor(CommonTime() + ThirtySeconds + Math.random() * 4 * ThirtySeconds);
+	// Next update in 1-3 minutes
+	PersistentData.ChangeTime = Math.floor(CommonTime() + OneMinute + Math.random() * 2 * OneMinute);
 	VibratorModePublish(C, Item, OldIntensity, Intensity);
 }
 
@@ -339,7 +339,7 @@ function VibratorModeUpdateEscalate(Item, C, PersistentData) {
 	var OldIntensity = Item.Property.Intensity;
 	var Intensity = (OldIntensity + 1) % 4;
 	// As intensity increases, time between updates decreases
-	var TimeFactor = Math.pow((5 - Intensity), 1.6);
+	var TimeFactor = Math.pow((5 - Intensity), 1.8);
 	var TimeToNextUpdate = (8000 + Math.random() * 4000) * TimeFactor;
 	Object.assign(Item.Property, { Intensity, Effect: ["Egged", "Vibrating"] });
 	PersistentData.ChangeTime = Math.floor(CommonTime() + TimeToNextUpdate);
@@ -378,7 +378,7 @@ function VibratorModeUpdateDeny(Item, C, PersistentData) {
  * @returns {void} - Nothing
  */
 function VibratorModeUpdateEdge(Item, C, PersistentData) {
-	var ThirtySeconds = 30000;
+	var OneMinute = 60000;
 	var OldIntensity = Item.Property.Intensity;
 	var Intensity = Math.min(Item.Property.Intensity + 1, 3);
 	Object.assign(Item.Property, { Intensity, Effect: ["Egged", "Vibrating", "Edged"] });
@@ -386,8 +386,8 @@ function VibratorModeUpdateEdge(Item, C, PersistentData) {
 		// If we've hit max intensity, no more changes needed
 		PersistentData.ChangeTime = Infinity;
 	} else {
-		// Next update 30-60 seconds from now
-		PersistentData.ChangeTime = Math.floor(CommonTime() + ThirtySeconds + Math.random() * ThirtySeconds);
+		// Next update 1-2 minutes from now
+		PersistentData.ChangeTime = Math.floor(CommonTime() + OneMinute + Math.random() * OneMinute);
 	}
 	VibratorModePublish(C, Item, OldIntensity, Intensity);
 }
