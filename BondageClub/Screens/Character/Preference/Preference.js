@@ -506,7 +506,7 @@ function PreferenceExit() {
 			GameplaySettings: Player.GameplaySettings,
 			ArousalSettings: Player.ArousalSettings,
 			OnlineSettings: Player.OnlineSettings,
-			OnlineSharedSettings: Player.OnlineSharedSettings,
+			OnlineSharedSettings: Player.OnlineSharedSettings
 		};
 		ServerSend("AccountUpdate", P);
 		PreferenceMessage = "";
