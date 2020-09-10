@@ -59,11 +59,21 @@ function InventoryItemArmsLeatherCuffsDraw() {
 	ExtendedItemDraw(InventoryItemArmsLeatherCuffsOptions, "LeatherCuffsPose");
 }
 	
-// Catches the item extension clicks
+/**
+ * Catches the item extension clicks
+ * @returns {void} - Nothing
+ */
 function InventoryItemArmsLeatherCuffsClick() {
 	ExtendedItemClick(InventoryItemArmsLeatherCuffsOptions);
 }
 
+/**
+ * Publishes the message to the chat
+ * @param {Character} C - The target character
+ * @param {Option} Option - The currently selected Option
+ * @param {Option} PreviousOption - The previously selected Option
+ * @returns {void} - Nothing
+ */
 function InventoryItemArmsLeatherCuffsPublishAction(C, Option, PreviousOption) {
 	var msg = "LeatherCuffsRestrain" + Option.Name;
 	var Dictionary = [
@@ -73,55 +83,15 @@ function InventoryItemArmsLeatherCuffsPublishAction(C, Option, PreviousOption) {
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
 
+/**
+ * The NPC dialog is for what the NPC says to you when you make a change to their restraints - the dialog lookup is on a 
+ * per-NPC basis. You basically put the "AssetName" + OptionName in there to allow individual NPCs to override their default 
+ * "GroupName" dialog if for example we ever wanted an NPC to react specifically to having the restraint put on them. 
+ * That could be done by adding an "AssetName" entry (or entries) to that NPC's dialog CSV
+ * @param {Character} C - The NPC to whom the restraint is applied
+ * @param {Option} Option - The chosen option for this extended item
+ * @returns {void} - Nothing
+ */
 function InventoryItemArmsLeatherCuffsNpcDialog(C, Option) {
 	C.CurrentDialog = DialogFind(C, "ItemArmsLeatherCuffs" + Option.Name, "ItemArms");
 }
-
-
-// // Sets the cuffs pose (wrist, elbow, both or none)
-// function InventoryItemArmsLeatherCuffsSetPose(NewPose) {
-
-// 	// Gets the current item and character
-// 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-// 	if (CurrentScreen == "ChatRoom") {
-// 		DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
-// 		InventoryItemArmsLeatherCuffsLoad();
-// 	}
-
-// 	// Sets the new pose with it's effects
-// 	DialogFocusItem.Property.Restrain = NewPose;
-// 	if (NewPose == null) {
-// 		delete DialogFocusItem.Property.SetPose;
-// 		delete DialogFocusItem.Property.Effect;
-// 		delete DialogFocusItem.Property.SelfUnlock;
-// 		delete DialogFocusItem.Property.Difficulty;
-// 	} else {
-// 		DialogFocusItem.Property.SetPose = [(NewPose == "Wrist") ? "BackBoxTie" : "BackElbowTouch"];
-// 		DialogFocusItem.Property.Effect = ["Block", "Prone"];
-// 		DialogFocusItem.Property.SelfUnlock = (NewPose == "Wrist");
-// 		if (NewPose == "Wrist") DialogFocusItem.Property.Difficulty = 2;
-// 		if (NewPose == "Elbow") DialogFocusItem.Property.Difficulty = 4;
-// 		if (NewPose == "Both") DialogFocusItem.Property.Difficulty = 6;
-// 	}
-
-// 	// Adds the lock effect back if it was padlocked
-// 	if ((DialogFocusItem.Property.LockedBy != null) && (DialogFocusItem.Property.LockedBy != "")) {
-// 		if (DialogFocusItem.Property.Effect == null) DialogFocusItem.Property.Effect = [];
-// 		DialogFocusItem.Property.Effect.push("Lock");
-// 	}
-
-// 	// Refreshes the character and chatroom
-// 	CharacterRefresh(C);
-// 	var msg = "LeatherCuffsRestrain" + ((NewPose == null) ? "None" : NewPose);
-// 	var Dictionary = [];
-// 	Dictionary.push({Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber});
-// 	Dictionary.push({Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber});
-// 	ChatRoomPublishCustomAction(msg, true, Dictionary);
-
-// 	// Rebuilds the inventory menu
-// 	if (DialogInventory != null) {
-// 		DialogFocusItem = null;
-// 		DialogMenuButtonBuild(C);
-// 	}
-
-// }
