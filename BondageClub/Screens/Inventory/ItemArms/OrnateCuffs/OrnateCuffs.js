@@ -6,8 +6,8 @@ var InventoryItemArmsOrnateCuffsOptions = [
 		Property: {
 			Type: null,
 			Difficulty: 0,
-			SetPose: [],
 			Effect: [],
+			SetPose: null,
 			SelfUnlock: true,
 		},
 	},
@@ -16,8 +16,8 @@ var InventoryItemArmsOrnateCuffsOptions = [
 		Property: {
 			Type: "Wrist",
 			Difficulty: 2,
-			SetPose: ["BackBoxTie"],
 			Effect: ["Block", "Prone"],
+			SetPose: ["BackBoxTie"],
 			SelfUnlock: true,
 		},
 	},
@@ -26,8 +26,8 @@ var InventoryItemArmsOrnateCuffsOptions = [
 		Property: {
 			Type: "Elbow",
 			Difficulty: 4,
-			SetPose: ["BackElbowTouch"],
 			Effect: ["Block", "Prone"],
+			SetPose: ["BackElbowTouch"],
 			SelfUnlock: false,
 		},
 	},
@@ -36,12 +36,12 @@ var InventoryItemArmsOrnateCuffsOptions = [
 		Property: {
 			Type: "Both",
 			Difficulty: 6,
-			SetPose: ["BackElbowTouch"],
 			Effect: ["Block", "Prone"],
+			SetPose: ["BackElbowTouch"],
 			SelfUnlock: false,
 		},
-	},
-]
+	}
+];
 
 /**
  * Loads the item extension properties
