@@ -4,15 +4,13 @@ var InventoryItemArmsDuctTapeMessage = "SelectTapeWrapping";
 const InventoryItemArmsDuctTapeOptions = [
 	{
 		Name: "Arms",
-		Property: {Type: null, Difficulty:1},
+		Property: {Type: null, Difficulty: 1},
 	},
 	{
 		Name: "Bottom",
-		BondageLevel: 0,
 		SelfBondageLevel: 4,
 		Property: {
 			Type: "Bottom",
-			Effect: [],
 			SetPose: ["BackElbowTouch"],
 			Block: ["ItemVulva", "ItemButt", "ItemPelvis", "ItemVulvaPiercings"],
 			Difficulty: 2,
@@ -20,10 +18,8 @@ const InventoryItemArmsDuctTapeOptions = [
 	},
 	{
 		Name: "Top",
-		RequiredBondageLevel: null,
 		Property: {
 			Type: "Top",
-			Effect: [],
 			SetPose: ["BackElbowTouch"],
 			Block: ["ItemTorso", "ItemBreast", "ItemNipples", "ItemNipplesPiercings"],
 			Difficulty: 4,
@@ -31,10 +27,8 @@ const InventoryItemArmsDuctTapeOptions = [
 	},
 	{
 		Name: "Full",
-		RequiredBondageLevel: null,
 		Property: {
 			Type: "Full",
-			Effect: [],
 			SetPose: ["BackElbowTouch"],
 			Block: ["ItemVulva", "ItemButt", "ItemPelvis", "ItemTorso", "ItemBreast", "ItemNipples", "ItemVulvaPiercings", "ItemNipplesPiercings"],
 			Difficulty: 6,
@@ -42,10 +36,8 @@ const InventoryItemArmsDuctTapeOptions = [
 	},
 	{
 		Name: "Complete",
-		RequiredBondageLevel: null,
 		Property: {
 			Type: "Complete",
-			Effect: [],
 			SetPose: ["BackElbowTouch"],
 			Block: ["ItemVulva", "ItemButt", "ItemPelvis", "ItemTorso", "ItemBreast", "ItemNipples", "ItemVulvaPiercings", "ItemNipplesPiercings"],
 			Difficulty: 7,
