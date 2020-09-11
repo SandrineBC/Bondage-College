@@ -334,7 +334,7 @@ function MainHallMaidChangeCollarPlayer() {
  * @returns {void} - Nothing
  */
 function MainHallMaidPunishmentPlayer() {
-	CharacterNaked(Player, true);
+	CharacterNaked(Player);
 	LogAdd("BlockChange","Rule", CurrentTime + 3600000);
 	if (ReputationGet("Dominant") > 10) ReputationProgress("Dominant", -10);
 	if (ReputationGet("Dominant") < -10) ReputationProgress("Dominant", 10);
@@ -345,7 +345,7 @@ function MainHallMaidPunishmentPlayer() {
  * @returns {void} - Nothing
  */
 function MainHallResetClubSlave() {
-	CharacterNaked(Player, true);
+	CharacterNaked(Player);
 	LogAdd("ClubSlave", "Management", CurrentTime + 3600000);
 	LogAdd("BlockChange", "Rule", CurrentTime + 3600000);
 	TitleSet("ClubSlave");

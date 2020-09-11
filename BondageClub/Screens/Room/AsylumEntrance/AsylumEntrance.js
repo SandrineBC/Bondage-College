@@ -105,7 +105,7 @@ function AsylumEntranceWearNurseClothes(C) {
 
 // Wears the patient clothes on a character
 /**
- * Dresses a given character as a patient. Removes all clothes except Cosply items.
+ * Dresses a given character as a patient. Removes all clothes and respects cosplay rules
  * @param {string | Character} C - The character to dress
  * @returns {void} - Nothing
  */
@@ -116,11 +116,9 @@ function AsylumEntranceWearPatientClothes(C) {
 	InventoryWear(C, "Socks2", "Socks", "#CCCCCC");
 	InventoryRemove(C, "Shoes");
 	InventoryRemove(C, "Gloves");
-	let hairAccessory = InventoryGet(C, "HairAccessory1");
-	if ((hairAccessory != null) && !hairAccessory.Asset.BodyCosplay)
-		InventoryRemove(C, "HairAccessory1");
-	hairAccessory= InventoryGet(C, "HairAccessory2");
-	if ((hairAccessory != null) && !hairAccessory.Asset.BodyCosplay)
+	InventoryRemove(C, "HairAccessory1");
+	let hairAccessory = InventoryGet(C, "HairAccessory2");
+	if ((hairAccessory != null) && !(hairAccessory.Asset.BodyCosplay && C.OnlineSettings.BlockBodyCosplay))
 		InventoryRemove(C, "HairAccessory2");
 	InventoryRemove(C, "Hat");
 }

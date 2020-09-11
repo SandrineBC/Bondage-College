@@ -275,7 +275,7 @@ function NurseryPlayerUndress(Cost) {
 	CharacterChangeMoney(Player, Cost);
 	CharacterRelease(Player);
 	InventoryRemove(Player, "ItemTorso");
-	CharacterNaked(Player, true);
+	CharacterNaked(Player);
 }
 
 // When the player puts on diapers or has them put on

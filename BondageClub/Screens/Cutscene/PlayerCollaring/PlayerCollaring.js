@@ -38,7 +38,7 @@ function PlayerCollaringRun() {
  */
 function PlayerCollaringClick() {
 	CutsceneStage++;
-	if (CutsceneStage == 2) CharacterNaked(Player, true);
+	if (CutsceneStage == 2) CharacterNaked(Player);
 	if (CutsceneStage == 4) CharacterSetActivePose(Player, "Kneel");
 	if (CutsceneStage == 6) InventoryWear(Player, "SlaveCollar", "ItemNeck");
 	if (CutsceneStage > 8) {

@@ -970,7 +970,7 @@ function PrivateActivityRun(LoveFactor) {
 	if (PrivateActivity == "FullRestrainOther") CharacterFullRandomRestrain(PrivateActivityTarget);
 	if (PrivateActivity == "Release") CharacterRelease(Player);
 	if (PrivateActivity == "Ungag") { InventoryRemove(Player, "ItemMouth"); InventoryRemove(Player, "ItemMouth2"); InventoryRemove(Player, "ItemMouth3"); InventoryRemove(Player, "ItemHead"); InventoryRemove(Player, "ItemHood");}
-	if (PrivateActivity == "Naked") CharacterNaked(Player, true);
+	if (PrivateActivity == "Naked") CharacterNaked(Player);
 	if (PrivateActivity == "Underwear") CharacterRandomUnderwear(Player);
 	if (PrivateActivity == "RandomClothes") CharacterAppearanceFullRandom(Player, true);
 	if (PrivateActivity == "CollegeClothes") { CollegeEntranceWearStudentClothes(Player); InventoryAdd(Player, "CollegeOutfit1", "Cloth"); }
@@ -987,7 +987,7 @@ function PrivateActivityRun(LoveFactor) {
 
 	// In Shibari, the player gets naked and fully roped in hemp
 	if (PrivateActivity == "Shibari") {
-		CharacterNaked(Player, true);
+		CharacterNaked(Player);
 		CharacterSetActivePose(Player, null);
 		InventoryRemove(Player, "ItemHood");
 		InventoryRemove(Player, "ItemHead");
@@ -1043,7 +1043,7 @@ function PrivateSelectPunishment() {
 
 	// Strip the player second
 	if (!Player.IsNaked()) {
-		CharacterNaked(Player, true);
+		CharacterNaked(Player);
 		CurrentCharacter.Stage = "PunishStripBefore";
 		CurrentCharacter.CurrentDialog = DialogFind(CurrentCharacter, "PunishStripBeforeIntro");
 		return;

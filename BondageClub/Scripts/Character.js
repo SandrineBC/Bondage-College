@@ -574,7 +574,7 @@ function CharacterHasNoItem(C) {
 function CharacterIsNaked(C) {
 	for (let A = 0; A < C.Appearance.length; A++)
 		if ((C.Appearance[A].Asset != null) && (C.Appearance[A].Asset.Group.Category == "Appearance") &&
-			C.Appearance[A].Asset.Group.AllowNone && !C.Appearance[A].Asset.Group.BodyCosplay)
+			C.Appearance[A].Asset.Group.AllowNone && !(C.Appearance[A].Asset.Group.BodyCosplay && C.OnlineSharedSettings.BlockBodyCosPlay))
 			return false;
 	return true;
 }
@@ -587,7 +587,7 @@ function CharacterIsNaked(C) {
 function CharacterIsInUnderwear(C) {
 	for (let A = 0; A < C.Appearance.length; A++)
 		if ((C.Appearance[A].Asset != null) && (C.Appearance[A].Asset.Group.Category == "Appearance") &&
-			C.Appearance[A].Asset.Group.AllowNone && !C.Appearance[A].Asset.Group.Underwear && !C.Appearance[A].Asset.Group.BodyCosplay)
+			C.Appearance[A].Asset.Group.AllowNone && !C.Appearance[A].Asset.Group.Underwear && !(C.Appearance[A].Asset.Group.BodyCosplay && C.OnlineSharedSettings.BlockBodyCosPlay))
 			return false;
 	return true;
 }
@@ -595,11 +595,10 @@ function CharacterIsInUnderwear(C) {
 /**
  * Removes all appearance items from the character
  * @param {Character} C - Character to undress
- * @param {boolean} [keepCosplay=false] - Flag that determines, wether cosplay items should be kept or removed
  * @returns {void} - Nothing
  */
-function CharacterNaked(C, keepCosplay = false) {
-	CharacterAppearanceNaked(C, keepCosplay);
+function CharacterNaked(C) {
+	CharacterAppearanceNaked(C);
 	CharacterRefresh(C);
 }
 

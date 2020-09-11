@@ -160,7 +160,7 @@ function ShibariClick() {
 	if (MouseIn(1250, 0, 500, 1000)) CharacterSetCurrent(ShibariStudent);
 	if (MouseIn(1885, 145, 90, 90)) InformationSheetLoadCharacter(Player);
 	if (MouseIn(1885, 265, 90, 90) && Player.CanChange()) CharacterDress(Player, ShibariPlayerAppearance);
-	if (MouseIn(1885, 385, 90, 90) && Player.CanChange()) CharacterNaked(Player, true);
+	if (MouseIn(1885, 385, 90, 90) && Player.CanChange()) CharacterNaked(Player);
 	if (MouseIn(1885, 25, 90, 90) && Player.CanWalk()) {
 		CharacterDress(Player, ShibariPlayerAppearance);
 		ShibariPlayerAppearance = null;

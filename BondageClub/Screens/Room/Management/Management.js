@@ -390,7 +390,7 @@ function ManagementClick() {
 function ManagementPlayerStrip() {
 	ManagementPlayerAppearance = Player.Appearance.slice();
 	CharacterRelease(Player);
-	CharacterNaked(Player, true);
+	CharacterNaked(Player);
 }
 
 /**

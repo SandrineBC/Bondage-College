@@ -368,7 +368,7 @@ function LoginResponse(C) {
 			CharacterRefresh(Player, false);
 			ElementRemove("InputName");
 			ElementRemove("InputPassword");
-			if (ManagementIsClubSlave()) CharacterNaked(Player, true);
+			if (ManagementIsClubSlave()) CharacterNaked(Player);
 
 			// Starts the game in the main hall while loading characters in the private room
 			PrivateCharacter = [];
