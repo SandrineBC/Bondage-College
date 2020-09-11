@@ -245,6 +245,7 @@ function CharacterAppearanceStripLayer(C) {
 
 	// Find out what the top layer currently is
 	for (let A = 0; A < C.Appearance.length; A++) {
+		if (!WardrobeGroupAccessible(C, C.Appearance[A].Asset.Group)) continue;
 		if (C.Appearance[A].Asset.Group.BodyCosplay || C.Appearance[A].Asset.BodyCosplay) HasBodyCosplay = true;
 		else if (C.Appearance[A].Asset.Group.Underwear) HasUnderwear = true;
 		else if (C.Appearance[A].Asset.Group.Clothing) { HasClothes = true; break; }
@@ -261,7 +262,8 @@ function CharacterAppearanceStripLayer(C) {
 	var RemoveAsset = false;
 	for (let A = 0; A < C.Appearance.length; A++) {
 		RemoveAsset = false;
-
+		
+		if (!WardrobeGroupAccessible(C, C.Appearance[A].Asset.Group)) continue;
 		if (C.Appearance[A].Asset.Group.BodyCosplay || C.Appearance[A].Asset.BodyCosplay) {
 			if (HasBodyCosplay) RemoveAsset = true;
 		}
