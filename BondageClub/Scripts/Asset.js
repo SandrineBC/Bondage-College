@@ -150,7 +150,6 @@ function AssetAdd(NewAsset) {
 		DynamicBeforeDraw: (typeof NewAsset.DynamicBeforeDraw === 'boolean') ? NewAsset.DynamicBeforeDraw : false,
 		DynamicAfterDraw: (typeof NewAsset.DynamicAfterDraw === 'boolean') ? NewAsset.DynamicAfterDraw : false,
 		DynamicScriptDraw: (typeof NewAsset.DynamicScriptDraw === 'boolean') ? NewAsset.DynamicScriptDraw : false,
-		InheritColor: NewAsset.InheritColor,
 		HasType: (typeof NewAsset.HasType === 'boolean') ? NewAsset.HasType : true,
 	}
 	A.Layer = AssetBuildLayer(NewAsset, A);
