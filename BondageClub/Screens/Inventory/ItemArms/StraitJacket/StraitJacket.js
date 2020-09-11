@@ -81,5 +81,5 @@ function InventoryItemArmsStraitJacketPublishAction(C, Option, PreviousOption) {
  * @returns {void} - Nothing
  */
 function InventoryItemArmsStraitJacketNpcDialog(C, Option) {
-	C.CurrentDialog = DialogFind(C, "RoundPiercingNPCReaction" + Option.Name, "ItemNipplesPiercings");
+	C.CurrentDialog = DialogFind(C, "ItemArmStraitJacketNPCReaction" + Option.Name, "ItemArms");
 }
