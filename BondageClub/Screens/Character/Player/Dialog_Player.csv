@@ -936,7 +936,7 @@ OldGasMaskUseOldGasMaskTube2,,,SourceCharacter attaches a tube to  DestinationCh
 OldGasMaskUseOldGasMaskRebreather,,,SourceCharacter attaches a rebreather to DestinationCharacter gas mask,,
 OldGasMaskUseOldGasMaskLensesTube1,,,SourceCharacter attaches a tube and lenses to  DestinationCharacter gas mask,,
 OldGasMaskUseOldGasMaskLensesTube2,,,SourceCharacter attaches a tube and lenses to  DestinationCharacter gas mask,,
-OldGasMaskUseOldGasMaskLensesRebreather,,,SourceCharacter attaches a tube and a rebreather to  DestinationCharacter gas mask,,
+OldGasMaskUseOldGasMaskLensesRebreather,,,SourceCharacter attaches lenses and a rebreather to  DestinationCharacter gas mask,,
 NoseRingPoseBase,,,Nothing,,
 NoseRingPoseChainShort,,,Short Chain,,
 NoseRingPoseChainLong,,,Long Chain,,
