@@ -204,8 +204,8 @@ function PreferenceInit(C) {
 	if (!C.VisualSettings) C.VisualSettings = { ForceFullHeight: false };
 
 	if (!C.OnlineSharedSettings) C.OnlineSharedSettings = {};
-	C.OnlineSharedSettings.AllowFullWardrobeAccess = false;
-	C.OnlineSharedSettings.BlockBodyCosplay = false;
+	if (C.OnlineSharedSettings.AllowFullWardrobeAccess == null) C.OnlineSharedSettings.AllowFullWardrobeAccess = false;
+	if (C.OnlineSharedSettings.BlockBodyCosplay == null) C.OnlineSharedSettings.BlockBodyCosplay = false;
 	
 	if (!C.OnlineSettings) C.OnlineSettings = {};
 	// TODO: The following preferences were migrated September 2020 in for R61 - replace with standard preference code after a few months
