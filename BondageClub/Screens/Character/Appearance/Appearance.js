@@ -220,11 +220,12 @@ function CharacterAppearanceFullRandom(C, ClothOnly) {
 function CharacterAppearanceNaked(C) {
 
 	// For each item group (non default items only show at a 20% rate)
-	for (let A = 0; A < C.Appearance.length; A++)
-		if (C.Appearance[A].Asset.Group.AllowNone && (C.Appearance[A].Asset.Group.Category == "Appearance") && !(Player.OnlineSettings.BlockBodyCosplay && C.Appearance[A].Asset.Group.BodyCosplay)) {
+	for (let A = 0; A < C.Appearance.length; A++) {
+		if (C.Appearance[A].Asset.Group.AllowNone && (C.Appearance[A].Asset.Group.Category == "Appearance") && !(C.OnlineSharedSettings.BlockBodyCosplay && C.Appearance[A].Asset.Group.BodyCosplay)) {
 			C.Appearance.splice(A, 1);
 			A--;
 		}
+	}
 
 	// Loads the new character canvas
 	CharacterLoadCanvas(C);
