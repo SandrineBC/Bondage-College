@@ -80,6 +80,6 @@ function InventoryItemEarsHeadphoneEarPlugsPublishAction(C, Option, PreviousOpti
  * @returns {void} - Nothing
  */
 function InventoryItemEarsHeadphoneEarPlugsNpcDialog(C, Option) {
-	C.CurrentDialog = DialogFind(C, "ItemArmsHeadphoneEarPlugs" + Option.Name, "ItemEars");
+	C.CurrentDialog = DialogFind(C, "ItemEarsHeadphonePlugs" + Option.Name, "ItemEars");
 }
 
