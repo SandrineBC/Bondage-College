@@ -663,15 +663,16 @@ function CharacterDress(C, Appearance) {
 /**
  * Removes all binding items from a given character
  * @param {Character} C - Character to release
+ * @param {false} [Refresh] - do not call CharacterRefresh if false
  * @returns {void} - Nothing
  */
-function CharacterRelease(C) {
+function CharacterRelease(C, Refresh) {
 	for (let E = 0; E < C.Appearance.length; E++)
 		if (C.Appearance[E].Asset.IsRestraint) {
 			C.Appearance.splice(E, 1);
 			E--;
 		}
-	CharacterRefresh(C);
+	if (Refresh || Refresh == null) CharacterRefresh(C);
 }
 
 /**
@@ -742,8 +743,9 @@ function CharacterGetBonus(C, BonusType) {
  * Restrains a character with random restraints. Some restraints are specifically disabled for randomization in their definition.
  * @param {Character} C - The target character to restrain
  * @param {"FEW"|"LOT"|"ALL"} [Ratio] - Amount of restraints to put on the character
+ * @param {false} [Refresh] - do not call CharacterRefresh if false
  */
-function CharacterFullRandomRestrain(C, Ratio) {
+function CharacterFullRandomRestrain(C, Ratio, Refresh) {
 
 	// Sets the ratio depending on the parameter
 	var RatioRare = 0.75;
@@ -755,12 +757,14 @@ function CharacterFullRandomRestrain(C, Ratio) {
 	}
 
 	// Apply each item if needed
-	if (InventoryGet(C, "ItemArms") == null) InventoryWearRandom(C, "ItemArms");
-	if ((Math.random() >= RatioRare) && (InventoryGet(C, "ItemHead") == null)) InventoryWearRandom(C, "ItemHead");
-	if ((Math.random() >= RatioNormal) && (InventoryGet(C, "ItemMouth") == null)) InventoryWearRandom(C, "ItemMouth");
-	if ((Math.random() >= RatioRare) && (InventoryGet(C, "ItemNeck") == null)) InventoryWearRandom(C, "ItemNeck");
-	if ((Math.random() >= RatioNormal) && (InventoryGet(C, "ItemLegs") == null)) InventoryWearRandom(C, "ItemLegs");
-	if ((Math.random() >= RatioNormal) && !C.IsKneeling() && (InventoryGet(C, "ItemFeet") == null)) InventoryWearRandom(C, "ItemFeet");
+	if (InventoryGet(C, "ItemArms") == null) InventoryWearRandom(C, "ItemArms", false);
+	if ((Math.random() >= RatioRare) && (InventoryGet(C, "ItemHead") == null)) InventoryWearRandom(C, "ItemHead", false);
+	if ((Math.random() >= RatioNormal) && (InventoryGet(C, "ItemMouth") == null)) InventoryWearRandom(C, "ItemMouth", false);
+	if ((Math.random() >= RatioRare) && (InventoryGet(C, "ItemNeck") == null)) InventoryWearRandom(C, "ItemNeck", false);
+	if ((Math.random() >= RatioNormal) && (InventoryGet(C, "ItemLegs") == null)) InventoryWearRandom(C, "ItemLegs", false);
+	if ((Math.random() >= RatioNormal) && !C.IsKneeling() && (InventoryGet(C, "ItemFeet") == null)) InventoryWearRandom(C, "ItemFeet", false);
+
+	if (Refresh || Refresh == null) CharacterRefresh(C);
 
 }
 
