@@ -572,8 +572,6 @@ function ManagementFinishClubSlave(RepChange) {
 	if (Player.IsOwned()) InventoryWear(Player, "SlaveCollar", "ItemNeck");
 	else {
 		InventoryRemove(Player, "ItemNeck");
-		InventoryRemove(Player, "ItemNeckAccessories");
-		InventoryRemove(Player, "ItemNeckRestraints");
 	}
 	if (Player.IsNaked()) CharacterDress(Player, ManagementPlayerAppearance);
 }

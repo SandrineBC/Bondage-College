@@ -116,10 +116,10 @@ function AsylumEntranceWearPatientClothes(C) {
 	InventoryWear(C, "Socks2", "Socks", "#CCCCCC");
 	InventoryRemove(C, "Shoes");
 	InventoryRemove(C, "Gloves");
-	let hairAccessory = InventoryGet(C, "HairAccessory1");
+	InventoryRemove(C, "HairAccessory1");
+	let hairAccessory = InventoryGet(C, "HairAccessory2");
 	if ((hairAccessory != null) && !(hairAccessory.Asset.BodyCosplay && C.OnlineSharedSettings.BlockBodyCosplay))
-		InventoryRemove(C, "HairAccessory1");
-	InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "HairAccessory2");
 	InventoryRemove(C, "HairAccessory3");
 	InventoryRemove(C, "Hat");
 }
