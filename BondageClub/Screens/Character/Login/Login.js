@@ -409,7 +409,7 @@ function LoginResponse(C) {
 						InventoryRemove(Player, "ItemFeet");
 						InventoryRemove(Player, "ItemLegs");
 						Player.Cage = true;
-						CharacterSetActivePose(Player, "Kneel");
+						CharacterSetActivePose(Player, "Kneel", true);
 						CommonSetScreen("Room", "Private");
 					} else {
 						CommonSetScreen("Room", "MainHall");
