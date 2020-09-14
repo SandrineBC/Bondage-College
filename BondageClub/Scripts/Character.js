@@ -218,6 +218,7 @@ function CharacterArchetypeClothes(C, Archetype, ForceColor) {
 		InventoryRemove(C, "ClothAccessory");
 		InventoryRemove(C, "HairAccessory1");
 		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "HairAccessory3");
 		InventoryRemove(C, "ClothLower");
 		C.AllowItem = (LogQuery("LeadSorority", "Maid"));
 	}
@@ -241,6 +242,7 @@ function CharacterArchetypeClothes(C, Archetype, ForceColor) {
 		InventoryRemove(C, "ClothAccessory");
 		InventoryRemove(C, "HairAccessory1");
 		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "HairAccessory3");
 	}
 
 }

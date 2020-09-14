@@ -196,7 +196,7 @@ function CollegeDetentionInviteToPrivateRoom() {
 	
 	var ItemsToEarn = [];
 	ItemsToEarn.push({Name: "Ribbons2", Group: "HairAccessory1"});
-	ItemsToEarn.push({Name: "Ribbons2", Group: "HairAccessory2"});
+	ItemsToEarn.push({Name: "Ribbons2", Group: "HairAccessory3"});
 	ItemsToEarn.push({Name: "RegularSleepingPill", Group: "ItemMouth"});
 	InventoryAddMany(Player, ItemsToEarn);
 	
