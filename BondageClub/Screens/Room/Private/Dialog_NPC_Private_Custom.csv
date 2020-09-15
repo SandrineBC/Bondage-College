@@ -648,6 +648,10 @@ OwnerBeepFail,,,"(She shakes her head from left to right.)  My girl, it's very d
 1000,1010,Can we talk Mistress?,(She starts to sing.)  Let's talk about sex subbie!  Let's talk about you and me!,,,DomStartTalk,Horny
 1000,1010,Can we talk Mistress?,"Absolutely, what will be the topic of our discussion or debate?",,,DomStartTalk,Polite
 1000,1010,Can we talk Mistress?,What's up slave?,,,DomStartTalk,Rude
+1000,1050,"Girl, it's time to turn the tables.",(She looks surprised.)  What?  What are you talking about my slave?,PlayerTurnTablesStart(),PlayerCanTurnTables(),DomTurnTablesStart,
+1000,1050,"Girl, it's time to turn the tables.",(She looks furious.)  What the fuck?  You better explain yourself before I punish you slave.,PlayerTurnTablesStart(),PlayerCanTurnTables(),DomTurnTablesStart,Rude|Violent
+1000,1050,"Girl, it's time to turn the tables.",(She looks annoyed.)  What?  Do not play games my cherish slave.  I am not disposed.,PlayerTurnTablesStart(),PlayerCanTurnTables(),DomTurnTablesStart,Polite|Serious
+1000,1050,"Girl, it's time to turn the tables.",(She looks confused.)  Uh?  Are you drunk my slave?,PlayerTurnTablesStart(),PlayerCanTurnTables(),DomTurnTablesStart,Dumb|Playful
 1000,,What would you like to do?,,StartActivity(),Player.CanTalk(),,
 1000,,(Try to get her attention.),,StartActivity(),!Player.CanTalk(),,
 1000,,Can you please release me?,(She nods and slowly releases you.)  I guess I can help you out now.,DialogRelease(Player),AllowReleasePlayer(),DomWillReleasePlayer,
@@ -823,6 +827,30 @@ OwnerBeepFail,,,"(She shakes her head from left to right.)  My girl, it's very d
 1042,1000,Making love will only be better.,"(She nods slowly.)  It will, sweetie.  Let's do something fun to celebrate!",,,,
 1042,1000,I hope we'll never argue.,(She raises an eyebrow.)  Don't talk about that.  Let's do something fun to celebrate!,NPCInteraction(-3),,,
 1042,1000,I hope we'll be together forever.,(She smiles at you.)  Let's make it work my love.  Let's do something fun to celebrate!,NPCInteraction(3),,,
+1050,1051,You don't deserve to call me slave.,So you're a Dominant now?  You want to break our bond?,NPCInteraction(-2),,,
+1050,1051,I've grown stronger than you.,So you're a Dominant now?  You want to break our bond?,,,,
+1050,1051,You've been a good owner.,So you're a Dominant now?  You want to break our bond?,NPCInteraction(2),,,
+1050,1000,"Sorry, I didn't mean to say that.",(She takes a deep breath and calms down slowly.),,,,
+1051,1052,Get on your knees girl.,(She gulps and starts to tremble.)  Are you serious?,,,,
+1051,1056,"Yes, I need someone stronger.",I guess you're ready for someone tougher than me.  You don't want to be owned by me anymore?,,,,
+1051,1000,No!  Sorry I said that.,(She takes a deep breath and calms down slowly.),,,,
+1052,1053,I'm very serious.,"(She starts to sweat and slowly gets down on her knees.)  Yes, Miss.","DialogSetPose(CurrentCharacter, ""Kneel"")",,,
+1052,1053,(Points to the floor.),"(She follows your finger and slowly gets down on her knees.)  Yes, Miss.","DialogSetPose(CurrentCharacter, ""Kneel"")",,,
+1052,1000,Let me think about it.,(She seems shaken.)  Very well my girl.  We'll see if we can work this out.,NPCInteraction(-5),,,
+1053,1054,"No.  You will call me ""Mistress"".",(She bows her head.)  Very well Mistress.  I will wear your collar.,,,PlayerTurnTableCollar,
+1053,1054,"No.  You will call me ""Mistress"".",This is the real shit then?  Wow!  I hope you're genuine on that Mistress.,,,PlayerTurnTableCollar,Serious|Rude
+1053,1054,"No.  You will call me ""Mistress"".","(She nods rapidly.)  Mistress, I hope I'll have outstanding moments exhibiting your collar.",,,PlayerTurnTableCollar,Playful|Polite
+1053,1054,"No.  You will call me ""Mistress"".",(She nods very slowly.)  I trust you will take good care of me Mistress.,,,PlayerTurnTableCollar,Wise|Peaceful
+1054,1055,Let's go girl.  (Go transfer your collar.),(You go to the club management and she pays to have your collar transfered to herself.  You walk back soon after.),PlayerTurnTablesCollar(),,,
+1055,2000,You better behave girl.,(She gulps.)  How can I serve you Mistress?,NPCInteraction(-3),,,
+1055,2000,You will become the perfect slave.,(She nods.)  How can I please you Mistress?,,,,
+1055,2000,I will take good care of you.,"Thanks Mistress, I know you will.  How can I serve you?",NPCInteraction(3),,,
+1056,1057,You can't own me.  But we can stay friends.,"(She sighs.)  Fine, come with me, we'll get you out of that collar.",,,,
+1056,1000,Let me think about it.,Very well my girl.  We'll see if we can work this out.,,,,
+1057,1058,(Go have your collar removed.),(You go to the club management and she pays to have your collar removed.  You walk back soon after.),PlayerTurnTablesRemove(),,,
+1058,0,I hope we can still be friends.,"Yes, lets hope it won't ruin our friendship.  What would you like to do now?",NPCInteraction(5),,,
+1058,0,Lets talk about something else.,Yes.  What would you like to do now?,,,,
+1058,0,I'm glad this collar is gone.,You could have told me sooner you know?  What would you like to do now?,NPCInteraction(-5),,,
 ActivityStop,,,Fine!  (She pushes you back.)  You can play without me girl.,,,DomActivityStop,
 ActivityStop,,,(She pushes you back.)  If you cannot obey then you're not worth my time.,,,DomActivityStop,Wise
 ActivityStop,,,(She pushes you back.)  Back off!,,,DomActivityStop,Dumb

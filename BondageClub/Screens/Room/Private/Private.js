@@ -306,6 +306,11 @@ function PrivateWontTakePlayerAsLoverAlreadyDating() { return ((CurrentCharacter
  * @returns {boolean} - TRUE if the NPC is free, but the player has 5 lovers.
  */
 function PrivateWontTakePlayerAsLoverPlayerDating() { return (((CurrentCharacter.Lover == null) || (CurrentCharacter.Lover == "")) && (Player.Lovership.length >= 5)) }
+/**
+ * Checks if it's possible for the player to turn the tables against her NPC owner
+ * @returns {boolean} - TRUE if turning the tables is possible
+ */
+function PrivatePlayerCanTurnTables() { return (!Player.IsRestrained() && (ReputationGet("Dominant") - 50 >= NPCTraitGet(CurrentCharacter, "Dominant")) && (NPCEventGet(CurrentCharacter, "PlayerCollaring") > 0)) }
 
 /**
  * Loads the private room screen and the vendor NPC.
@@ -1309,4 +1314,36 @@ function PrivateLoveYou() {
 
 	}
 
+}
+
+/**
+ * Triggered when the player starts turning the tables on her NPC owner.  The player stands up.
+ * @returns {void} - Nothing.
+ */
+function PrivatePlayerTurnTablesStart() {
+	CharacterSetActivePose(Player, null);
+	PrivateNPCInteraction(-5);
+}
+
+/**
+ * Triggered when the player turns the table with her owner but only removes her collar
+ * @returns {void} - Nothing.
+ */
+function PrivatePlayerTurnTablesRemove() {
+	PrivateNPCInteraction(-20);
+	NPCEventDelete(CurrentCharacter, "EndSubTrial");
+	ManagementReleaseFromOwner(6);
+}
+
+/**
+ * Triggered when the player turns the table with her owner and transfer her collar
+ * @returns {void} - Nothing.
+ */
+function PrivatePlayerTurnTablesCollar() {
+	ManagementReleaseFromOwner(12);
+	NPCEventDelete(CurrentCharacter, "EndSubTrial");
+	NPCEventAdd(CurrentCharacter, "NPCCollaring", CurrentTime);
+	CurrentCharacter.Owner = Player.Name;
+	InventoryWear(CurrentCharacter, "SlaveCollar", "ItemNeck");
+	ServerPrivateCharacterSync();
 }
