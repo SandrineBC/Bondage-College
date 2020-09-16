@@ -390,10 +390,9 @@ function DialogRemove() {
  */
 function DialogRemoveGroup(GroupName) {
 	GroupName = GroupName.trim().toUpperCase();
-	for (let D = 0; D < CurrentCharacter.Dialog.length; D++)
+	for (let D = CurrentCharacter.Dialog.length - 1; D >= 0; D--)
 		if ((CurrentCharacter.Dialog[D].Group != null) && (CurrentCharacter.Dialog[D].Group.trim().toUpperCase() == GroupName)) {
 			CurrentCharacter.Dialog.splice(D, 1);
-			D--;
 		}
 }
 
