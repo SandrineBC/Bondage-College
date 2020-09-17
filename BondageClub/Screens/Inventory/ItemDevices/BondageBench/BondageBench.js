@@ -64,17 +64,26 @@ var InventoryItemDevicesBondageBenchOptions = [
 	},
 ];
 
-// Loads the item extension properties
+/**
+ * Loads the item extension properties
+ * @returns {void} - Nothing
+ */
 function InventoryItemDevicesBondageBenchLoad() {
 	ExtendedItemLoad(InventoryItemDevicesBondageBenchOptions, "BondageBenchStrapsSelectTightness");
 }
 
-// Draw the item extension screen
+/**
+ * Draw the item extension screen
+ * @returns {void} - Nothing
+ */
 function InventoryItemDevicesBondageBenchDraw() {
 	ExtendedItemDraw(InventoryItemDevicesBondageBenchOptions, "BondageBenchStrapsPose");
 }
 
-// Catches the item extension clicks
+/**
+ * Catches the item extension clicks
+ * @returns {void} - Nothing
+ */
 function InventoryItemDevicesBondageBenchClick() {
 	ExtendedItemClick(InventoryItemDevicesBondageBenchOptions);
 }
@@ -91,6 +100,7 @@ function InventoryItemDevicesBondageBenchPublishAction(C, Option, PreviousOption
 	var Dictionary = [
 		{ Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber },
 		{ Tag: "TargetCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
+		{ Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber },
 	];
 	ChatRoomPublishCustomAction(msg, true, Dictionary);
 }
@@ -107,47 +117,3 @@ function InventoryItemDevicesBondageBenchPublishAction(C, Option, PreviousOption
 function InventoryItemDevicesBondageBenchPNpcDialog(C, Option) {
 	C.CurrentDialog = DialogFind(C, "InventoryItemDevicesBondageBenchNPCReaction" + Option.Name, "ItemDevices");
 }
-
-
-// // Sets the cuffs pose (wrist, elbow, both or none)
-// function InventoryItemDevicesBondageBenchSetPose(NewPose) {
-
-// 	// Gets the current item and character
-// 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-// 	if ((CurrentScreen == "ChatRoom") || (DialogFocusItem == null)) {
-// 		DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
-// 		InventoryItemDevicesBondageBenchLoad();
-// 	}
-
-// 	var BondageBenchStraps = InventoryItemCreate(C, "ItemAddon", "BondageBenchStraps");
-
-// 	// Do not continue if the item is blocked
-// 	if (InventoryIsPermissionBlocked(C, "BondageBenchStraps", "ItemAddon") || !InventoryCheckLimitedPermission(C, BondageBenchStraps)) return;
-
-// 	// Cannot be used with clothes or other addons
-// 	if ((InventoryGet(C, "Cloth") != null) || (InventoryGet(C, "ClothLower") != null)) return;
-// 	if (InventoryGet(C, "ItemAddon") != null) return;
-
-// 	// Adds the strap and focus on it
-// 	if (NewPose == "StrapUp") {
-// 		InventoryWear(C, "BondageBenchStraps", "ItemAddon", DialogColorSelect);
-// 		DialogFocusItem = InventoryGet(C, "ItemAddon");
-// 	}
-
-// 	// Refreshes the character and chatroom
-// 	CharacterRefresh(C);
-// 	var msg = "BondageBenchRestrain" + ((NewPose == null) ? "None" : NewPose);
-// 	var Dictionary = [];
-// 	Dictionary.push({Tag: "SourceCharacter", Text: Player.Name, MemberNumber: Player.MemberNumber});
-// 	Dictionary.push({Tag: "DestinationCharacter", Text: C.Name, MemberNumber: C.MemberNumber});
-// 	Dictionary.push({Tag: "TargetCharacter", Text: C.Name, MemberNumber: C.MemberNumber});
-// 	ChatRoomPublishCustomAction(msg, true, Dictionary);
-// 	ChatRoomCharacterItemUpdate(C, "ItemAddon");
-
-// 	// Rebuilds the inventory menu
-// 	if (DialogInventory != null) {
-// 		DialogFocusItem = null;
-// 		DialogMenuButtonBuild(C);
-// 	}
-
-// }
