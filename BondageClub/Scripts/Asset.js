@@ -151,6 +151,7 @@ function AssetAdd(NewAsset) {
 		DynamicAfterDraw: (typeof NewAsset.DynamicAfterDraw === 'boolean') ? NewAsset.DynamicAfterDraw : false,
 		DynamicScriptDraw: (typeof NewAsset.DynamicScriptDraw === 'boolean') ? NewAsset.DynamicScriptDraw : false,
 		HasType: (typeof NewAsset.HasType === 'boolean') ? NewAsset.HasType : true,
+		AllowLockType: NewAsset.AllowLockType,
 	}
 	A.Layer = AssetBuildLayer(NewAsset, A);
 	// Unwearable assets are not visible but can be overwritten

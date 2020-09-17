@@ -2513,8 +2513,9 @@ var AssetFemale3DCG = [
 				Prerequisite: ["NotKneeling", "AllFours", "NotSuspended", "NotHogtied", "NoFeetSpreader"],
 				SetPose: ["LegsClosed"],
 				Effect: ["Mounted"],
-				AllowEffect: ["Block", "Prone", "Freeze", "Mounted"],
+				AllowEffect: ["Block", "Prone", "Freeze", "Mounted", "Lock"],
 				AllowType: ["Light", "Normal", "Heavy", "Full"],
+				AllowLockType: ["Light", "Normal", "Heavy", "Full"],
 				Layer: [
 					{ Name: "Bench", AllowColorize: false, Priority: 1, HasType: false },
 					{ Name: "Straps", AllowColorize: false, Priority: 53, HasType: true },
