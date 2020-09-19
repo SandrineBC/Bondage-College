@@ -218,6 +218,7 @@ function CharacterArchetypeClothes(C, Archetype, ForceColor) {
 		InventoryRemove(C, "ClothAccessory");
 		InventoryRemove(C, "HairAccessory1");
 		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "HairAccessory3");
 		InventoryRemove(C, "ClothLower");
 		C.AllowItem = (LogQuery("LeadSorority", "Maid"));
 	}
@@ -241,6 +242,7 @@ function CharacterArchetypeClothes(C, Archetype, ForceColor) {
 		InventoryRemove(C, "ClothAccessory");
 		InventoryRemove(C, "HairAccessory1");
 		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "HairAccessory3");
 	}
 
 }
@@ -289,6 +291,7 @@ function CharacterOnlineRefresh(Char, data, SourceMemberNumber) {
 	Char.Description = data.Description;
 	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.ItemPermission == null))) Char.ItemPermission = data.ItemPermission;
 	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.ArousalSettings == null))) Char.ArousalSettings = data.ArousalSettings;
+	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.OnlineSharedSettings == null))) Char.OnlineSharedSettings = data.OnlineSharedSettings;
 	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.Game == null))) Char.Game = data.Game;
 	Char.Ownership = data.Ownership;
 	Char.Lovership = data.Lovership;
@@ -382,6 +385,7 @@ function CharacterLoadOnline(data, SourceMemberNumber) {
 		if (!Refresh && (JSON.stringify(Char.Ownership) !== JSON.stringify(data.Ownership))) Refresh = true;
 		if (!Refresh && (JSON.stringify(Char.Lovership) !== JSON.stringify(data.Lovership))) Refresh = true;
 		if (!Refresh && (JSON.stringify(Char.ArousalSettings) !== JSON.stringify(data.ArousalSettings))) Refresh = true;
+		if (!Refresh && (JSON.stringify(Char.OnlineSharedSettings) !== JSON.stringify(data.OnlineSharedSettings))) Refresh = true;
 		if (!Refresh && (JSON.stringify(Char.Game) !== JSON.stringify(data.Game))) Refresh = true;
 		if (!Refresh && (data.Inventory != null) && (Char.Inventory.length != data.Inventory.length)) Refresh = true;
 		if (!Refresh && (data.BlockItems != null) && (Char.BlockItems.length != data.BlockItems.length)) Refresh = true;
@@ -661,7 +665,7 @@ function CharacterRefresh(C, Push) {
 function CharacterHasNoItem(C) {
 	for (let A = 0; A < C.Appearance.length; A++)
 		if ((C.Appearance[A].Asset != null) && (C.Appearance[A].Asset.Group.Category == "Item"))
-			if (C.Appearance[A].Asset.Name != "SlaveCollar")
+			if (C.Appearance[A].Asset.Group.Name != "ItemNeck" || (C.Appearance[A].Asset.Group.Name == "ItemNeck" && !InventoryOwnerOnlyItem(C.Appearance[A])))
 				return false;
 	return true;
 }

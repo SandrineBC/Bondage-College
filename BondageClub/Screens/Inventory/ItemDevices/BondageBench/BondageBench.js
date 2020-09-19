@@ -12,6 +12,7 @@ var InventoryItemDevicesBondageBenchOptions = [
 	},
 	{
 		Name: "Light",
+		Prerequisite: ["NoOuterClothes"],
 		Property: {
 			Type: "Light",
 			Difficulty: 2,
@@ -19,12 +20,12 @@ var InventoryItemDevicesBondageBenchOptions = [
 			AllowLock: true,
 			SetPose: ["LegsClosed", "BaseUpper"],
 			Effect: ["Block", "Prone", "Freeze", "Mounted"],
-			Prerequisite: ["NoOuterClothes"],
 			Hide: ["HairBack", "Wings", "TailStraps", "ItemButt"],
 		},
 	},
 	{
 		Name: "Normal",
+		Prerequisite: ["NoOuterClothes"],
 		Property: {
 			Type: "Normal",
 			Difficulty: 3,
@@ -32,12 +33,12 @@ var InventoryItemDevicesBondageBenchOptions = [
 			AllowLock: true,
 			SetPose: ["LegsClosed", "BaseUpper"],
 			Effect: ["Block", "Prone", "Freeze", "Mounted"],
-			Prerequisite: ["NoOuterClothes"],
 			Hide: ["HairBack", "Wings", "TailStraps", "ItemButt"],
 		},
 	},
 	{
 		Name: "Heavy",
+		Prerequisite: ["NoOuterClothes"],
 		Property: {
 			Type: "Heavy",
 			Difficulty: 6,
@@ -45,12 +46,12 @@ var InventoryItemDevicesBondageBenchOptions = [
 			AllowLock: true,
 			SetPose: ["LegsClosed", "BaseUpper"],
 			Effect: ["Block", "Prone", "Freeze", "Mounted"],
-			Prerequisite: ["NoOuterClothes"],
 			Hide: ["HairBack", "Wings", "TailStraps", "ItemButt"],
 		},
 	},
 	{
 		Name: "Full",
+		Prerequisite: ["NoOuterClothes"],
 		Property: {
 			Type: "Full",
 			Difficulty: 9,
@@ -58,7 +59,6 @@ var InventoryItemDevicesBondageBenchOptions = [
 			AllowLock: true,
 			SetPose: ["LegsClosed", "BaseUpper"],
 			Effect: ["Block", "Prone", "Freeze", "Mounted"],
-			Prerequisite: ["NoOuterClothes"],
 			Hide: ["HairBack", "Wings", "TailStraps", "ItemButt"],
 		},
 	},

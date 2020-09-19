@@ -507,6 +507,7 @@ function ManagementReleaseFromOwner(RepChange) {
 	InventoryRemove(Player, "ItemNeckRestraints");
 	ReputationProgress("Dominant", RepChange);
 	LogAdd("ReleasedFromOwner", "Management");
+	LogDelete("ReleasedCollar", "OwnerRule");
 	if ((Player.Ownership != null) && (Player.Ownership.MemberNumber != null)) ServerSend("AccountOwnership", { MemberNumber: Player.Ownership.MemberNumber, Action: "Break" });
 }
 
@@ -571,7 +572,7 @@ function ManagementClubSlaveCollar(RepChange) {
 function ManagementFinishClubSlave(RepChange) {
 	ReputationProgress("Dominant", RepChange);
 	CharacterChangeMoney(Player, 80);
-	if (Player.IsOwned()) InventoryWear(Player, "SlaveCollar", "ItemNeck");
+	if (Player.IsOwned() && !LogQuery("ReleasedCollar", "OwnerRule")) InventoryWear(Player, "SlaveCollar", "ItemNeck");
 	else {
 		InventoryRemove(Player, "ItemNeck");
 		InventoryRemove(Player, "ItemNeckAccessories");
@@ -884,8 +885,9 @@ function ManagementClubSlaveVisitRoom() {
  */
 function ManagementChangeSlaveCollarType(NewType) {
 	var Collar = InventoryGet(Player, "ItemNeck");
-	if (NewType == "") Collar.Property = null;
-	else Collar.Property = { Type: NewType, Effect: [] };
+	var TypeProperties = InventoryItemNeckSlaveCollarTypes.find(T => T.Name == NewType);
+	if (!TypeProperties) Collar.Property = null;
+	else Collar.Property = TypeProperties.Property;
 	CharacterRefresh(Player);
 	CharacterChangeMoney(Player, -30);
 }
