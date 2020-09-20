@@ -141,6 +141,7 @@ Bra,ChineseBra1,Chinese Bra
 Bra,LatexCorset1,Latex Corset
 Bra,LeatherStrapBra1,Leather Strap Bra
 Bra,Swimsuit3,Swimsuit style 3
+Bra,Clamshell,Clamshell Bra
 Bra,LeatherCorsetTop1,Leather Corset Top
 Bra,CowPrintedBra,Cow Printed Bra
 Panties,,Panties
@@ -520,6 +521,7 @@ ItemLegs,WoodenHorse,Wooden Horse
 ItemLegs,Zipties,Zip Ties
 ItemLegs,Chains,Chains
 ItemLegs,FrogtieStraps,Frog-tie Straps
+ItemLegs,MermaidTail, Mermaid Tail
 ItemVulva,,Vulva
 ItemVulva,VibratingEgg,Vibrating Egg
 ItemVulva,VibratingWand,Vibrating Wand
@@ -960,6 +962,7 @@ ItemHead,RopeBlindfold,Rope Blindfold
 ItemHead,SleepMask,Smooth Sleep Mask
 ItemHead,PrisonLockdownBlindfold,Prison Lockdown Blindfold
 ItemHead,Pantyhose,Pantyhose
+ItemHead,Snorkel,Snorkel
 ItemNose,,Nose
 ItemNose,NoseHook,Nose Hook
 ItemNose,NoseRing,Nose Ring
