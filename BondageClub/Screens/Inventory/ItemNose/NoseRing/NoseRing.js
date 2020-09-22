@@ -101,32 +101,15 @@ function InventoryItemNoseNoseRingValidate(Option) {
 		case "Base":
 			break;
 		case "ChainShort":
-			if (C.Pose.indexOf("Suspension") >= 0 || C.Pose.indexOf("SuspensionHogtied") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "RemoveSuspensionForItem");
-				ChainShortPrerequisites = false;
-			} else if (C.Pose.indexOf("StraitDressOpen") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "StraitDressOpen");
-				ChainShortPrerequisites = false;
-			} else if (C.Effect.indexOf("Mounted") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "CannotBeUsedWhenMounted");
+			if (!InventoryAllow(C, ["NotSuspended", "StraitDressOpen", "NotMounted"], true)){
+				DialogExtendedMessage = DialogText;
 				ChainShortPrerequisites = false;
 			} // if
 			break;
 		case "ChainLong":
-			if (C.Pose.indexOf("Suspension") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "RemoveSuspensionForItem");
-				ChainShortPrerequisites = false;
-			} else if (C.Pose.indexOf("StraitDressOpen") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "StraitDressOpen");
-				ChainShortPrerequisites = false;
-			} // if
-			break;
 		case "Leash":
 			if (C.Pose.indexOf("Suspension") >= 0) {
 				DialogExtendedMessage = DialogFind(Player, "RemoveSuspensionForItem");
-				ChainShortPrerequisites = false;
-			} else if(C.Pose.indexOf("StraitDressOpen") >= 0) {
-				DialogExtendedMessage = DialogFind(Player, "StraitDressOpen");
 				ChainShortPrerequisites = false;
 			} // if
 			break;
