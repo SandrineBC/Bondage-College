@@ -117,7 +117,7 @@ function AsylumEntranceWearPatientClothes(C) {
 	InventoryRemove(C, "Shoes");
 	InventoryRemove(C, "Gloves");
 	InventoryRemove(C, "HairAccessory1");
-	if (!C.OnlineSharedSettings.BlockBodyCosplay) {
+	if (C.IsNpc() || !C.OnlineSharedSettings.BlockBodyCosplay) {
 		InventoryRemove(C, "HairAccessory2");
 		InventoryRemove(C, "Wings");
 		InventoryRemove(C, "TailStraps");
