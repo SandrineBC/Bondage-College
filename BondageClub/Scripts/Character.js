@@ -717,10 +717,9 @@ function CharacterNaked(C) {
 function CharacterRandomUnderwear(C) {
 
 	// Clear the current clothes
-	for (let A = 0; A < C.Appearance.length; A++)
+	for (let A = C.Appearance.length - 1; A >= 0; A--)
 		if ((C.Appearance[A].Asset.Group.Category == "Appearance") && C.Appearance[A].Asset.Group.AllowNone) {
 			C.Appearance.splice(A, 1);
-			A--;
 		}
 
 	// Generate random undies at a random color
@@ -778,10 +777,9 @@ function CharacterDress(C, Appearance) {
  * @returns {void} - Nothing
  */
 function CharacterRelease(C, Refresh) {
-	for (let E = 0; E < C.Appearance.length; E++)
+	for (let E = C.Appearance.length - 1; E >= 0; E--)
 		if (C.Appearance[E].Asset.IsRestraint) {
 			C.Appearance.splice(E, 1);
-			E--;
 		}
 	if (Refresh || Refresh == null) CharacterRefresh(C);
 }
@@ -804,10 +802,9 @@ function CharacterReleaseFromLock(C, LockName) {
  * @returns {void} - Nothing
  */
 function CharacterReleaseNoLock(C) {
-	for (let E = 0; E < C.Appearance.length; E++)
+	for (let E = C.Appearance.length-1; E >=0 ; E--)
 		if (C.Appearance[E].Asset.IsRestraint && ((C.Appearance[E].Property == null) || (C.Appearance[E].Property.LockedBy == null))) {
 			C.Appearance.splice(E, 1);
-			E--;
 		}
 	CharacterRefresh(C);
 }
@@ -818,7 +815,7 @@ function CharacterReleaseNoLock(C) {
  * @returns {void} - Nothing
  */
 function CharacterReleaseTotal(C) {
-	for (let E = 0; E < C.Appearance.length; E++) {
+	for (let E = C.Appearance.length - 1; E >= 0; E--) {
 	    if (C.Appearance[E].Asset.Group.Category != "Appearance") {
 	    	if (C.IsOwned() && C.Appearance[E].Asset.Name == "SlaveCollar") {
 	    		// Reset slave collar to the default model if it has a gameplay effect (such as gagging the player)
@@ -827,7 +824,6 @@ function CharacterReleaseTotal(C) {
 	    	}
 	    	else {
 	    		C.Appearance.splice(E,1);
-	        	E--;
 	    	}
 	    }
 	}

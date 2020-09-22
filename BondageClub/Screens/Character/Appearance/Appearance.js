@@ -47,20 +47,18 @@ function CharacterAppearanceValidate(C) {
 
 	// Remove any appearance item that's not in inventory
 	var Refresh = false;
-	for (let A = 0; A < C.Appearance.length; A++)
+	for (let A = C.Appearance.length - 1; A >= 0; A--)
 		if ((C.Appearance[A].Asset.Value != 0) && (C.Appearance[A].Asset.Group.Category == "Appearance") && !InventoryAvailable(C, C.Appearance[A].Asset.Name, C.Appearance[A].Asset.Group.Name)) {
 			C.Appearance.splice(A, 1);
 			Refresh = true;
-			A--;
 		}
 
 	// Remove items flagged as "Remove At Login"
 	if (!Player.GameplaySettings || !Player.GameplaySettings.DisableAutoRemoveLogin)
-		for (let A = 0; A < C.Appearance.length; A++)
+		for (let A = C.Appearance.length - 1; A >= 0; A--)
 			if (C.Appearance[A].Asset.RemoveAtLogin) {
 				C.Appearance.splice(A, 1);
 				Refresh = true;
-				A--;
 			}
 
 	// Dress back if there are missing appearance items
@@ -154,11 +152,10 @@ function CharacterAppearanceMustHide(C, GroupName) {
 function CharacterAppearanceFullRandom(C, ClothOnly) {
 
 	// Clear the current appearance
-	for (let A = 0; A < C.Appearance.length; A++)
+	for (let A = C.Appearance.length - 1; A >= 0; A--)
 		if (C.Appearance[A].Asset.Group.Category == "Appearance")
 			if ((ClothOnly == null) || (C.Appearance[A].Asset.Group.AllowNone)) {
 				C.Appearance.splice(A, 1);
-				A--;
 			}
 
 	// For each item group (non default items only show at a 20% rate, if it can occasionally happen)
@@ -219,11 +216,10 @@ function CharacterAppearanceFullRandom(C, ClothOnly) {
 function CharacterAppearanceNaked(C) {
 
 	// For each item group (non default items only show at a 20% rate)
-	for (let A = 0; A < C.Appearance.length; A++) {
+	for (let A = C.Appearance.length-1 ; A >= 0; A--) {
 		if (C.Appearance[A].Asset.Group.AllowNone && (C.Appearance[A].Asset.Group.Category == "Appearance") &&
 			( C.IsNpc() || !(C.OnlineSharedSettings.BlockBodyCosplay && C.Appearance[A].Asset.Group.BodyCosplay))) {
 			C.Appearance.splice(A, 1);
-			A--;
 		}
 	}
 
@@ -260,7 +256,7 @@ function CharacterAppearanceStripLayer(C) {
 
 	// Remove assets from the top layer only
 	var RemoveAsset = false;
-	for (let A = 0; A < C.Appearance.length; A++) {
+	for (let A = C.Appearance.length - 1; A >= 0; A--) {
 		RemoveAsset = false;
 		
 		if (!WardrobeGroupAccessible(C, C.Appearance[A].Asset.Group)) continue;
@@ -276,7 +272,6 @@ function CharacterAppearanceStripLayer(C) {
 
 		if (RemoveAsset) {
 			C.Appearance.splice(A, 1);
-			A--;
 		}
 	}
 
@@ -1061,10 +1056,9 @@ function CharacterAppearanceReady(C) {
 function CharacterAppearanceCopy(FromC, ToC) {
 
 	// Removes any previous appearance asset
-	for (let A = 0; A < ToC.Appearance.length; A++)
+	for (let A = ToC.Appearance.length - 1; A >= 0; A--)
 		if ((ToC.Appearance[A].Asset != null) && (ToC.Appearance[A].Asset.Group.Category == "Appearance")) {
 			ToC.Appearance.splice(A, 1);
-			A--;
 		}
 
 	// Adds all appearance assets from the first character to the second
