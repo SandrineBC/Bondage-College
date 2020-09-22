@@ -117,9 +117,11 @@ function AsylumEntranceWearPatientClothes(C) {
 	InventoryRemove(C, "Shoes");
 	InventoryRemove(C, "Gloves");
 	InventoryRemove(C, "HairAccessory1");
-	let hairAccessory = InventoryGet(C, "HairAccessory2");
-	if ((hairAccessory != null) && (C.IsNpc() || !(hairAccessory.Asset.BodyCosplay && C.OnlineSharedSettings.BlockBodyCosplay)))
+	if (!C.OnlineSharedSettings.BlockBodyCosplay) {
 		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "Wings");
+		InventoryRemove(C, "TailStraps");
+	}
 	InventoryRemove(C, "HairAccessory3");
 	InventoryRemove(C, "Hat");
 }
@@ -133,11 +135,11 @@ function AsylumEntranceIsWearingPatientClothes() {
 	if ((InventoryGet(Player, "ClothLower") == null) || (InventoryGet(Player, "ClothLower").Asset.Name != "Pajama1")) return false;
 	if ((InventoryGet(Player, "Socks") == null) || (InventoryGet(Player, "Socks").Asset.Name != "Socks2")) return false;
 	if (InventoryGet(Player, "Shoes") != null) return false;
-	if (InventoryGet(Player, "Wings") != null) return false;
-	if (InventoryGet(Player, "TailStraps") != null) return false;
 	if (InventoryGet(Player, "Gloves") != null) return false;
 	if (InventoryGet(Player, "HairAccessory1") != null) return false;
-	if (InventoryGet(Player, "HairAccessory2") != null) return false;
+	if (InventoryGet(Player, "HairAccessory2") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
+	if (InventoryGet(Player, "Wings") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
+	if (InventoryGet(Player, "TailStraps") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
 	if (InventoryGet(Player, "HairAccessory3") != null) return false;
 	if (InventoryGet(Player, "Hat") != null) return false;
 	return true;
