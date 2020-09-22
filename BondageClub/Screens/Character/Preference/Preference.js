@@ -203,10 +203,6 @@ function PreferenceInit(C) {
 	if (C.ChatSettings.ShowAutomaticMessages == null) C.ChatSettings.ShowAutomaticMessages = false;
 	if (!C.VisualSettings) C.VisualSettings = { ForceFullHeight: false };
 
-	if (!C.OnlineSharedSettings) C.OnlineSharedSettings = {};
-	if (C.OnlineSharedSettings.AllowFullWardrobeAccess == null) C.OnlineSharedSettings.AllowFullWardrobeAccess = false;
-	if (C.OnlineSharedSettings.BlockBodyCosplay == null) C.OnlineSharedSettings.BlockBodyCosplay = false;
-	
 	// Sets the default audio settings
 	if (!C.AudioSettings) C.AudioSettings = { Volume: 1, PlayBeeps: false, PlayItem: false, PlayItemPlayerOnly: false };
 	if (typeof C.AudioSettings.Volume !== "number") C.AudioSettings.Volume = 1;
