@@ -311,6 +311,11 @@ function PrivateWontTakePlayerAsLoverPlayerDating() { return (((CurrentCharacter
  * @returns {boolean} - TRUE if turning the tables is possible
  */
 function PrivatePlayerCanTurnTables() { return (!Player.IsRestrained() && (ReputationGet("Dominant") - 50 >= NPCTraitGet(CurrentCharacter, "Dominant")) && (NPCEventGet(CurrentCharacter, "PlayerCollaring") > 0)) }
+/**
+ * Checks if it's possible for the submissive to turn the tables against her player owner
+ * @returns {boolean} - TRUE if turning the tables is possible
+ */
+function PrivateSubCanTurnTables() { return (!Player.IsRestrained() && !CurrentCharacter.IsRestrained() && !Player.IsOwned() && !PrivateOwnerInRoom() && (ReputationGet("Dominant") + 50 <= NPCTraitGet(CurrentCharacter, "Dominant")) && (NPCEventGet(CurrentCharacter, "NPCCollaring") > 0)) }
 
 /**
  * Loads the private room screen and the vendor NPC.
@@ -1007,6 +1012,7 @@ function PrivateActivityRun(LoveFactor) {
 		InventoryRemove(Player, "ItemFeet");
 		InventoryRemove(Player, "Hat");
 		InventoryRemove(Player, "HairAccessory2");
+		InventoryRemove(Player, "HairAccessory3");
 		InventoryWearRandom(Player, "ItemMouth");
 		InventoryWear(Player, "BitchSuit", "ItemArms", "Default", Math.floor(Math.random() * 10) + 1);
 		InventoryWear(Player, "PuppyEars1", "HairAccessory1");
@@ -1331,7 +1337,7 @@ function PrivatePlayerTurnTablesStart() {
 function PrivatePlayerTurnTablesRemove() {
 	PrivateNPCInteraction(-20);
 	NPCEventDelete(CurrentCharacter, "EndSubTrial");
-	ManagementReleaseFromOwner(6);
+	ManagementReleaseFromOwner(8);
 }
 
 /**
@@ -1339,10 +1345,48 @@ function PrivatePlayerTurnTablesRemove() {
  * @returns {void} - Nothing.
  */
 function PrivatePlayerTurnTablesCollar() {
-	ManagementReleaseFromOwner(12);
+	PrivateNPCInteraction(10);
+	ManagementReleaseFromOwner(15);
 	NPCEventDelete(CurrentCharacter, "EndSubTrial");
 	NPCEventAdd(CurrentCharacter, "NPCCollaring", CurrentTime);
 	CurrentCharacter.Owner = Player.Name;
 	InventoryWear(CurrentCharacter, "SlaveCollar", "ItemNeck");
 	ServerPrivateCharacterSync();
+}
+
+/**
+ * Triggered when the sub starts to the turn the tables against the player
+ * @returns {void} - Nothing.
+ */
+function PrivateSubTurnTablesStart() {
+	CharacterSetActivePose(CurrentCharacter, null);
+	PrivateNPCInteraction(-3);
+}
+
+/**
+ * Triggered when the sub turns the table on the player
+ * @returns {void} - Nothing.
+ */
+function PrivateSubTurnTablesDone() {
+	
+	// Clears the submissive ownership
+	NPCEventDelete(CurrentCharacter, "EndSubTrial");
+	NPCEventDelete(CurrentCharacter, "NPCCollaring");
+	CurrentCharacter.Owner = "";
+	InventoryRemove(CurrentCharacter, "ItemNeck");
+	InventoryRemove(CurrentCharacter, "ItemNeckAccessories");
+	InventoryRemove(CurrentCharacter, "ItemNeckRestraints");
+	PrivateNPCInteraction(10);
+	ServerPrivateCharacterSync();
+
+	// The submissive becomes the player owner and the player gets collared
+	NPCEventAdd(CurrentCharacter, "PlayerCollaring", CurrentTime);
+	ReputationProgress("Dominant", -20);
+	InventoryRemove(Player, "ItemNeck");
+	InventoryRemove(Player, "ItemNeckAccessories");
+	InventoryRemove(Player, "ItemNeckRestraints");
+	InventoryWear(Player, "SlaveCollar", "ItemNeck");
+	Player.Owner = "NPC-" + CurrentCharacter.Name;
+	ServerPlayerSync();
+
 }
