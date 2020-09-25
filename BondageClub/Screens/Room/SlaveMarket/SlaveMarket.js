@@ -4,6 +4,7 @@ var SlaveMarketMistress = null;
 var SlaveMarketSlave = null;
 var SlaveMarketSlaveToTrain = null;
 var SlaveMarketTrainingBackgroundList = ["BDSMRoomBlue", "BDSMRoomPurple", "BDSMRoomRed"];
+var SlaveMarketBuyer = null;
 
 /**
  * Checks if an auction can be started.
@@ -20,6 +21,11 @@ function SlaveMarketCannotStartAuctionSubmissive() { return (ReputationGet("Domi
  * @returns {boolean} - Returns TRUE if the player is dominant enough to participate in an auction, but does not have space in her private room
  */
 function SlaveMarketCannotStartAuctionRoom() { return ((ReputationGet("Dominant") >= -50) && !ManagementCanTransferToRoom()) }
+/**
+ * Checks if the player can be auctioned.  Must not be owned, must be submissive, must not be restrained, must have space in room and must not have been auctioned in the last seven days
+ * @returns {boolean} - Returns TRUE if the player can be auctioned
+ */
+function SlaveMarketCanBeAuctioned() { return (!Player.IsOwned() && !PrivateOwnerInRoom() && !Player.IsRestrained() && !Player.IsChaste() && (ReputationGet("Dominant") < 0) && !LogQuery("Auctioned", "SlaveMarket") && ManagementCanTransferToRoom()) }
 
 /**
  * Loads the Slave Market room, generates the Mistress and slave
@@ -29,6 +35,7 @@ function SlaveMarketLoad() {
 	if (SlaveMarketMistress == null) {
 		SlaveMarketMistress = CharacterLoadNPC("NPC_SlaveMarket_Mistress");
 		SlaveMarketMistress.AllowItem = false;
+		SlaveMarketBuyer = CharacterLoadNPC("NPC_SlaveMarket_Buyer");
 	}
 	if (SlaveMarketSlave == null) SlaveMarketNewSlave();
 }
@@ -64,7 +71,7 @@ function SlaveMarketClick() {
  * @returns {void} - Nothing
  */
 function SlaveMarketAuctionStart() {
-	InventoryWear(SlaveMarketSlave, "CollarChainShort", "ItemNeckAccessories");
+	InventoryWear(SlaveMarketSlave, "CollarChainShort", "ItemNeckRestraints");
 	SlaveAuctionVendor = SlaveMarketMistress;
 	SlaveAuctionSlave = SlaveMarketSlave;
 	MiniGameStart("SlaveAuction", "", "SlaveMarketAuctionEnd");
@@ -103,7 +110,7 @@ function SlaveMarketNewSlave() {
 	CharacterNaked(SlaveMarketSlave);
 	CharacterRandomName(SlaveMarketSlave);
 	InventoryWear(SlaveMarketSlave, "LeatherCollar", "ItemNeck");
-	InventoryWear(SlaveMarketSlave, "CollarChainLong", "ItemNeckAccessories");
+	InventoryWear(SlaveMarketSlave, "CollarChainLong", "ItemNeckRestraints");
 	if (CurrentCharacter != null) DialogLeave();
 }
 
@@ -141,4 +148,59 @@ function SlaveMarketTrainingStart() {
 	EmptyCharacter.push(Player);
 	EmptyCharacter.push(SlaveMarketSlaveToTrain);
 	CommonSetScreen("Room", "Empty");
+}
+
+/**
+ * Triggered when the auctioned player gets stripped and chained
+ * @returns {void} - Nothing
+ */
+function SlaveMarketAuctionPlayerStrip() {
+	CharacterRelease(Player);
+	CharacterNaked(Player);
+	InventoryRemove(Player, "ItemNeck", false);
+	InventoryWear(Player, "LeatherCollar", "ItemNeck", "Default", 10, false);
+	InventoryWear(Player, "CollarChainLong", "ItemNeckRestraints", "Default", 10, false);
+	CharacterRefresh(Player);
+}
+
+/**
+ * Triggered when the player auction starts
+ * @returns {void} - Nothing
+ */
+function SlaveMarketAuctionPlayerStart() {
+	DialogLeave();
+	MiniGameStart("PlayerAuction", "", "SlaveMarketPlayerAuctionEnd");
+}
+
+/**
+ * Triggered when the player auction ends, we create the buyer and activate her
+ * @returns {void} - Nothing
+ */
+function SlaveMarketPlayerAuctionEnd() {
+	CharacterRelease(Player);
+	LogAdd("Auctioned", "SlaveMarket", CurrentTime + 604800000);
+	CharacterChangeMoney(Player, PlayerAuctionBidAmount / 2);
+	CommonSetScreen("Room", "SlaveMarket");
+	SlaveMarketBuyer.AllowItem = false;	
+	SlaveMarketBuyer.Appearance = PlayerAuctionCustomer[PlayerAuctionBidCurrent].Appearance.slice(0);
+	SlaveMarketBuyer.Archetype = PlayerAuctionCustomer[PlayerAuctionBidCurrent].Archetype;
+	CharacterRefresh(SlaveMarketBuyer);
+	SlaveMarketBuyer.CurrentDialog = DialogFind(SlaveMarketBuyer, "Intro" + Math.floor(Math.random() * 3).toString());
+	CharacterSetCurrent(SlaveMarketBuyer);
+}
+
+/**
+ * Triggered when the player auction has ended and both characters are transferred to the player room
+ * @returns {void} - Nothing
+ */
+function SlaveMarketPlayerAuctionTransfer() {
+	DialogLeave();
+	CommonSetScreen("Room", "Private");
+	PrivateAddCharacter(SlaveMarketBuyer, SlaveMarketBuyer.Archetype);
+	var C = PrivateCharacter[PrivateCharacter.length - 1];
+	NPCTraitSet(C, "Dominant", 50 + Math.floor(Math.random() * 51));
+	C.Love = 30;
+	Player.Owner = "NPC-" + C.Name;
+	NPCEventAdd(C, "EndSubTrial", CurrentTime + NPCLongEventDelay(C));
+	ServerPrivateCharacterSync();
 }
