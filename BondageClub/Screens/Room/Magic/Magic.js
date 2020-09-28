@@ -76,7 +76,7 @@ function MagicAssistantIsntDressRestrain() { return (MagicShowIsState(8) && !Mag
 function MagicRestrainMinItem(C, MinItem) {
 	var CurItem = 0;
 	var GagApplied = false;
-	for (var E = 0; E < C.Appearance.length; E++) {
+	for (let E = 0; E < C.Appearance.length; E++) {
 		if ((C.Appearance[E].Asset.Group.Name == "ItemMouth") || (C.Appearance[E].Asset.Group.Name == "ItemMouth2") || (C.Appearance[E].Asset.Group.Name == "ItemMouth3")) {
 			GagApplied = true;
 		}
@@ -343,7 +343,8 @@ function MagicTrickBoxMilkCan() {
  * @returns {void} - Nothing
  */
 function MagicTrickBoxWaterCell() {
-	InventoryWear(Player, "SuspensionHempRope", "ItemFeet");
+	InventoryWear(Player, "HempRope", "ItemFeet"); 
+	InventoryGet(Player, "ItemFeet").Property = { Type: "Suspension", SetPose: ["LegsClosed", "Suspension"], Difficulty: 6 };
 	InventoryWear(Player, "HempRope", "ItemLegs");
 	InventoryWear(Player, "HempRope", "ItemArms");
 	InventoryWear(Player, "WaterCell", "ItemDevices");
@@ -443,7 +444,7 @@ function MagicTrickEndPerformance() {
  * @returns	{void} - Nothing
  */
 function MagicRestrainRemove(C) {
-	var itemArms = InventoryGet(C, "ItemArms");
+	let itemArms = InventoryGet(C, "ItemArms");
 
 	if ((itemArms != null) && (itemArms.Asset.Name === "MittenChain1")) {
 		// If the arms are restrained by the adult baby harness chain, remove the harness and the mittens as well

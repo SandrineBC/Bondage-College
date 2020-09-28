@@ -34,7 +34,7 @@ function ServerInit() {
 	ServerSocket.on("LoginResponse", function (data) { LoginResponse(data); });
 	ServerSocket.on("disconnect", function (data) { ServerDisconnect(); });
 	ServerSocket.on("ForceDisconnect", function (data) { ServerDisconnect(data); });
-	ServerSocket.on("ChatRoomSearchResult", function (data) { ChatSearchResult = data; });
+	ServerSocket.on("ChatRoomSearchResult", function (data) { ChatSearchResultResponse(data); });
 	ServerSocket.on("ChatRoomSearchResponse", function (data) { ChatSearchResponse(data); });
 	ServerSocket.on("ChatRoomCreateResponse", function (data) { ChatCreateResponse(data); });
 	ServerSocket.on("ChatRoomUpdateResponse", function (data) { ChatAdminResponse(data); });
@@ -167,7 +167,7 @@ function ServerPlayerSync() {
  */
 function ServerPlayerInventorySync() {
 	var Inv = [];
-	for (var I = 0; I < Player.Inventory.length; I++)
+	for (let I = 0; I < Player.Inventory.length; I++)
 		if (Player.Inventory[I].Asset != null)
 			Inv.push([Player.Inventory[I].Asset.Name, Player.Inventory[I].Asset.Group.Name]);
 	ServerSend("AccountUpdate", { Inventory: LZString.compressToUTF16(JSON.stringify(Inv)) });
@@ -210,7 +210,7 @@ function ServerPlayerSkillSync() {
  */
 function ServerAppearanceBundle(Appearance) {
 	var Bundle = [];
-	for (var A = 0; A < Appearance.length; A++) {
+	for (let A = 0; A < Appearance.length; A++) {
 		var N = {};
 		N.Group = Appearance[A].Asset.Group.Name;
 		N.Name = Appearance[A].Asset.Name;
@@ -235,7 +235,7 @@ function ServerValidateProperties(C, Item) {
 
 	// For each effect on the item
 	if ((Item.Property != null) && (Item.Property.Effect != null)) {
-		for (var E = 0; E < Item.Property.Effect.length; E++) {
+		for (let E = Item.Property.Effect.length - 1; E >= 0; E--) {
 
 			// Make sure the item can be locked, remove any lock that's invalid
 			var Effect = Item.Property.Effect[E];
@@ -250,7 +250,6 @@ function ServerValidateProperties(C, Item) {
 				delete Item.Property.EnableRandomInput;
 				delete Item.Property.MemberNumberList;
 				Item.Property.Effect.splice(E, 1);
-				E--;
 			}
 
 			// If the item is locked by a lock
@@ -259,8 +258,8 @@ function ServerValidateProperties(C, Item) {
 				// Make sure the combination number on the lock is valid, 4 digits only
 				var Lock = InventoryGetLock(Item);
 				if ((Item.Property.CombinationNumber != null) && (typeof Item.Property.CombinationNumber == "string")) {
-					var E = /^[0-9]+$/;
-					if (!Item.Property.CombinationNumber.match(E) || (Item.Property.CombinationNumber.length != 4)) {
+					var Regex = /^[0-9]+$/;
+					if (!Item.Property.CombinationNumber.match(Regex) || (Item.Property.CombinationNumber.length != 4)) {
 						Item.Property.CombinationNumber = "0000";
 					}
 				} else delete Item.Property.CombinationNumber;
@@ -286,7 +285,6 @@ function ServerValidateProperties(C, Item) {
 					delete Item.Property.EnableRandomInput;
 					delete Item.Property.MemberNumberList;
 					Item.Property.Effect.splice(E, 1);
-					E--;
 				}
 
 				// Make sure the lover lock is valid
@@ -301,7 +299,6 @@ function ServerValidateProperties(C, Item) {
 					delete Item.Property.EnableRandomInput;
 					delete Item.Property.MemberNumberList;
 					Item.Property.Effect.splice(E, 1);
-					E--;
 				}
 
 			}
@@ -312,14 +309,13 @@ function ServerValidateProperties(C, Item) {
 				// Check if the effect is allowed for the item
 				var MustRemove = true;
 				if (Item.Asset.AllowEffect != null)
-					for (var A = 0; A < Item.Asset.AllowEffect.length; A++)
+					for (let A = 0; A < Item.Asset.AllowEffect.length; A++)
 						if (Item.Asset.AllowEffect[A] == Effect)
 							MustRemove = false;
 
 				// Remove the effect if it's not allowed
 				if (MustRemove) {
 					Item.Property.Effect.splice(E, 1);
-					E--;
 				}
 
 			}
@@ -328,19 +324,18 @@ function ServerValidateProperties(C, Item) {
 
 	// For each block on the item
 	if ((Item.Property != null) && (Item.Property.Block != null)) {
-		for (var B = 0; B < Item.Property.Block.length; B++) {
+		for (let B = Item.Property.Block.length - 1; B >= 0; B--) {
 
 			// Check if the effect is allowed for the item
 			var MustRemove = true;
 			if (Item.Asset.AllowBlock != null)
-				for (var A = 0; A < Item.Asset.AllowBlock.length; A++)
+				for (let A = 0; A < Item.Asset.AllowBlock.length; A++)
 					if (Item.Asset.AllowBlock[A] == Item.Property.Block[B])
 						MustRemove = false;
 
 			// Remove the effect if it's not allowed
 			if (MustRemove) {
 				Item.Property.Block.splice(B, 1);
-				B--;
 			}
 		}
 	}
@@ -366,7 +361,7 @@ function ServerValidateProperties(C, Item) {
 function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumber) {
 
 	// Removes any invalid data from the appearance bundle
-	for (var B = 0; B < Bundle.length; B++)
+	for (let B = 0; B < Bundle.length; B++)
 		if ((Bundle[B] == null) || (typeof Bundle[B] !== "object") || (Bundle[B].Name == null) || (typeof Bundle[B].Name != "string") || (Bundle[B].Name == null) || (typeof Bundle[B].Name != "string")) {
 			Bundle.splice(B, 1);
 			B--;
@@ -377,7 +372,7 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 
 	// Reapply any item that was equipped and isn't enable, same for owner locked items if the source member isn't the owner
 	if ((SourceMemberNumber != null) && (C.ID == 0))
-		for (var A = 0; A < C.Appearance.length; A++) {
+		for (let A = 0; A < C.Appearance.length; A++) {
 			if (!C.Appearance[A].Asset.Enable && !C.Appearance[A].Asset.OwnerOnly && !C.Appearance[A].Asset.LoverOnly) {
 				Appearance.push(C.Appearance[A]);
 			} else {
@@ -386,7 +381,7 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 					if (!C.Appearance[A].Asset.OwnerOnly) {
 
 						// If the owner-locked item is sent back from a non-owner, we allow to change some properties and lock it back with the owner lock
-						for (var B = 0; B < Bundle.length; B++)
+						for (let B = 0; B < Bundle.length; B++)
 							if ((C.Appearance[A].Asset.Name == Bundle[B].Name) && (C.Appearance[A].Asset.Group.Name == Bundle[B].Group) && (C.Appearance[A].Asset.Group.Family == AssetFamily))
 								NA.Property = Bundle[B].Property;
 
@@ -414,7 +409,7 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 					if (!C.Appearance[A].Asset.LoverOnly) {
 
 						// If the lover-locked item is sent back from a non-lover, we allow to change some properties and lock it back with the lover lock
-						for (var B = 0; B < Bundle.length; B++)
+						for (let B = 0; B < Bundle.length; B++)
 							if ((C.Appearance[A].Asset.Name == Bundle[B].Name) && (C.Appearance[A].Asset.Group.Name == Bundle[B].Group) && (C.Appearance[A].Asset.Group.Family == AssetFamily))
 								NA.Property = Bundle[B].Property;
 
@@ -440,13 +435,14 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 		}
 
 	// For each appearance item to load
-	for (var A = 0; A < Bundle.length; A++) {
+	for (let A = 0; A < Bundle.length; A++) {
 
 		// Skip blocked items
-		if ((InventoryIsPermissionBlocked(C, Bundle[A].Name, Bundle[A].Group) || InventoryIsPermissionLimited(C, Bundle[A].Name, Bundle)) && OnlineGameAllowBlockItems()) continue;
+		const Type = typeof Bundle[A].Property === "object" ? Bundle[A].Property.Type : null;
+		if ((InventoryIsPermissionBlocked(C, Bundle[A].Name, Bundle[A].Group, Type)  || InventoryIsPermissionLimited(C, Bundle[A].Name, Bundle)) && OnlineGameAllowBlockItems()) continue;
 
 		// Cycles in all assets to find the correct item to add (do not add )
-		for (var I = 0; I < Asset.length; I++)
+		for (let I = 0; I < Asset.length; I++)
 			if ((Asset[I].Name == Bundle[A].Name) && (Asset[I].Group.Name == Bundle[A].Group) && (Asset[I].Group.Family == AssetFamily)) {
 
 				// OwnerOnly items can only get update if it comes from owner
@@ -459,17 +455,21 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 					if ((C.GetLoversNumbers().indexOf(SourceMemberNumber) < 0) && (SourceMemberNumber != null)) break;
 				}
 
+				var ColorSchema = Asset[I].Group.ColorSchema;
+				var Color = Bundle[A].Color;
+				if (Array.isArray(Color)) {
+					if (Color.length > Asset[I].ColorableLayerCount) Color = Color.slice(0, Asset[I].ColorableLayerCount);
+					Color = Color.map(Col => ServerValidateColorAgainstSchema(Col, ColorSchema));
+				} else {
+					Color = ServerValidateColorAgainstSchema(Color, ColorSchema);
+				}
+
 				// Creates the item and colorize it
 				var NA = {
 					Asset: Asset[I],
 					Difficulty: parseInt((Bundle[A].Difficulty == null) ? 0 : Bundle[A].Difficulty),
-					Color: ((Bundle[A].Color == null) || (typeof Bundle[A].Color !== 'string')) ? Asset[I].Group.ColorSchema[0] : Bundle[A].Color
-				}
-
-				// Validate color string, fallback to default in case of an invalid color
-				if ((NA.Color != NA.Asset.Group.ColorSchema[0]) && (/^#(?:[0-9a-f]{3}){1,2}$/i.test(NA.Color) == false) && (NA.Asset.Group.ColorSchema.indexOf(NA.Color) < 0)) {
-					NA.Color = NA.Asset.Group.ColorSchema[0];
-				}
+					Color,
+				};
 
 				// Sets the item properties and make sure a non-owner cannot add an owner lock
 				if (Bundle[A].Property != null) {
@@ -487,7 +487,7 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 
 				// Make sure we don't push an item if there's already an item in that slot
 				var CanPush = true;
-				for (var P = 0; P < Appearance.length; P++)
+				for (let P = 0; P < Appearance.length; P++)
 					if (Appearance[P].Asset.Group.Name == NA.Asset.Group.Name) {
 						CanPush = false;
 						break;
@@ -503,31 +503,64 @@ function ServerAppearanceLoadFromBundle(C, AssetFamily, Bundle, SourceMemberNumb
 	}
 
 	// Adds any critical appearance asset that could be missing, adds the default one
-	for (var G = 0; G < AssetGroup.length; G++)
+	for (let G = 0; G < AssetGroup.length; G++)
 		if ((AssetGroup[G].Category == "Appearance") && !AssetGroup[G].AllowNone) {
 
 			// Check if we already have the item
 			var Found = false;
-			for (var A = 0; A < Appearance.length; A++)
+			for (let A = 0; A < Appearance.length; A++)
 				if (Appearance[A].Asset.Group.Name == AssetGroup[G].Name)
 					Found = true;
 
-			// Adds the missing appearance part
-			if (!Found)
-				for (var I = 0; I < Asset.length; I++)
-					if (Asset[I].Group.Name == AssetGroup[G].Name) {
-						Appearance.push({ Asset: Asset[I], Color: Asset[I].Group.ColorSchema[0] });
-						break;
-					}
+			// Adds the missing appearance part, we copy the mirrored group if it is not found and it exists
+			if (!Found) {
+				if (AssetGroup[G].MirrorGroup) { 
+					var MirroredAsset = null;
+					for (let A = 0; A < Appearance.length; A++)
+						if (Appearance[A].Asset.Group.Name == AssetGroup[G].MirrorGroup) {
+							for (let I = 0; I < Asset.length; I++)
+								if (Asset[I].Group.Name == AssetGroup[G].Name && Asset[I].Name == Appearance[A].Asset.Name) {
+									MirroredAsset = { Asset: Asset[I], Color: Appearance[A].Color };
+									break;
+								}
+							break;
+						}
+					if (MirroredAsset == null)
+						for (let I = 0; I < Asset.length; I++)
+							if (Asset[I].Group.Name == AssetGroup[G].Name) {
+								MirroredAsset = { Asset: Asset[I], Color: Asset[I].Group.ColorSchema[0] };
+								break;
+							}
+					Appearance.push(MirroredAsset);
+				} else
+					for (let I = 0; I < Asset.length; I++)
+						if (Asset[I].Group.Name == AssetGroup[G].Name) {
+							Appearance.push({ Asset: Asset[I], Color: Asset[I].Group.ColorSchema[0] });
+							break;
+						}
+			}
 
 		}
 	return Appearance;
 
 }
 
-/** 
+/**
+ * Validates and returns a color against a color schema
+ * @param {string} Color - The color to validate
+ * @param {string[]} Schema - The color schema to validate against (a list of accepted Color values)
+ * @returns {string} - The color if it is a valid hex color string or part of the color schema, or the default color from the color schema
+ * otherwise
+ */
+function ServerValidateColorAgainstSchema(Color, Schema) {
+	var HexCodeRegex = /^#(?:[0-9a-f]{3}){1,2}$/i;
+	if (typeof Color === 'string' && (Schema.includes(Color) || HexCodeRegex.test(Color))) return Color;
+	return Schema[0];
+}
+
+/**
  * Syncs the player appearance with the server
- * @returns {void} - Nothing 
+ * @returns {void} - Nothing
  */
 function ServerPlayerAppearanceSync() {
 
@@ -549,7 +582,7 @@ function ServerPrivateCharacterSync() {
 	if (PrivateVendor != null) {
 		var D = {};
 		D.PrivateCharacter = [];
-		for (var ID = 1; ID < PrivateCharacter.length; ID++) {
+		for (let ID = 1; ID < PrivateCharacter.length; ID++) {
 			var C = {
 				Name: PrivateCharacter[ID].Name,
 				Love: PrivateCharacter[ID].Love,
@@ -634,6 +667,7 @@ function ServerAccountOwnership(data) {
 	if ((data != null) && (typeof data === "object") && !Array.isArray(data) && (data.ClearOwnership != null) && (typeof data.ClearOwnership === "boolean") && (data.ClearOwnership == true)) {
 		Player.Owner = "";
 		Player.Ownership = null;
+		LogDelete("ReleasedCollar", "OwnerRule");
 		LoginValidCollar();
 	}
 

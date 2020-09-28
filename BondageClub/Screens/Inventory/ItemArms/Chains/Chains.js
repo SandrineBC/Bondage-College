@@ -49,7 +49,6 @@ const ChainsArmsOptions = [
 		Prerequisite: ["NotMounted", "NotChained", "NotSuspended", "CannotBeHogtiedWithAlphaHood"],
 		Property: { Type: "SuspensionHogtied", Effect: ["Block", "Freeze", "Prone"], Block: ["ItemHands", "ItemLegs", "ItemFeet", "ItemBoots"], SetPose: ["Hogtied", "SuspensionHogtied"], Difficulty: 6 },
 		Expression: [{ Group: "Blush", Name: "Medium", Timer: 10 }],
-		HiddenItem: "SuspensionChains"
 	}
 ];
 
@@ -60,7 +59,7 @@ var ChainsArmsOptionOffset = 0;
  * @returns {void} - Nothing
  */
 function InventoryItemArmsChainsLoad() {
-	if (DialogFocusItem.Property == null) DialogFocusItem.Property = ChainsArmsOptions[0].Property;
+	if (DialogFocusItem.Property == null) DialogFocusItem.Property = JSON.parse(JSON.stringify(ChainsArmsOptions[0].Property));
 	DialogExtendedMessage = DialogFind(Player, "SelectChainBondage");
 	ChainsArmsOptionOffset = 0;
 }
@@ -80,7 +79,7 @@ function InventoryItemArmsChainsDraw() {
 	DrawText(DialogExtendedMessage, 1500, 375, "white", "gray");
 
 	// Draw the possible positions and their requirements, 4 at a time in a 2x2 grid
-	for (var I = ChainsArmsOptionOffset; (I < ChainsArmsOptions.length) && (I < ChainsArmsOptionOffset + 4); I++) {
+	for (let I = ChainsArmsOptionOffset; (I < ChainsArmsOptions.length) && (I < ChainsArmsOptionOffset + 4); I++) {
 		var offset = I - ChainsArmsOptionOffset;
 		var X = 1200 + (offset % 2 * 387);
 		var Y = 450 + (Math.floor(offset / 2) * 300);
@@ -104,7 +103,7 @@ function InventoryItemArmsChainsClick() {
 	if (ChainsArmsOptionOffset >= ChainsArmsOptions.length) ChainsArmsOptionOffset = 0;
 
 	// Item buttons
-	for (var I = ChainsArmsOptionOffset; (I < ChainsArmsOptions.length) && (I < ChainsArmsOptionOffset + 4); I++) {
+	for (let I = ChainsArmsOptionOffset; (I < ChainsArmsOptions.length) && (I < ChainsArmsOptionOffset + 4); I++) {
 		var offset = I - ChainsArmsOptionOffset;
 		var X = 1200 + (offset % 2 * 387);
 		var Y = 450 + (Math.floor(offset / 2) * 300);
@@ -124,7 +123,6 @@ function InventoryItemArmsChainsClick() {
  * @param {number} NewType.RequiredBondageLevel - THe minimum bondage level, the rigger needs befor she can do this tie
  * @param {Property} NewType.Property - A propperty object, detailing the new pose
  * @param {Expression} NewType.Expression - An expression object, that changes the expressions of the victim
- * @param {string} NewType.HiddenItem - Name of an item from the ItemHidden gropu to apply on the victim
  * @returns {void} - Nothing
  */
 function InventoryItemArmsChainsSetPose(NewType) {
@@ -142,17 +140,9 @@ function InventoryItemArmsChainsSetPose(NewType) {
 	// Sets the new pose with its effects only if the chains are not locked
 	if (!InventoryItemHasEffect(DialogFocusItem, "Lock", true)) {
 		DialogFocusItem.Property = NewType.Property;
-		if (NewType.HiddenItem != null) InventoryWear(C, NewType.HiddenItem, "ItemHidden", DialogFocusItem.Color);
-		else InventoryRemove(C, "ItemHidden");
 	} else {
 		DialogExtendedMessage = DialogFind(Player, "CantChangeWhileLocked");
 		return;
-	}
-
-	// Adds the lock effect back if it was padlocked
-	if ((DialogFocusItem.Property.LockedBy != null) && (DialogFocusItem.Property.LockedBy != "")) {
-		if (DialogFocusItem.Property.Effect == null) DialogFocusItem.Property.Effect = [];
-		DialogFocusItem.Property.Effect.push("Lock");
 	}
 
 	// Refresh the character

@@ -64,6 +64,7 @@ function GLDrawMakeGLProgam(gl) {
     gl.programHalf.u_color = gl.getUniformLocation(gl.programHalf, "u_color");
 
     gl.textureCache = new Map();
+    gl.maskCache = new Map();
 }
 
 /**
@@ -122,11 +123,14 @@ var GLDrawFragmentShaderSource = `
   varying vec2 v_texcoord;
 
   uniform sampler2D u_texture;
+  uniform sampler2D u_alpha_texture;
 
   void main() {
     vec4 texColor = texture2D(u_texture, v_texcoord);
+    vec4 alphaColor = texture2D(u_alpha_texture, v_texcoord);
     if (texColor.w < ` + GLDrawAlphaThreshold + `) discard;
-    gl_FragColor = texColor;   
+    if (alphaColor.w < ` + GLDrawAlphaThreshold + `) discard;
+    gl_FragColor = texColor;
   }
 `;
 
@@ -141,11 +145,14 @@ var GLDrawFragmentShaderSourceFullAlpha = `
   varying vec2 v_texcoord;
 
   uniform sampler2D u_texture;
+  uniform sampler2D u_alpha_texture;
   uniform vec4 u_color;
 
   void main() {
     vec4 texColor = texture2D(u_texture, v_texcoord);
+    vec4 alphaColor = texture2D(u_alpha_texture, v_texcoord);
     if (texColor.w < ` + GLDrawAlphaThreshold + `) discard;
+    if (alphaColor.w < ` + GLDrawAlphaThreshold + `) discard;
     float t = (texColor.x + texColor.y + texColor.z) / 383.0;
     gl_FragColor = u_color * vec4(t, t, t, texColor.w);
   }
@@ -162,11 +169,14 @@ var GLDrawFragmentShaderSourceHalfAlpha = `
   varying vec2 v_texcoord;
 
   uniform sampler2D u_texture;
+  uniform sampler2D u_alpha_texture;
   uniform vec4 u_color;
 
   void main() {
     vec4 texColor = texture2D(u_texture, v_texcoord);
+    vec4 alphaColor = texture2D(u_alpha_texture, v_texcoord);
     if (texColor.w < ` + GLDrawAlphaThreshold + `) discard;
+    if (alphaColor.w < ` + GLDrawAlphaThreshold + `) discard;
     float t = (texColor.x + texColor.y + texColor.z) / 383.0;
     if (t < ` + GLDrawHalfAlphaLow + ` || t > ` + GLDrawHalfAlphaHigh + `) {
       gl_FragColor = texColor;
@@ -214,6 +224,7 @@ function GLDrawCreateProgram(gl, vertexShader, fragmentShader) {
 
     program.u_matrix = gl.getUniformLocation(program, "u_matrix");
     program.u_texture = gl.getUniformLocation(program, "u_texture");
+    program.u_alpha_texture = gl.getUniformLocation(program, "u_alpha_texture");
 
     program.position_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, program.position_buffer);
@@ -234,23 +245,26 @@ function GLDrawCreateProgram(gl, vertexShader, fragmentShader) {
  * @param {number} dstY - Position of the image on the Y axis
  * @param {string} color - Color of the image to draw
  * @param {boolean} fullAlpha - Whether or not the full alpha should be rendered
+ * @param {number[][]} alphaMasks - A list of alpha masks to apply to the asset
  * @returns {void} - Nothing
  */
-function GLDrawImageBlink(url, gl, dstX, dstY, color, fullAlpha) { GLDrawImage(url, gl, dstX + 500, dstY, color, fullAlpha); }
+function GLDrawImageBlink(url, gl, dstX, dstY, color, fullAlpha, alphaMasks) { GLDrawImage(url, gl, dstX, dstY, 500, color, fullAlpha, alphaMasks); }
 /**
  * Draws an image from a given url to a WebGLRenderingContext
  * @param {string} url - URL of the image to render
  * @param {WebGLRenderingContext} gl - WebGL context
  * @param {number} dstX - Position of the image on the X axis
  * @param {number} dstY - Position of the image on the Y axis
+ * @param {number} offsetX - Additional offset to add to the X axis (for blinking)
  * @param {string} color - Color of the image to draw
  * @param {boolean} fullAlpha - Whether or not the full alpha should be rendered
+ * @param {number[][]} alphaMasks - A list of alpha masks to apply to the asset
  * @returns {void} - Nothing
  */
-function GLDrawImage(url, gl, dstX, dstY, color, fullAlpha) {
+function GLDrawImage(url, gl, dstX, dstY, offsetX, color, fullAlpha, alphaMasks) {
+    offsetX = offsetX || 0;
     var tex = GLDrawLoadImage(gl, url);
-
-    gl.bindTexture(gl.TEXTURE_2D, tex.texture);
+    var mask = GLDrawLoadMask(gl, tex.width, tex.height, dstX, dstY, alphaMasks);
 
     var program = (color == null) ? gl.program : (fullAlpha ? gl.programFull : gl.programHalf);
 
@@ -267,14 +281,45 @@ function GLDrawImage(url, gl, dstX, dstY, color, fullAlpha) {
     gl.vertexAttribPointer(program.a_texcoord, 2, gl.FLOAT, false, 0, 0);
 
     var matrix = m4.orthographic(0, gl.canvas.width, gl.canvas.height, 0, -1, 1);
-    matrix = m4.translate(matrix, dstX, dstY, 0);
+    matrix = m4.translate(matrix, dstX + offsetX, dstY, 0);
     matrix = m4.scale(matrix, tex.width, tex.height, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, matrix);
     gl.uniform1i(program.u_texture, 0);
+    gl.uniform1i(program.u_alpha_texture, 1);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex.texture);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, mask);
+
     if (program.u_color != null) gl.uniform4fv(program.u_color, GLDrawHexToRGBA(color));
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
+/**
+ * Draws a canvas on the WebGL canvas for the blinking effect
+ * @param {WebGLRenderingContext} gl - WebGL context
+ * @param {ImageData} Img - Canvas to get the data of
+ * @param {number} X - Position of the image on the X axis
+ * @param {number} Y - Position of the image on the Y axis
+ * @param {number[][]} alphaMasks - A list of alpha masks to apply to the asset
+ */
+function GLDraw2DCanvasBlink(gl, Img, X, Y, alphaMasks) { GLDraw2DCanvas(gl, Img, X + 500, Y, 500,  alphaMasks); }
+/**
+ * Draws a canvas on the WebGL canvas
+ * @param {WebGLRenderingContext} gl - WebGL context
+ * @param {ImageData} Img - Canvas to get the data of
+ * @param {number} X - Position of the image on the X axis
+ * @param {number} Y - Position of the image on the Y axis
+ * @param {number[][]} alphaMasks - A list of alpha masks to apply to the asset
+ */
+function GLDraw2DCanvas(gl, Img, X, Y, alphaMasks) { 
+    var TempCanvasName = Img.getAttribute("name");
+    gl.textureCache.delete(TempCanvasName);
+    GLDrawImageCache.set(TempCanvasName, Img);
+    GLDrawImage(TempCanvasName, gl, X, Y, 0, null, null, alphaMasks);
 }
 
 /**
@@ -343,6 +388,42 @@ function GLDrawLoadImage(gl, url) {
 }
 
 /**
+ * Loads alpha mask data
+ * @param {WebGLRenderingContext} gl - The WebGL context
+ * @param {number} texWidth - The width of the texture to mask
+ * @param {number} texHeight - The height of the texture to mask
+ * @param {number} offsetX - The X offset at which the texture is to be drawn on the target canvas
+ * @param {number} offsetY - The Y offset at which the texture is to be drawn on the target canvas
+ * @param {number[][]} alphaMasks - A list of alpha masks to apply to the asset
+ * @return {WebGLTexture} - The WebGL texture corresponding to the mask
+ */
+function GLDrawLoadMask(gl, texWidth, texHeight, offsetX, offsetY, alphaMasks) {
+	alphaMasks = alphaMasks || [];
+	var key = alphaMasks.length ? JSON.stringify([texWidth, texHeight, offsetX, offsetY, alphaMasks]) : null;
+	var mask = gl.maskCache.get(key);
+
+	if (!mask) {
+		var tmpCanvas = document.createElement("canvas");
+		tmpCanvas.width = texWidth;
+		tmpCanvas.height = texHeight;
+		var ctx = tmpCanvas.getContext("2d");
+		ctx.fillRect(0, 0, texWidth, texHeight);
+		alphaMasks.forEach(([x, y, w, h]) => ctx.clearRect(x - offsetX, y - offsetY, w, h));
+
+		mask = gl.createTexture();
+
+		gl.bindTexture(gl.TEXTURE_2D, mask);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tmpCanvas);
+
+		gl.maskCache.set(key, mask);
+	}
+	return mask;
+}
+
+/**
  * Clears a rectangle on WebGLRenderingContext
  * @param {WebGLRenderingContext} gl - WebGL context
  * @param {number} x - Position of the image on the X axis
@@ -388,122 +469,17 @@ function GLDrawHexToRGBA(color) {
  */
 function GLDrawAppearanceBuild(C) {
     GLDrawClearRect(GLDrawCanvas.GL, 0, 0, 1000, 1000);
-
-    // Loops in all visible items worn by the character
-    for (var A = 0; A < C.Appearance.length; A++)
-        if (C.Appearance[A].Asset.Visible && CharacterAppearanceVisible(C, C.Appearance[A].Asset.Name, C.Appearance[A].Asset.Group.Name)) {
-
-            // If there's a father group, we must add it to find the correct image
-            var CA = C.Appearance[A];
-            var ParentGroup = CA.Asset.ParentGroupName ? CA.Asset.ParentGroupName : CA.Asset.Group.ParentGroupName && !CA.Asset.IgnoreParentGroup ? CA.Asset.Group.ParentGroupName : "";
-            var G = "";
-            if (ParentGroup != "")
-                for (var FG = 0; FG < C.Appearance.length; FG++)
-                    if (ParentGroup == C.Appearance[FG].Asset.Group.Name)
-                        G = "_" + C.Appearance[FG].Asset.Name;
-
-            // If there's a pose style we must add (first by group then by item)
-            var Pose = "";
-            if ((CA.Asset.Group.AllowPose != null) && (CA.Asset.Group.AllowPose.length > 0) && (C.Pose != null) && (C.Pose.length > 0))
-                for (var AP = 0; AP < CA.Asset.Group.AllowPose.length; AP++)
-                    for (var P = 0; P < C.Pose.length; P++)
-                        if (C.Pose[P] == CA.Asset.Group.AllowPose[AP])
-                            Pose = C.Pose[P] + "/";
-            if ((CA.Asset.AllowPose != null) && (CA.Asset.AllowPose.length > 0) && (C.Pose != null) && (C.Pose.length > 0))
-                for (var AP = 0; AP < CA.Asset.AllowPose.length; AP++)
-                    for (var P = 0; P < C.Pose.length; P++)
-                        if (C.Pose[P] == CA.Asset.AllowPose[AP])
-                            Pose = C.Pose[P] + "/";
-
-            // If we must apply alpha masks to the current image as it is being drawn
-            if (CA.Asset.Alpha != null)
-                for (var AL = 0; AL < CA.Asset.Alpha.length; AL++) {
-                    GLDrawClearRect(GLDrawCanvas.GL, CA.Asset.Alpha[AL][0], 1000 - CA.Asset.Alpha[AL][1] - CA.Asset.Alpha[AL][3], CA.Asset.Alpha[AL][2], CA.Asset.Alpha[AL][3]);
-                    GLDrawClearRectBlink(GLDrawCanvas.GL, CA.Asset.Alpha[AL][0], 1000 - CA.Asset.Alpha[AL][1] - CA.Asset.Alpha[AL][3], CA.Asset.Alpha[AL][2], CA.Asset.Alpha[AL][3]);
-                }
-
-            // Check if we need to draw a different expression (for facial features)
-            var Expression = "";
-            if ((CA.Asset.Group.AllowExpression != null) && (CA.Asset.Group.AllowExpression.length > 0))
-                if ((CA.Property && CA.Property.Expression && CA.Asset.Group.AllowExpression.indexOf(CA.Property.Expression) >= 0))
-                    Expression = CA.Property.Expression + "/";
-
-            // Find the X and Y position to draw on
-            var X = CA.Asset.Group.DrawingLeft;
-            var Y = CA.Asset.Group.DrawingTop;
-            if (CA.Asset.DrawingLeft != null) X = CA.Asset.DrawingLeft;
-            if (CA.Asset.DrawingTop != null) Y = CA.Asset.DrawingTop;
-            if (C.Pose != null)
-                for (var CP = 0; CP < C.Pose.length; CP++)
-                    for (var P = 0; P < PoseFemale3DCG.length; P++)
-                        if ((C.Pose[CP] == PoseFemale3DCG[P].Name) && (PoseFemale3DCG[P].MovePosition != null))
-                            for (var M = 0; M < PoseFemale3DCG[P].MovePosition.length; M++)
-                                if (PoseFemale3DCG[P].MovePosition[M].Group == CA.Asset.Group.Name) {
-                                    X = X + PoseFemale3DCG[P].MovePosition[M].X;
-                                    Y = Y + PoseFemale3DCG[P].MovePosition[M].Y;
-                                }
-
-            // Check if we need to draw a different variation (from type property)
-            var Type = "";
-            if ((CA.Property != null) && (CA.Property.Type != null)) Type = CA.Property.Type;
-
-            // Cycle through all layers of the image
-            var MaxLayer = (CA.Asset.Layer == null) ? 1 : CA.Asset.Layer.length;
-            for (var L = 0; L < MaxLayer; L++) {
-                var Layer = "";
-                var LayerType = Type;
-                if (CA.Asset.Layer != null) {
-                    Layer = "_" + CA.Asset.Layer[L].Name;
-                    if ((CA.Asset.Layer[L].AllowTypes != null) && (CA.Asset.Layer[L].AllowTypes.indexOf(Type) < 0)) continue;
-                    if (!CA.Asset.Layer[L].HasExpression) Expression = "";
-                    if (!CA.Asset.Layer[L].HasType) LayerType = "";
-                    if ((CA.Asset.Layer[L].NewParentGroupName != null) && (CA.Asset.Layer[L].NewParentGroupName != CA.Asset.Group.ParentGroupName)) {
-                        if (CA.Asset.Layer[L].NewParentGroupName == "") G = "";
-                        else
-                            for (var FG = 0; FG < C.Appearance.length; FG++)
-                                if (CA.Asset.Layer[L].NewParentGroupName == C.Appearance[FG].Asset.Group.Name)
-                                    G = "_" + C.Appearance[FG].Asset.Name;
-                    }
-                    if (CA.Asset.Layer[L].OverrideAllowPose != null) {
-                        Pose = "";
-                        for (var AP = 0; AP < CA.Asset.Layer[L].OverrideAllowPose.length; AP++)
-                            for (var P = 0; P < C.Pose.length; P++)
-                                if (C.Pose[P] == CA.Asset.Layer[L].OverrideAllowPose[AP])
-                                    Pose = C.Pose[P] + "/";
-                    }
-                }
-
-                // Draw the item on the canvas (default or empty means no special color, # means apply a color, regular text means we apply that text)
-                if ((CA.Color != null) && (CA.Color.indexOf("#") == 0) && ((CA.Asset.Layer == null) || CA.Asset.Layer[L].AllowColorize)) {
-                    GLDrawImage("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + Expression + CA.Asset.Name + G + LayerType + Layer + ".png", GLDrawCanvas.GL, X, Y, CA.Color, CA.Asset.Group.DrawingFullAlpha);
-                    GLDrawImageBlink("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + (CA.Asset.Group.DrawingBlink ? "Closed/" : Expression) + CA.Asset.Name + G + LayerType + Layer + ".png", GLDrawCanvas.GL, X, Y, CA.Color, CA.Asset.Group.DrawingFullAlpha);
-                } else {
-                    var Color = ((CA.Color == null) || (CA.Color == "Default") || (CA.Color == "") || (CA.Color.length == 1) || (CA.Color.indexOf("#") == 0)) ? "" : "_" + CA.Color;
-                    GLDrawImage("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + Expression + CA.Asset.Name + G + LayerType + Color + Layer + ".png", GLDrawCanvas.GL, X, Y);
-                    GLDrawImageBlink("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + (CA.Asset.Group.DrawingBlink ? "Closed/" : Expression) + CA.Asset.Name + G + LayerType + Color + Layer + ".png", GLDrawCanvas.GL, X, Y);
-                }
-            }
-
-            // If we must draw the lock (never colorized)
-            if ((CA.Property != null) && (CA.Property.LockedBy != null) && (CA.Property.LockedBy != "")) {
-                GLDrawImage("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + Expression + CA.Asset.Name + Type + "_Lock.png", GLDrawCanvas.GL, X, Y);
-                GLDrawImageBlink("Assets/" + CA.Asset.Group.Family + "/" + CA.Asset.Group.Name + "/" + Pose + (CA.Asset.Group.DrawingBlink ? "Closed/" : Expression) + CA.Asset.Name + Type + "_Lock.png", GLDrawCanvas.GL, X, Y);
-            }
-        }
-
-    if (C.Canvas == null) {
-        C.Canvas = document.createElement("canvas");
-        C.Canvas.width = 500;
-        C.Canvas.height = 1000;
-    } else C.Canvas.getContext("2d").clearRect(0, 0, 500, 1000);
-    if (C.CanvasBlink == null) {
-        C.CanvasBlink = document.createElement("canvas");
-        C.CanvasBlink.width = 500;
-        C.CanvasBlink.height = 1000;
-    } else C.CanvasBlink.getContext("2d").clearRect(0, 0, 500, 1000);
-
+    CommonDrawCanvasPrepare(C);
+    CommonDrawAppearanceBuild(C, {
+		clearRect: (x, y, w, h) => GLDrawClearRect(GLDrawCanvas.GL, x, 1000 - y - h, w, h),
+		clearRectBlink: (x, y, w, h) => GLDrawClearRectBlink(GLDrawCanvas.GL, x, 1000 - y - h, w, h),
+		drawImage: (src, x, y, alphaMasks) => GLDrawImage(src, GLDrawCanvas.GL, x, y, 0, null, null, alphaMasks),
+		drawImageBlink: (src, x, y, alphaMasks) => GLDrawImageBlink(src, GLDrawCanvas.GL, x, y, null, null, alphaMasks),
+		drawImageColorize: (src, x, y, color, fullAlpha, alphaMasks) => GLDrawImage(src, GLDrawCanvas.GL, x, y, 0, color, fullAlpha, alphaMasks),
+		drawImageColorizeBlink: (src, x, y, color, fullAlpha, alphaMasks) => GLDrawImageBlink(src, GLDrawCanvas.GL, x, y, color, fullAlpha, alphaMasks),
+		drawCanvas: (Img, x, y, alphaMasks) => GLDraw2DCanvas(GLDrawCanvas.GL, Img, x, y, alphaMasks),
+		drawCanvasBlink: (Img, x, y, alphaMasks) => GLDraw2DCanvasBlink(GLDrawCanvas.GL, Img, x, y, alphaMasks),
+	});
     C.Canvas.getContext("2d").drawImage(GLDrawCanvas, 0, 0);
     C.CanvasBlink.getContext("2d").drawImage(GLDrawCanvas, -500, 0);
-
-    C.MustDraw = true;
 }

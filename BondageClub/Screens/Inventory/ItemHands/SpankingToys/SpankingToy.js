@@ -80,7 +80,14 @@ const SpankingInventory = [
 	}, {
 		Name: "Toothbrush",
 		ExpressionTrigger: [{ Group: "Blush", Name: "Medium", Timer: 10 }, {Group: "Eyes", Name: "Closed", Timer: 10}, { Group: "Mouth", Name: "Grin", Timer: 10}, { Group: "Eyebrows", Name: "Soft", Timer: 10}]
-	}
+	}, {
+		Name: "ShockWand",
+		ExpressionTrigger: [{ Group: "Blush", Name: "Medium", Timer: 10 }, { Group: "Eyebrows", Name: "Soft", Timer: 10 }, { Group: "Eyes", Name: "Wink", Timer: 5 }]
+	},{
+	  Name: "Lotion",
+	  ExpressionTrigger: [{ Group: "Blush", Name: "Low", Timer: 10 }, { Group: "Eyebrows", Name: "Soft", Timer: 10 }, { Group: "Mouth", Name: "Frown", Timer: 10}]
+	},
+	
 ];
 
 var SpankingInventoryOffset = 0;
@@ -108,7 +115,7 @@ function InventoryItemHandsSpankingToysDraw() {
 	DrawText(DialogFind(Player, "SelectSpankingToysType"), 1500, 375, "white", "gray");
 
 	// Draw the buttons 6 at a time, in a 2x3 grid
-	for (var I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
+	for (let I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
 		var offset = I - SpankingInventoryOffset;
 		var X = 1080 + (offset % 3 * 305);
 		var Y = 430 + (Math.floor(offset / 3) * 300);
@@ -128,7 +135,7 @@ function InventoryItemHandsSpankingToysClick() {
 	if (SpankingInventoryOffset >= SpankingPlayerInventory.length) SpankingInventoryOffset = 0;
 
 	// Item buttons
-	for (var I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
+	for (let I = SpankingInventoryOffset; (I < SpankingPlayerInventory.length) && (I < SpankingInventoryOffset + 6); I++) {
 		var nextItem = SpankingPlayerInventory[I].Name;
 		var offset = I - SpankingInventoryOffset;
 		var X = 1080 + (offset % 3 * 305);
@@ -203,4 +210,20 @@ function InventorySpankingToysActivityAllowed(C) {
 		if (C.FocusGroup.Activity != null) return C.FocusGroup.Activity.indexOf(Activity) >= 0;
 	}
 	return false;
+}
+
+// Returns the audio sound to be played
+function InventorySpankingToysGetAudio(C) {
+	switch (InventorySpankingToysGetType(C)) {
+		case "Crop":
+		case "Flogger": return "SmackSkin1";
+		case "Cane":
+		case "HeartCrop": return "SmackSkin2";
+		case "Paddle":
+		case "WhipPaddle":
+		case "TennisRacket": return "SmackSkin3";
+		case "Whip": return "Whip1";
+		case "CattleProd": return "Shocks";
+		default: return "";
+	}
 }

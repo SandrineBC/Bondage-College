@@ -7,6 +7,7 @@ var MainHallMaid = null;
 var MainHallIsMaid = false;
 var MainHallIsHeadMaid = false;
 var MainHallHasOwnerLock = false;
+var MainHallHasLoverLock = false;
 var MainHallHasSlaveCollar = false;
 var MainHallTip = 0;
 
@@ -17,6 +18,12 @@ var MainHallTip = 0;
 function MainHallCanTrickMaid() { return (ManagementIsClubSlave() && SarahUnlockQuest) }
 
 /**
+ * Checks, if the player has an owner or lover lock on her
+ * @returns {boolean} - Returns true, if the player has either a lover or owner item on herself, false otherwise
+ */
+function MainHallHasOwnerOrLoverItem() { return MainHallHasLoverLock || MainHallHasOwnerLock }
+
+/**
  * Loads the main hall by setting up the NPCs, CSVs and global variables required.
  * @returns {void} - Nothing
  */
@@ -25,6 +32,10 @@ function MainHallLoad() {
 	// Loads the variables and dialog
 	ChatSearchSafewordAppearance = null;
 	CharacterSetActivePose(Player, null);
+	if (ChatSearchPreviousActivePose != null) {
+		ServerSend("ChatRoomCharacterPoseUpdate", { Pose: Player.ActivePose });
+		ChatSearchPreviousActivePose = null;
+	}
 	MainHallBackground = "MainHall";
 	MainHallStartEventTimer = null;
 	MainHallNextEventTimer = null;
@@ -32,7 +43,8 @@ function MainHallLoad() {
 	MainHallIsMaid = LogQuery("JoinedSorority", "Maid");
 	MainHallIsHeadMaid = LogQuery("LeadSorority", "Maid");
 	MainHallHasOwnerLock = InventoryCharacterHasOwnerOnlyRestraint(Player);
-	for (var A = 0; A < Player.Appearance.length; A++)
+	MainHallHasLoverLock = InventoryCharacterHasLoverOnlyRestraint(Player);
+	for (let A = 0; A < Player.Appearance.length; A++)
 		if (Player.Appearance[A].Asset.Name == "SlaveCollar")
 			if (Player.Appearance[A].Property)
 				MainHallHasSlaveCollar = true;
@@ -43,6 +55,7 @@ function MainHallLoad() {
 	CommonReadCSV("NoArravVar", "Room", "AsylumEntrance", "Dialog_NPC_AsylumEntrance_KidnapNurse");
 	CommonReadCSV("NoArravVar", "Room", "AsylumEntrance", "Dialog_NPC_AsylumEntrance_EscapedPatient");
 	CommonReadCSV("NoArravVar", "Room", "Prison", "Dialog_NPC_Prison_Police");
+	CommonReadCSV("NoArravVar", "Character", "Relog", "Text_Relog");
 
 }
 
@@ -112,6 +125,9 @@ function MainHallRun() {
 		if (!ManagementIsClubSlave()) DrawButton(1765, 625, 90, 90, "", "White", "Icons/College.png", TextGet("College"));
 		DrawButton(1885, 625, 90, 90, "", "White", "Icons/Asylum.png", TextGet("Asylum"));
 
+		// Movie Studio
+		if (!ManagementIsClubSlave()) DrawButton(1885, 745, 90, 90, "", "White", "Icons/MovieStudio.png", TextGet("MovieStudio"));
+		
 		// Draws the custom content rooms - Gambling, Prison & Photographic
 		DrawButton(265, 25, 90, 90, "", "White", "Icons/Camera.png", TextGet("Photographic"));
 		DrawButton(145, 25, 90, 90, "", "White", "Icons/Cage.png", TextGet("Prison"));
@@ -204,7 +220,7 @@ function MainHallClick() {
 	if ((MouseX >= 1645) && (MouseX < 1735) && (MouseY >= 25) && (MouseY < 115)) InformationSheetLoadCharacter(Player);
 	if ((MouseX >= 1765) && (MouseX < 1855) && (MouseY >= 25) && (MouseY < 115) && Player.CanChange()) CharacterAppearanceLoadCharacter(Player);
 	if ((MouseX >= 1885) && (MouseX < 1975) && (MouseY >= 25) && (MouseY < 115)) window.location = window.location;
-	if ((MouseX >= 1645) && (MouseX < 1735) && (MouseY >= 145) && (MouseY < 235)) ChatRoomStart("", "", "MainHall", "IntroductionDark", CommonBackgroundList.slice());
+	if ((MouseX >= 1645) && (MouseX < 1735) && (MouseY >= 145) && (MouseY < 235)) ChatRoomStart("", "", "MainHall", "IntroductionDark", BackgroundsTagList);
 
 	// The options below are only available if the player can move
 	if (Player.CanWalk()) {
@@ -232,6 +248,9 @@ function MainHallClick() {
 		if ((MouseX >= 1645) && (MouseX < 1735) && (MouseY >= 625) && (MouseY < 715) && !ManagementIsClubSlave()) MainHallWalk("LARP");
 		if ((MouseX >= 1765) && (MouseX < 1855) && (MouseY >= 625) && (MouseY < 715) && !ManagementIsClubSlave()) MainHallWalk("CollegeEntrance");
 		if ((MouseX >= 1885) && (MouseX < 1975) && (MouseY >= 625) && (MouseY < 715)) MainHallWalk("AsylumEntrance");
+
+		// Movie Studio
+		if ((MouseX >= 1885) && (MouseX < 1975) && (MouseY >= 745) && (MouseY < 855) && !ManagementIsClubSlave()) MainHallWalk("MovieStudio");
 		
 		// Custom content rooms - Gambling, Prison & Photographic
 		if ((MouseX >=   25) && (MouseX <  115) && (MouseY >=  25) && (MouseY < 115)) MainHallWalk("Gambling");
@@ -255,7 +274,7 @@ function MainHallClick() {
  */
 function MainHallMaidReleasePlayer() {
 	if (MainHallMaid.CanInteract()) {
-		for (var D = 0; D < MainHallMaid.Dialog.length; D++)
+		for (let D = 0; D < MainHallMaid.Dialog.length; D++)
 			if ((MainHallMaid.Dialog[D].Stage == "0") && (MainHallMaid.Dialog[D].Option == null))
 				MainHallMaid.Dialog[D].Result = DialogFind(MainHallMaid, "AlreadyReleased");
 		CharacterRelease(Player);
@@ -270,7 +289,7 @@ function MainHallMaidReleasePlayer() {
  */
 function MainHallMaidAngry() {
 	if ((ReputationGet("Dominant") < 30) && !MainHallIsHeadMaid) {
-		for (var D = 0; D < MainHallMaid.Dialog.length; D++)
+		for (let D = 0; D < MainHallMaid.Dialog.length; D++)
 			if ((MainHallMaid.Dialog[D].Stage == "PlayerGagged") && (MainHallMaid.Dialog[D].Option == null))
 				MainHallMaid.Dialog[D].Result = DialogFind(MainHallMaid, "LearnedLesson");
 		ReputationProgress("Dominant", 1);
@@ -307,7 +326,7 @@ function MainHallMaidShamePlayer() {
  * @returns {void} - Nothing
  */
 function MainHallMaidChangeCollarPlayer() {
-	for (var A = 0; A < Player.Appearance.length; A++)
+	for (let A = 0; A < Player.Appearance.length; A++)
 		if (Player.Appearance[A].Asset.Name == "SlaveCollar") {
 			Player.Appearance[A].Property = null;
 			Player.Appearance[A].Color = "Default";
