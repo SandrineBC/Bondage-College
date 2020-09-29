@@ -1,0 +1,5 @@
+0,,,(There's a small wooden drawer.),
+0,,(Open the first one.),TO DO ,
+0,,(Open the second one.),TO DO ,
+0,,(Open the third one.),TO DO ,
+0,,(Leave it.),,DialogLeave()
