@@ -119,11 +119,11 @@ function InventoryItemArmsWebClick() {
 
 /**
  * Validates, if the chosen option is possible. Sets the global variable 'DialogExtendedMessage' to the appropriate error message, if not.
+ * @param {Character} C - The character to check the options for
  * @param {Option} Option - The next option to use on the character
  * @returns {string} - Returns false and sets DialogExtendedMessage, if the chosen option is not possible.
  */
-function InventoryItemArmsWebValidate(Option) {
-	var C = CharacterGetCurrent();
+function InventoryItemArmsWebValidate(C, Option) {
 	var Allowed = "";
 
 	// Validates some prerequisites before allowing more advanced poses
@@ -143,6 +143,7 @@ function InventoryItemArmsWebValidate(Option) {
 		CharacterAppearanceSetItem(C, "ItemArms", Web.Asset, Web.Color, DifficultyFactor, null, false);
 		InventoryGet(C, "ItemArms").Property = Web.Property;
 		CharacterRefresh(C);
+		DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
 
 	}
 	return Allowed;

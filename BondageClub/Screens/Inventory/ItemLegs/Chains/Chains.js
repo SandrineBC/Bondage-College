@@ -66,11 +66,10 @@ function InventoryItemLegsChainsNpcDialog(C, Option) {
 
 /**
  * Validates, if the chosen option is possible. Sets the global variable 'DialogExtendedMessage' to the appropriate error message, if not.
- * @param {Option} Option - The next option to use on the character
+ * @param {Character} C - The character to check this option for
  * @returns {string} - Returns false and sets DialogExtendedMessage, if the chosen option is not possible.
  */
-function InventoryItemLegsChainsValidate(Option) {
-	var C = CharacterGetCurrent();
+function InventoryItemLegsChainsValidate(C) {
 	var Allowed = "";
 	if (DialogFocusItem.Property.LockedBy && !DialogCanUnlock(C, DialogFocusItem)) {
 		Allowed = DialogFind(Player, "CantChangeWhileLocked");

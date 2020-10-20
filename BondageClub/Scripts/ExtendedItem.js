@@ -110,7 +110,7 @@ function ExtendedItemLoad(Options, DialogKey) {
 		}
 	}
 
-	ExtendedItemSetOffset(0);
+	if (ExtendedItemOffsets[ExtendedItemOffsetKey()] == null) ExtendedItemSetOffset(0);
 
 	//DialogExtendedMessage = DialogFind(Player, DialogKey);
 	DialogExtendedMessage = DialogFind(Player, DialogKey);
@@ -137,11 +137,9 @@ function ExtendedItemDraw(Options, DialogPrefix, OptionsPerPage, ShowImages = tr
 	OptionsPerPage = OptionsPerPage || Math.min(Options.length, XYPositions.length - 1);
 	
 	// If we have to paginate, draw the back/next buttons
-	if (ItemOptionsOffset >= OptionsPerPage) {
-		DrawButton(1555, 25, 90, 90, "", "White", "Icons/Prev.png");
-	}
-	if (ItemOptionsOffset + OptionsPerPage < Options.length) {
-		DrawButton(1665, 25, 90, 90, "", "White", "Icons/Next.png");
+	if (Options.length > OptionsPerPage) {
+		DrawButton(1665, 240, 90, 90, "", "White", "Icons/Prev.png");
+		DrawButton(1775, 240, 90, 90, "", "White", "Icons/Next.png");
 	}
 	
 	// Draw the header and item
@@ -152,14 +150,13 @@ function ExtendedItemDraw(Options, DialogPrefix, OptionsPerPage, ShowImages = tr
 
 	// Draw the possible variants and their requirements, arranged based on the number per page
 	for (let I = ItemOptionsOffset; I < Options.length && I < ItemOptionsOffset + OptionsPerPage; I++) {
-		var C = CharacterGetCurrent();
 		var PageOffset = I - ItemOptionsOffset;
 		var X = XYPositions[OptionsPerPage][PageOffset][0];
 		var Y = XYPositions[OptionsPerPage][PageOffset][1];
+		
 		var Option = Options[I];
-		var Height = (ShowImages) ? 275 : 55;
-		var Hover = MouseIn(X, X + 225, Y, Y + Height) && !CommonIsMobile;
-		var FailSkillCheck = ExtendedItemRequirementCheckMessage(Option, IsSelfBondage);
+		var Hover = MouseIn(X, Y, 225, 55 + ImageHeight) && !CommonIsMobile;
+		var FailSkillCheck = !!ExtendedItemRequirementCheckMessage(Option, IsSelfBondage);
 		var IsSelected = DialogFocusItem.Property.Type == Option.Property.Type;
 		var Blocked = InventoryIsPermissionBlocked(C, DialogFocusItem.Asset.DynamicName(Player), DialogFocusItem.Asset.DynamicGroupName, Option.Property.Type);
 		var Limited = !InventoryCheckLimitedPermission(C, DialogFocusItem, Option.Property.Type);
@@ -209,11 +206,13 @@ function ExtendedItemClick(Options, IsCloth, OptionsPerPage, ShowImages = true) 
 	}
 	
 	// Pagination buttons
-	if (MouseIn(1555, 25, 90, 90) && ItemOptionsOffset >= OptionsPerPage) {
-		ExtendedItemSetOffset(ItemOptionsOffset - OptionsPerPage);
+	if (MouseIn(1665, 240, 90, 90) && Options.length > OptionsPerPage) {
+		if (ItemOptionsOffset - OptionsPerPage < 0) ExtendedItemSetOffset(OptionsPerPage * (Math.ceil(Options.length / OptionsPerPage) - 1));
+		else ExtendedItemSetOffset(ItemOptionsOffset - OptionsPerPage);
 	}
-	if (MouseIn(1665, 25, 90, 90) && ItemOptionsOffset + OptionsPerPage < Options.length) {
-		ExtendedItemSetOffset(ItemOptionsOffset + OptionsPerPage);
+	if (MouseIn(1775, 240, 90, 90) && Options.length > OptionsPerPage) {
+		if (ItemOptionsOffset + OptionsPerPage >= Options.length) ExtendedItemSetOffset(0);
+		else ExtendedItemSetOffset(ItemOptionsOffset + OptionsPerPage);
 	}
 	
 	// Options
@@ -223,7 +222,7 @@ function ExtendedItemClick(Options, IsCloth, OptionsPerPage, ShowImages = true) 
 		var Y = XYPositions[OptionsPerPage][PageOffset][1];
 		var Option = Options[I];
 		if (MouseIn(X, Y, 225, 55 + ImageHeight)) {
-			ExtendedItemHandleOptionClick(Options, Option, IsSelfBondage, IsCloth);
+			ExtendedItemHandleOptionClick(C, Options, Option, IsSelfBondage, IsCloth);
 		}
 	}
 }
@@ -241,14 +240,15 @@ function ExtendedItemExit() {
 
 /**
  * Handler function for setting the type of an extended item
+ * @param {Character} C - The character wearing the item
  * @param {ExtendedItemOption[]} Options - An Array of type definitions for each allowed extended type. The first item in the array should
  *     be the default option.
  * @param {ExtendedItemOption} Option - The selected type definition
  * @param {boolean} IsCloth - Whether or not the click is performed on a clothing item.
  * @returns {void} Nothing
  */
-function ExtendedItemSetType(Options, Option, IsCloth) {
-	var C = CharacterGetCurrent() || CharacterAppearanceSelection;
+function ExtendedItemSetType(C, Options, Option, IsCloth) {
+    DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
 	var FunctionPrefix = ExtendedItemFunctionPrefix();
 
 	DialogFocusItem = InventoryGet(C, C.FocusGroup.Name);
@@ -299,6 +299,7 @@ function ExtendedItemSetType(Options, Option, IsCloth) {
 
 /**
  * Handler function called when an option on the type selection screen is clicked
+ * @param {Character} C - The character wearing the item
  * @param {ExtendedItemOption[]} Options - An Array of type definitions for each allowed extended type. The first item in the array should
  *     be the default option.
  * @param {ExtendedItemOption} Option - The selected type definition
@@ -306,8 +307,7 @@ function ExtendedItemSetType(Options, Option, IsCloth) {
  * @param {boolean} IsCloth - Whether or not the click is performed on a clothing item.
  * @returns {void} Nothing
  */
-function ExtendedItemHandleOptionClick(Options, Option, IsSelfBondage, IsCloth) {
-	var C = CharacterGetCurrent();
+function ExtendedItemHandleOptionClick(C, Options, Option, IsSelfBondage, IsCloth) {
 	if (ExtendedItemPermissionMode) {
 		if (Option.Property.Type == null || (C.ID == 0 && DialogFocusItem.Property.Type == Option.Property.Type)) return;
 		InventoryTogglePermission(DialogFocusItem, Option.Property.Type);
@@ -321,7 +321,7 @@ function ExtendedItemHandleOptionClick(Options, Option, IsSelfBondage, IsCloth) 
 		if (RequirementMessage) {
 			DialogExtendedMessage = RequirementMessage;
 		} else {
-			ExtendedItemSetType(Options, Option, IsCloth);
+			ExtendedItemSetType(C, Options, Option, IsCloth);
 			ExtendedItemExit();
 		}
 	}
@@ -347,7 +347,7 @@ function ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage) {
 		// An extendable item may provide a validation function. Returning false from the validation function will drop out of
 		// this function, and the new type will not be applied.
 		if (typeof window[FunctionPrefix + "Validate"] === "function") {
-			let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate", Option);
+			let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate",C, Option);
 			if (ValidateResult != "") {
 				return ValidateResult;
 			}

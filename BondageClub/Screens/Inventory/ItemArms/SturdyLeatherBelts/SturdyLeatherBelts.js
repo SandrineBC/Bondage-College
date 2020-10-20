@@ -49,11 +49,11 @@ function InventoryItemArmsSturdyLeatherBeltsClick() {
 
 /**
  * Validates, if the chosen option is possible. Sets the global variable 'DialogExtendedMessage' to the appropriate error message, if not.
+ * @param {Character} C - The character to validate the option for
  * @param {Option} Option - The next option to use on the character
  * @returns {string} - Returns false and sets DialogExtendedMessage, if the chosen option is not possible.
  */
-function InventoryItemArmsSturdyLeatherBeltsValidate() {
-	var C = CharacterGetCurrent();
+function InventoryItemArmsSturdyLeatherBeltsValidate(C) {
 	var Allowed = "";
 
 	if (DialogFocusItem.Property.LockedBy && !DialogCanUnlock(C, DialogFocusItem)) {
@@ -61,7 +61,6 @@ function InventoryItemArmsSturdyLeatherBeltsValidate() {
 	} else if (InventoryGet(C, "Cloth") != null) {
 		Allowed = DialogFind(Player, "RemoveClothesForItem");
 	}
-
 	return Allowed;
 }
 

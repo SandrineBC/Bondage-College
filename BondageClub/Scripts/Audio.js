@@ -28,6 +28,7 @@ var AudioList = [
 	{ Name: "VibrationLong2", File: "VibrationTone4Long6" },
 	{ Name: "VibrationShort", File: "VibrationTone4ShortLoop" },
 	{ Name: "Wand", File: "Wand" },
+	{ Name: "WoodenCuffs", File: "WoodenCuffs" },
 	{ Name: "ZipTie", File: "ZipTie" },
 ];
 
@@ -37,8 +38,10 @@ var AudioActions = [
 	{ Action: "ActionUnlock", Sound: "Unlock" },
 	{ Action: "ActionUnlockAndRemove", Sound: "Unlock" },
 	{ Action: "ActionLock", GetAudioInfo: AudioPlayAssetSound },
-	{ Action: "ActionUse", GetAudioInfo: AudioPlayAssetSound },
-	{ Action: "ActionSwap", GetAudioInfo: AudioPlayAssetSound },
+	{
+		IsAction: (data) => ["ActionUse", "ActionSwap"].includes(data.Content) && data.Sender !== Player.MemberNumber,
+		GetAudioInfo: AudioPlayAssetSound,
+	},
 	{
 		IsAction: (data) => data.Content.indexOf("ActionActivity") == 0,
 		GetAudioInfo: AudioPlayAssetSound
