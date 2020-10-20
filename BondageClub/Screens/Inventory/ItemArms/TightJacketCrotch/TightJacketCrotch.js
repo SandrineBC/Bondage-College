@@ -61,11 +61,11 @@ function InventoryItemArmsTightJacketCrotchClick() {
 
 /**
  * Validates, if the chosen option is possible. Sets the global variable 'DialogExtendedMessage' to the appropriate error message, if not.
+ * @param {Character} C - The character wearing the item
  * @param {Option} Option - The next option to use on the character
  * @returns {string} - Returns false and sets DialogExtendedMessage, if the chosen option is not possible.
  */
-function InventoryItemArmsTightJacketCrotchValidate() {
-	var C = CharacterGetCurrent();
+function InventoryItemArmsTightJacketCrotchValidate(C) {
 	var Allowed = "";
 	if (InventoryItemHasEffect(DialogFocusItem, "Lock", true) && !DialogCanUnlock(C, DialogFocusItem)) {
 		Allowed = DialogFind(Player, "CantChangeWhileLocked");

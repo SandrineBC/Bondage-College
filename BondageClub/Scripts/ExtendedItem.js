@@ -68,7 +68,7 @@ const ExtendedXYClothes = [
 /** Memoization of the requirements check 
  * @type {function}
 */
-const ExtendedItemRequirementCheckMessage = CommonMemoize(ExtendedItemRequirementCheckMessageMemo);
+const ExtendedItemRequirementCheckMessageMemo = CommonMemoize(ExtendedItemRequirementCheckMessage);
 
 /**
  * The current display mode
@@ -156,7 +156,7 @@ function ExtendedItemDraw(Options, DialogPrefix, OptionsPerPage, ShowImages = tr
 		
 		var Option = Options[I];
 		var Hover = MouseIn(X, Y, 225, 55 + ImageHeight) && !CommonIsMobile;
-		var FailSkillCheck = !!ExtendedItemRequirementCheckMessage(Option, IsSelfBondage);
+		var FailSkillCheck = !!ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage);
 		var IsSelected = DialogFocusItem.Property.Type == Option.Property.Type;
 		var Blocked = InventoryIsPermissionBlocked(C, DialogFocusItem.Asset.DynamicName(Player), DialogFocusItem.Asset.DynamicGroupName, Option.Property.Type);
 		var Limited = !InventoryCheckLimitedPermission(C, DialogFocusItem, Option.Property.Type);
@@ -234,7 +234,7 @@ function ExtendedItemClick(Options, IsCloth, OptionsPerPage, ShowImages = true) 
  */
 function ExtendedItemExit() {
 	// invalidate the cache
-	ExtendedItemRequirementCheckMessage.clearCache();
+	ExtendedItemRequirementCheckMessageMemo.clearCache();
 }
 
 
@@ -317,7 +317,7 @@ function ExtendedItemHandleOptionClick(C, Options, Option, IsSelfBondage, IsClot
 		if (DialogFocusItem.Property.Type === Option.Property.Type || Blocked || Limited) return;
 		
 		// use the unmemoized function to ensure we make a final check to the requirements
-		var RequirementMessage = ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage);
+		var RequirementMessage = ExtendedItemRequirementCheckMessage(Option, IsSelfBondage);
 		if (RequirementMessage) {
 			DialogExtendedMessage = RequirementMessage;
 		} else {
@@ -335,8 +335,8 @@ function ExtendedItemHandleOptionClick(C, Options, Option, IsSelfBondage, IsClot
  * @returns {string|null} null if the player meets the option requirements. Otherwise a string message informing them
  * of the requirements they do not meet
  */
-function ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage) {
-	var C = CharacterGetCurrent();
+function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
+	var C = CharacterGetCurrent() || CharacterAppearanceSelection;
 	var FunctionPrefix = ExtendedItemFunctionPrefix();
 
 	if (IsSelfBondage && SkillGetLevelReal(Player, "SelfBondage") < Option.SelfBondageLevel) {
@@ -347,7 +347,7 @@ function ExtendedItemRequirementCheckMessageMemo(Option, IsSelfBondage) {
 		// An extendable item may provide a validation function. Returning false from the validation function will drop out of
 		// this function, and the new type will not be applied.
 		if (typeof window[FunctionPrefix + "Validate"] === "function") {
-			let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate",C, Option);
+			let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate", C, Option);
 			if (ValidateResult != "") {
 				return ValidateResult;
 			}

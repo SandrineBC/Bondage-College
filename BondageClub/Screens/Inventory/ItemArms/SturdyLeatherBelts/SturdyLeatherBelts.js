@@ -55,7 +55,6 @@ function InventoryItemArmsSturdyLeatherBeltsClick() {
  */
 function InventoryItemArmsSturdyLeatherBeltsValidate(C) {
 	var Allowed = "";
-
 	if (DialogFocusItem.Property.LockedBy && !DialogCanUnlock(C, DialogFocusItem)) {
 		Allowed = DialogFind(Player, "CantChangeWhileLocked");
 	} else if (InventoryGet(C, "Cloth") != null) {
