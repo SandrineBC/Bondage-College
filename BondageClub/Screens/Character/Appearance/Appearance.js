@@ -289,7 +289,7 @@ function CharacterAppearanceSortLayers(C) {
 	var layers = C.Appearance.reduce((layersAcc, item) => {
 		var asset = item.Asset;
 		// Only include layers for visible assets
-		if (asset.Visible && CharacterAppearanceVisible(C, asset.Name, asset.Group.Name)) {
+		if (asset.Visible && CharacterAppearanceVisible(C, asset.Name, asset.Group.Name) && InventoryChatRoomAllow(asset.Category)) {
 			// Check if we need to draw a different variation (from type property)
 			var type = (item.Property && item.Property.Type) || "";
 			// Only include layers that permit the current type (if AllowTypes is not defined, also include the layer)
@@ -521,7 +521,7 @@ function AppearanceRun() {
 				var Color = CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Color", "");
 				const ColorButtonText = ItemColorGetColorButtonText(Color);
 				const ColorButtonColor = ColorButtonText.startsWith("#") ? ColorButtonText : "#fff";
-				const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && Item.Asset.ColorableLayerCount > 0;
+				const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1);
 				const CanPickColor = CanCycleColors && AssetGroup[A].AllowColorize;
 				const ColorIsSimple = ItemColorIsSimple(Item);
 				DrawButton(1725, 145 + (A - CharacterAppearanceOffset) * 95, 160, 65, ColorButtonText, CanCycleColors ? ColorButtonColor : "#aaa", null, null, !CanCycleColors);
@@ -795,7 +795,7 @@ function AppearanceClick() {
 			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
 				const Item = InventoryGet(C, AssetGroup[A].Name);
 				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
-				    WardrobeGroupAccessible(C, AssetGroup[A]) && Item && Item.Asset.ColorableLayerCount > 0)
+				    WardrobeGroupAccessible(C, AssetGroup[A]) && Item && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1))
 					if ((MouseY >= 145 + (A - CharacterAppearanceOffset) * 95) && (MouseY <= 210 + (A - CharacterAppearanceOffset) * 95))
 						CharacterAppearanceNextColor(C, AssetGroup[A].Name);
 			}
