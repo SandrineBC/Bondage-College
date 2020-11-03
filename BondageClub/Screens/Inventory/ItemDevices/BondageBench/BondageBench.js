@@ -114,6 +114,6 @@ function InventoryItemDevicesBondageBenchPublishAction(C, Option, PreviousOption
  * @param {Option} Option - The chosen option for this extended item
  * @returns {void} - Nothing
  */
-function InventoryItemDevicesBondageBenchPNpcDialog(C, Option) {
+function InventoryItemDevicesBondageBenchNpcDialog(C, Option) {
 	C.CurrentDialog = DialogFind(C, "InventoryItemDevicesBondageBenchNPCReaction" + Option.Name, "ItemDevices");
 }
