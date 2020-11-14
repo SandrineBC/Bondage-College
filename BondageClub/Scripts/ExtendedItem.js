@@ -339,10 +339,16 @@ function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
 	var C = CharacterGetCurrent() || CharacterAppearanceSelection;
 	var FunctionPrefix = ExtendedItemFunctionPrefix();
 
-	if (IsSelfBondage && SkillGetLevelReal(Player, "SelfBondage") < Option.SelfBondageLevel) {
-		return DialogFind(Player, "RequireSelfBondage" + Option.SelfBondageLevel);
-	} else if (!IsSelfBondage && SkillGetLevelReal(Player, "Bondage") < Option.BondageLevel) {
-		return DialogFind(Player, "RequireBondageLevel").replace("ReqLevel", Option.BondageLevel);
+	if (IsSelfBondage) {
+		let RequiredLevel = Option.SelfBondageLevel || Math.max(DialogFocusItem.Asset.SelfBondage, Option.BondageLevel);
+		if (SkillGetLevelReal(Player, "SelfBondage") < RequiredLevel) {
+			return DialogFind(Player, "RequireSelfBondage" + RequiredLevel);
+		}
+	} else {
+		let RequiredLevel = Option.BondageLevel;
+		if (SkillGetLevelReal(Player, "Bondage") < RequiredLevel) {
+			return DialogFind(Player, "RequireBondageLevel").replace("ReqLevel", RequiredLevel);
+		}
 	} else {
 		// An extendable item may provide a validation function. Returning false from the validation function will drop out of
 		// this function, and the new type will not be applied.
@@ -354,6 +360,12 @@ function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
 		} else if (Option.Prerequisite != null && !InventoryAllow(C, Option.Prerequisite, true)) {
 			// Otherwise use the standard prerequisite check
 			return DialogText;
+		} else {
+			const OldEffect = DialogFocusItem && DialogFocusItem.Property && DialogFocusItem.Property.Effect;
+			if (OldEffect && OldEffect.includes("Lock") && Option.Property.AllowLock === false) {
+				DialogExtendedMessage = DialogFind(Player, "ExtendedItemUnlockBeforeChange");
+				return DialogExtendedMessage;
+			}
 		}
 	}
 	return "";
