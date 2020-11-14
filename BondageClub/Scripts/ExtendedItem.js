@@ -349,25 +349,26 @@ function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
 		if (SkillGetLevelReal(Player, "Bondage") < RequiredLevel) {
 			return DialogFind(Player, "RequireBondageLevel").replace("ReqLevel", RequiredLevel);
 		}
+	}
+
+	// An extendable item may provide a validation function. Returning false from the validation function will drop out of
+	// this function, and the new type will not be applied.
+	if (typeof window[FunctionPrefix + "Validate"] === "function") {
+		let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate", C, Option);
+		if (ValidateResult != "") {
+			return ValidateResult;
+		}
+	} else if (Option.Prerequisite != null && !InventoryAllow(C, Option.Prerequisite, true)) {
+		// Otherwise use the standard prerequisite check
+		return DialogText;
 	} else {
-		// An extendable item may provide a validation function. Returning false from the validation function will drop out of
-		// this function, and the new type will not be applied.
-		if (typeof window[FunctionPrefix + "Validate"] === "function") {
-			let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate", C, Option);
-			if (ValidateResult != "") {
-				return ValidateResult;
-			}
-		} else if (Option.Prerequisite != null && !InventoryAllow(C, Option.Prerequisite, true)) {
-			// Otherwise use the standard prerequisite check
-			return DialogText;
-		} else {
-			const OldEffect = DialogFocusItem && DialogFocusItem.Property && DialogFocusItem.Property.Effect;
-			if (OldEffect && OldEffect.includes("Lock") && Option.Property.AllowLock === false) {
-				DialogExtendedMessage = DialogFind(Player, "ExtendedItemUnlockBeforeChange");
-				return DialogExtendedMessage;
-			}
+		const OldEffect= DialogFocusItem && DialogFocusItem.Property && DialogFocusItem.Property.Effect;
+		if (OldEffect && OldEffect.includes("Lock") && Option.Property.AllowLock === false) {
+			DialogExtendedMessage = DialogFind(Player, "ExtendedItemUnlockBeforeChange");
+			return DialogExtendedMessage;
 		}
 	}
+
 	return "";
 }
 
