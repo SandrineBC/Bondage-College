@@ -3202,6 +3202,7 @@ var AssetFemale3DCG = [
 				Effect: ["Mounted"],
 				AllowEffect: ["Block", "Prone", "Freeze", "Mounted", "Lock"],
 				AllowType: ["Light", "Normal", "Heavy", "Full"],
+				AllowLock: true,
 				AllowLockType: ["Light", "Normal", "Heavy", "Full"],
 				Layer: [
 					{ Name: "Bench", AllowColorize: true, Priority: 1, HasType: false },
