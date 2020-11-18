@@ -3,7 +3,7 @@
 // Loads the item extension properties
 function InventoryItemNeckFuturisticCollarLoad() {
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagLoadAccessDenied()
 	} 
 }
@@ -14,7 +14,7 @@ function InventoryItemNeckFuturisticCollarLoad() {
 // Draw the item extension screen
 function InventoryItemNeckFuturisticCollarDraw() {
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagDrawAccessDenied()
 	} else {
 		DrawRect(1387, 225, 225, 275, "white");
@@ -63,7 +63,7 @@ function InventoryItemNeckFuturisticCollarExit() {
 function InventoryItemNeckFuturisticCollarClick() {
 	
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagClickAccessDenied()
 	} else {
 		
