@@ -52,9 +52,9 @@ function CharacterReset(CharacterID, CharacterAssetFamily) {
 		GetBlindLevel: function () {
 			let blindLevel = 0;
 			if ((this.Effect.includes("BlindHeavy")) ||
-				((this.Appearance.filter(A => A.Asset.Group.Name === "Eyes")[0].Property.Expression === "Closed") &&
-				(this.Appearance.filter(A => A.Asset.Group.Name === "Eyes2")[0].Property.Expression === "Closed"))
-				) blindLevel = 3;
+			((InventoryGet(this, "Eyes").Property.Expression === "Closed") &&
+			(InventoryGet(this, "Eyes2").Property.Expression === "Closed"))
+			) blindLevel = 3;
 			else if (this.Effect.includes("BlindNormal")) blindLevel = 2;
 			else if (this.Effect.includes("BlindLight")) blindLevel = 1;
 			// Light sensory deprivation setting limits blindness
