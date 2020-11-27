@@ -51,11 +51,11 @@ function CharacterReset(CharacterID, CharacterAssetFamily) {
 		/** Look for blindness effects and return the worst (limited by settings), Light: 1, Normal: 2, Heavy: 3 */
 		GetBlindLevel: function () {
 			let blindLevel = 0;
-			if (InventoryGet(this, "Eyes").Property && InventoryGet(this, "Eyes").Property.Expression &&
-				InventoryGet(this, "Eyes2").Property && InventoryGet(this, "Eyes2").Property.Expression) {
-				if ((InventoryGet(this, "Eyes").Property.Expression === "Closed") &&
-					(InventoryGet(this, "Eyes2").Property.Expression === "Closed")) {
-						blindLevel = 3;
+			let eyes1 = InventoryGet(this, "Eyes");
+			let eyes2 = InventoryGet(this, "Eyes2");
+			if (eyes1.Property && eyes1.Property.Expression && eyes2.Property && eyes2.Property.Expression) {
+				if ((eyes1.Property.Expression === "Closed") && (eyes2.Property.Expression === "Closed")) {
+					blindLevel = 3;
 				}
 			}
 			if (blindLevel == 0) {
