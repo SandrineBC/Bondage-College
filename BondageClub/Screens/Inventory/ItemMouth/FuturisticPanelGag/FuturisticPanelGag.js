@@ -37,7 +37,7 @@ var InventoryItemMouthFuturisticPanelGagOptions = [
 // futuristic panel gag functions. Just make sure your item loads after the panel gag and not before in index.html:
 /*
  	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagLoadAccessDenied()
 	} else
 */
@@ -45,7 +45,7 @@ var InventoryItemMouthFuturisticPanelGagOptions = [
 // In the draw function, add:
 /*
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagDrawAccessDenied()
 	} else
 */
@@ -53,7 +53,7 @@ var InventoryItemMouthFuturisticPanelGagOptions = [
 // In the click function, add:
 /*
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagClickAccessDenied()
 	} else
 */
@@ -78,7 +78,7 @@ var FuturisticAccessDeniedMessage = ""
  */
 function InventoryItemMouthFuturisticPanelGagLoad() {
  	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagLoadAccessDenied()
 	} else {
 		ExtendedItemLoad(InventoryItemMouthFuturisticPanelGagOptions, "SelectGagType");
@@ -165,7 +165,7 @@ function InventoryItemMouthFuturisticPanelGagExit() {
 */
 function InventoryItemMouthFuturisticPanelGagDraw() {
 	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagDrawAccessDenied()
 	} else {
 		DrawRect(1387, 75, 225, 275, "white");
@@ -221,8 +221,8 @@ function InventoryItemMouthFuturisticPanelGagDraw() {
  * @returns {void} - Nothing
  */
 function InventoryItemMouthFuturisticPanelGagClick() {
-	var C = CharacterGetCurrent();
-	if (!InventoryItemMouthFuturisticPanelGagValidate(C)) {
+	var C = (Player.FocusGroup != null) ? Player : CurrentCharacter;
+	if (InventoryItemMouthFuturisticPanelGagValidate(C) !== "") {
 		InventoryItemMouthFuturisticPanelGagClickAccessDenied()
 	} else {		
 		if (MouseIn(1885, 25, 90, 90)) InventoryItemMouthFuturisticPanelGagExit()

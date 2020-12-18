@@ -468,6 +468,10 @@ function DialogLeaveItemMenu() {
  */
 function DialogLeaveFocusItem() {
 	if (DialogFocusItem != null) {
+		if (DialogFocusItem.Asset.Extended) {
+			ExtendedItemExit();
+		}
+
 		var funcName = "Inventory" + DialogFocusItem.Asset.Group.Name + DialogFocusItem.Asset.Name + "Exit";
 		if (typeof window[funcName] === "function") {
 			window[funcName]();
