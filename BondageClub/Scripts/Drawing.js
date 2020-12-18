@@ -192,7 +192,7 @@ function DrawArousalMeter(C, X, Y, Zoom) {
 						Progress = C.ArousalSettings.VibratorLevel
 					}
 										
-					if (Progress >= 0) // -1 is disabled
+					if (Progress > 0) // -1 is disabled
 						var max_time = 5000 // 5 seconds
 						DrawArousalGlow(X + ((C.ArousalZoom ? 50 : 90) * Zoom), Y + ((C.ArousalZoom ? 200 : 400) * Zoom), C.ArousalZoom ? Zoom : Zoom * 0.2, Progress, Player.ArousalSettings.VFX == "VFXAnimated" || (Player.ArousalSettings.VFX == "VFXAnimatedTemp" && C.ArousalSettings.ChangeTime != null && CommonTime() - C.ArousalSettings.ChangeTime < max_time), Math.max(0, (max_time + C.ArousalSettings.ChangeTime - CommonTime())/ max_time), ((C.ArousalSettings.OrgasmTimer != null) && (typeof C.ArousalSettings.OrgasmTimer === "number") && !isNaN(C.ArousalSettings.OrgasmTimer) && (C.ArousalSettings.OrgasmTimer > 0)));
 				}
@@ -309,7 +309,7 @@ function DrawCharacter(C, X, Y, Zoom, IsHeightResizeAllowed) {
 		if (C.HasHiddenItems) DrawImageZoomCanvas("Screens/Character/Player/HiddenItem.png", MainCanvas, 0, 0, 86, 86, X + 54 * Zoom, Y + 880 * Zoom, 70 * Zoom, 70 * Zoom);
 
 		// Draws the character focus zones if we need too
-		if ((C.FocusGroup != null) && (C.FocusGroup.Zone != null) && (CurrentScreen != "Preference")) {
+		if ((C.FocusGroup != null) && (C.FocusGroup.Zone != null) && (CurrentScreen != "Preference") && (DialogColor == null)) {
 
 			// Draw all the possible zones in transparent colors (gray if free, yellow if occupied, red if blocker)
 			for (let A = 0; A < AssetGroup.length; A++)
@@ -705,9 +705,10 @@ function DrawTextWrap(Text, X, Y, Width, Height, ForeColor, BackColor, MaxLine) 
  * @param {number} Y - Position of the text on the Y axis
  * @param {number} Width - Width in which the text has to fit
  * @param {string} Color - Color of the text
+ * @param {string} BackColor - Color of the background
  * @returns {void} - Nothing
  */
-function DrawTextFit(Text, X, Y, Width, Color) {
+function DrawTextFit(Text, X, Y, Width, Color, BackColor) {
 
 	for (let S = 36; S >= 10; S = S - 2) {
 		MainCanvas.font = S.toString() + "px Arial";
@@ -715,6 +716,13 @@ function DrawTextFit(Text, X, Y, Width, Color) {
 		if (metrics.width <= Width)
 			break;
 	}
+	
+	// Draw a back color relief text if needed
+	if ((BackColor != null) && (BackColor != "")) {
+		MainCanvas.fillStyle = BackColor;
+		MainCanvas.fillText(Text, X + 1, Y + 1);
+	}
+	
 	MainCanvas.fillStyle = Color;
 	MainCanvas.fillText(Text, X, Y);
 	MainCanvas.font = "36px Arial";
