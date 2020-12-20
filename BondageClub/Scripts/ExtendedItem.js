@@ -112,7 +112,6 @@ function ExtendedItemLoad(Options, DialogKey) {
 
 	if (ExtendedItemOffsets[ExtendedItemOffsetKey()] == null) ExtendedItemSetOffset(0);
 
-	//DialogExtendedMessage = DialogFind(Player, DialogKey);
 	DialogExtendedMessage = DialogFind(Player, DialogKey);
 }
 
@@ -351,8 +350,8 @@ function ExtendedItemRequirementCheckMessage(Option, IsSelfBondage) {
 		}
 	}
 
-	// An extendable item may provide a validation function. Returning false from the validation function will drop out of
-	// this function, and the new type will not be applied.
+	// An extendable item may provide a validation function. Returning a non-empty sring from the validation function will
+	// drop out of this function, and the new type will not be applied.
 	if (typeof window[FunctionPrefix + "Validate"] === "function") {
 		let ValidateResult = CommonCallFunctionByName(FunctionPrefix + "Validate", C, Option);
 		if (ValidateResult != "") {
