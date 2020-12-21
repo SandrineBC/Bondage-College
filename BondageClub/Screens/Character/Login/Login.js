@@ -4,14 +4,16 @@ var LoginMessage = "";
 var LoginCredits = null;
 var LoginCreditsPosition = 0;
 var LoginThankYou = "";
-var LoginThankYouList = ["Abby", "Aylea", "BlueEyedCat", "BlueWiner", "Bryce", "Christian", "Dini", "Epona", "Escurse", "FanRunner", 
-						 "Fluffythewhat", "Greendragon", "Jin", "Joe", "KamiKaze", "KBgamer", "Kimuriel", "Michal", "Michel", "Mike", 
-						 "Mindtie", "Misa", "Nick", "Overlord", "Rashiash", "Ray", "Rika", "Rutherford", "Ryner", "Samuel", 
-						 "Setsu", "Shadow", "Sky", "Tam", "Thomas", "Trent", "Troubadix", "William", "Xepherio", "Yurei"];
+var LoginThankYouList = ["Abby", "Anna", "Asuna", "Aylea", "BlueEyedCat", "BlueWinter", "Brian", "Bryce", "Christian", "Dini", "EliseBlackthorn",
+						 "Epona", "Escurse", "FanRunner", "Fluffythewhat", "Greendragon", "Jin", "KamiKaze", "KBgamer", "Kimuriel", "Longwave",
+						 "Michal", "Michel", "Mike", "Mindtie", "Misa", "Nick", "Overlord", "Rashiash", "Ray", "Rika", "Rutherford", "Ryner",
+						 "Samuel", "SeraDenoir", "Setsu", "Shadow", "Somononon", "Tam", "Trent", "Troubadix", "William", "Xepherio", "Yurei"];
 var LoginThankYouNext = 0;
 var LoginSubmitted = false;
 var LoginIsRelog = false;
 var LoginErrorMessage = "";
+var LoginCharacter = null;
+
 /* DEBUG: To measure FPS - uncomment this and change the + 4000 to + 40
 var LoginLastCT = 0;
 var LoginFrameCount = 0;
@@ -23,10 +25,10 @@ var LoginFrameTotalTime = 0;*/
  */
 function LoginDoNextThankYou() {
 	LoginThankYou = CommonRandomItemFromList(LoginThankYou, LoginThankYouList);
-	CharacterRelease(Player, false);
-	CharacterAppearanceFullRandom(Player);
-	if (InventoryGet(Player, "ItemNeck") != null) InventoryRemove(Player, "ItemNeck", false);
-	CharacterFullRandomRestrain(Player);
+	CharacterRelease(LoginCharacter, false);
+	CharacterAppearanceFullRandom(LoginCharacter);
+	if (InventoryGet(LoginCharacter, "ItemNeck") != null) InventoryRemove(LoginCharacter, "ItemNeck", false);
+	CharacterFullRandomRestrain(LoginCharacter);
 	LoginThankYouNext = CommonTime() + 4000;
 }
 
@@ -48,7 +50,7 @@ function LoginDrawCredits() {
 	else DrawText("Calculating Average FPS...", 1000, 975, "white");*/
 
 	// For each credits in the list
-	LoginCreditsPosition++;
+	LoginCreditsPosition += (TimerRunInterval * 60) / 1000;
 	MainCanvas.font = "30px Arial";
 	for (let C = 0; C < LoginCredits.length; C++) {
 
@@ -91,9 +93,11 @@ function LoginLoad() {
 
 	// Resets the player and other characters
 	Character = [];
+	CharacterNextId = 1;
 	CharacterReset(0, "Female3DCG");
-	LoginDoNextThankYou();
 	CharacterLoadCSVDialog(Player);
+	LoginCharacter = CharacterLoadNPC("NPC_Login");
+	LoginDoNextThankYou();
 	LoginStatusReset();
 	LoginErrorMessage = "";
 	LoginUpdateMessage();
@@ -130,7 +134,7 @@ function LoginRun() {
 	DrawButton(825, 870, 350, 60, TextGet(CheatAllow ? "Cheats" : "PasswordReset"), "White", "");
 
 	// Draw the character and thank you bubble
-	DrawCharacter(Player, 1400, 100, 0.9);
+	DrawCharacter(LoginCharacter, 1400, 100, 0.9);
 	if (LoginThankYouNext < CommonTime()) LoginDoNextThankYou();
 	DrawImage("Screens/" + CurrentModule + "/" + CurrentScreen + "/Bubble.png", 1400, 16);
 	DrawText(TextGet("ThankYou") + " " + LoginThankYou, 1625, 53, "Black", "Gray");
@@ -276,6 +280,22 @@ function LoginValidateArrays() {
 }
 
 /**
+ * Makes sure the difficulty restrictions are applied to the player
+ * @returns {void} Nothing
+ */
+function LoginDifficulty() {
+
+	// If Extreme mode, the player cannot control her blocked items
+	if (Player.GetDifficulty() >= 3) {
+		Player.BlockItems = [];
+		Player.LimitedItems = [{Name: "CombinationPadlock", Group: "ItemMisc", Type: null}, {Name: "PasswordPadlock", Group: "ItemMisc", Type: null}];
+		Player.HiddenItems = [];
+		ServerSend("AccountUpdate", { BlockItems: Player.BlockItems, LimitedItems: Player.LimitedItems, HiddenItems: Player.HiddenItems });
+	}
+
+}
+
+/**
  * Handles player login response data
  * @param {Character | string} C - The Login response data - this will either be the player's character data if the
  * login was successful, or a string error message if the login failed.
@@ -327,8 +347,10 @@ function LoginResponse(C) {
 			Player.BlockItems = ((C.BlockItems == null) || !Array.isArray(C.BlockItems)) ? [] : C.BlockItems;
 			Player.LimitedItems = ((C.LimitedItems == null) || !Array.isArray(C.LimitedItems)) ? [] : C.LimitedItems;
 			Player.HiddenItems = ((C.HiddenItems == null) || !Array.isArray(C.HiddenItems)) ? [] : C.HiddenItems;
+			Player.Difficulty = C.Difficulty;
 			Player.WardrobeCharacterNames = C.WardrobeCharacterNames;
-			WardrobeCharacter = [];
+			WardrobeCharacter = [];			
+			LoginDifficulty();
 
 			// Loads the ownership data
 			Player.Ownership = C.Ownership;
@@ -350,12 +372,25 @@ function LoginResponse(C) {
 			Player.AudioSettings = C.AudioSettings;
 			Player.GameplaySettings = C.GameplaySettings;
 			Player.ImmersionSettings = C.ImmersionSettings;
+			Player.RestrictionSettings = C.RestrictionSettings;
 			Player.ArousalSettings = C.ArousalSettings;
 			Player.OnlineSettings = C.OnlineSettings;
 			Player.OnlineSharedSettings = C.OnlineSharedSettings;
 			Player.WhiteList = ((C.WhiteList == null) || !Array.isArray(C.WhiteList)) ? [] : C.WhiteList;
 			Player.BlackList = ((C.BlackList == null) || !Array.isArray(C.BlackList)) ? [] : C.BlackList;
 			Player.FriendList = ((C.FriendList == null) || !Array.isArray(C.FriendList)) ? [] : C.FriendList;
+			// Attempt to parse friend names
+			if (typeof C.FriendNames === "string") { 
+				try {
+					Player.FriendNames = new Map(JSON.parse(LZString.decompressFromUTF16(C.FriendNames)));
+				} catch(err) {
+					console.warn("An error occured while parsing friendnames, entries have been reset.");
+				}
+			}
+			if (Player.FriendNames == null) { 
+				Player.FriendNames = new Map();
+			}
+			Player.SubmissivesList = typeof C.SubmissivesList === "string" ? new Set(JSON.parse(LZString.decompressFromUTF16(C.SubmissivesList))) : new Set();
 			Player.GhostList = ((C.GhostList == null) || !Array.isArray(C.GhostList)) ? [] : C.GhostList;
 
 			// Loads the player character model and data
@@ -376,6 +411,7 @@ function LoginResponse(C) {
 			CharacterRefresh(Player, false);
 			ElementRemove("InputName");
 			ElementRemove("InputPassword");
+			CharacterDelete(LoginCharacter);
 			if (ManagementIsClubSlave()) CharacterNaked(Player);
 
 			// Starts the game in the main hall while loading characters in the private room
@@ -468,9 +504,7 @@ function LoginClick() {
 	}
 	
 	// Try to login
-	if ((MouseX >= 775) && (MouseX <= 975) && (MouseY >= 500) && (MouseY <= 560)) {
-		LoginDoLogin();
-	}
+	if ((MouseX >= 775) && (MouseX <= 975) && (MouseY >= 500) && (MouseY <= 560)) LoginDoLogin();
 
 	// If we must change the language
 	if ((MouseX >= 1025) && (MouseX <= 1225) && (MouseY >= 500) && (MouseY <= 560)) {

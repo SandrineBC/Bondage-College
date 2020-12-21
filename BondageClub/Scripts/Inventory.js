@@ -164,7 +164,7 @@ function InventoryPrerequisiteMessage(C, Prerequisite) {
 	if (Prerequisite == "CannotBeSuited") return ((InventoryGet(C, "ItemVulva") != null) && (InventoryGet(C, "ItemVulva").Asset.Name == "WandBelt")) ? "CannotHaveWand" : "";
 	if (Prerequisite == "CannotBeHogtiedWithAlphaHood") return ((InventoryGet(C, "ItemHood") != null) && (InventoryGet(C, "ItemHood").Asset.Prerequisite != null) && (InventoryGet(C, "ItemHood").Asset.Prerequisite.indexOf("CanUseAlphaHood") >= 0)) ? Prerequisite : "";
 	if (Prerequisite == "AllFours") return CharacterItemsHavePose(C, "AllFours") ? "CannotUse" : "";
-	if (Prerequisite == "OnBed") return ((InventoryGet(C, "ItemDevices") == null) || (InventoryGet(C, "ItemDevices").Asset.Name != "Bed")) ? "MustBeOnBed" : "";
+	if (Prerequisite == "OnBed") return !C.Effect.includes("OnBed") ? "MustBeOnBed" : "";
 	if (Prerequisite == "CuffedArms") return  (C.Effect.indexOf("CuffedArms") <= -1) ? "MustBeArmCuffedFirst" : "";
 	if (Prerequisite == "CuffedFeet") return (C.Effect.indexOf("CuffedFeet") <= -1) ? "MustBeFeetCuffedFirst" : "";
 	if (Prerequisite == "NoOuterClothes") return (InventoryGet(C, "Cloth") != null || InventoryGet(C, "ClothLower") != null) ? "RemoveClothesForItem" : "";
@@ -425,13 +425,19 @@ function InventoryRemove(C, AssetGroup, Refresh) {
 				if (!AssetToCheck.Name) {
 					// Just try to force remove a group, if no item is specified
 					InventoryRemove(C, AssetToCheck.Group, false);
-				} else if ((InventoryGet(C, AssetToCheck.Group)) && (InventoryGet(C, AssetToCheck.Group).Asset.Name == AssetToCheck.Name)) {
-					// If a name is specified and the item is worn, check if it's an extended item
-					if ((!InventoryGet(C, AssetToCheck.Group).Asset.Type) || (InventoryGet(C, AssetToCheck.Group).Asset.Type) && (InventoryGet(C, AssetToCheck.Group).Asset.Type === AssetToCheck.Type))
-						// if the item is not extended or the item is extended and the type matches, remove it
-						InventoryRemove(C, AssetToCheck.Group, false);
+				} else {
+					let AssetFound = InventoryGet(C, AssetToCheck.Group);
+					// If a name is specified check if the item is worn
+					if (AssetFound && (AssetFound.Asset.Name == AssetToCheck.Name))
+						// If there is no type check or there is a type check and the item type matches, remove it
+						if (AssetToCheck.Type) {
+							if (AssetFound.Property && AssetFound.Property.Type === AssetToCheck.Type)
+								InventoryRemove(C, AssetToCheck.Group, false);
+						} else {
+							InventoryRemove(C, AssetToCheck.Group, false);
+						}
 				}
-			} 
+			}
 		}
 
 	// Second loop to find the item again, and remove it from the character appearance
@@ -667,6 +673,9 @@ function InventoryUnlock(C, Item) {
 		Item.Property.Effect.splice(Item.Property.Effect.indexOf("Lock"), 1);
 		delete Item.Property.LockedBy;
 		delete Item.Property.RemoveTimer;
+		delete Item.Property.LockSet;
+		delete Item.Property.Password;
+		delete Item.Property.Hint;
 		delete Item.Property.LockMemberNumber;
 		CharacterRefresh(C);
 	}
