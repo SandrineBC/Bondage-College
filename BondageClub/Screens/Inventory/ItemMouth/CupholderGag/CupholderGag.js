@@ -3,12 +3,12 @@
 const InventoryItemMouthCupholderGagOptions = [
 	{
 		Name: "NoCup",
-		Property: { Type: "",
+		Property: { Type: null,
 		},
 	},
 	{
 		Name: "Tip",
-		Property: { Type: "",
+		Property: { Type: null,
 		},
 	},
 	{
@@ -70,30 +70,3 @@ function InventoryItemMouthCupholderGagPublishAction(C, Option) {
 function InventoryItemMouthCupholderGagNpcDialog(C, Option) {
 	C.CurrentDialog = DialogFind(C, "InventoryItemMouthCupholderGag" + Option.Name, "ItemMouth");
 }
-
-/**
- * Validate function that checks, if the restrained character wears outer clothes. If so, the duct tape cannot be applied
- * @param {Character} C - The character wearing the item
- * @param {Option} Option - The option to be applied on the character. 
- * @returns {boolean} - Returns false and sets DialogExtendedMessage, if the chosen option is not possible.
- */
-/* function InventoryItemMouthCupholderGagValidate(C, Option) {
-	var Allowed = "";
-
-	switch (Option.Name) {
-		case "NoCup":
-		case "Tip":
-			if (!DialogFocusItem.Property.Type) {
-				Allowed = DialogFind(Player, "CupHolderGagNoCupPresent");
-			}
-			break;
-		case "Cup":
-			if (DialogFocusItem.Property.Type) {
-				Allowed = DialogFind(Player, "CupHolderGagCupAlreadyPresent");
-			}
-			break;
-	}// switch
-
-	return Allowed;
-}
- */
