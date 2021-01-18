@@ -109,8 +109,6 @@ ItemFeetMedicalBedRestraintsBase,Bed Straps
 ItemFeetMedicalBedRestraintsStraps,Cuffs
 ItemLegsFuturisticLegCuffsCuffs,Cuffs
 ItemLegsFuturisticLegCuffsDisplay,Display
-ItemLegsCeilingShacklesChain,Chain
-ItemLegsCeilingShacklesCuffs,Cuffs
 ItemLegsFuturisticCuffsCuffs,Cuffs
 ItemLegsFuturisticCuffsDisplay,Display
 ItemLegsOrnateLegCuffsGems,Gems
@@ -200,6 +198,8 @@ ItemArmsFuturisticArmbinderBand,Band
 ItemArmsFuturisticArmbinderStraps,Straps
 ItemArmsMedicalBedRestraintsBase,Bed Straps
 ItemArmsMedicalBedRestraintsStraps,Cuffs
+ItemArmsCeilingShacklesChain,Chain
+ItemArmsCeilingShacklesCuffs,Cuffs
 ItemHandsFuturisticMittensBody,Body
 ItemHandsFuturisticMittensMesh,Mesh
 ItemHandsFuturisticMittensDisplay,Display
