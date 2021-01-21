@@ -12,6 +12,6 @@ function InventoryItemVulvaClitoralStimulatorClick() {
 	VibratorModeClick([VibratorModeSet.STANDARD, VibratorModeSet.ADVANCED]);
 }
 
-function AssetsItemVulvaClitoralStimulatorDraw(data) {
+function AssetsItemVulvaClitoralStimulatorScriptDraw(data) {
 	VibratorModeScriptDraw(data);
 }
