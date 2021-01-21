@@ -12,6 +12,6 @@ function InventoryItemVulvaVibratingEggClick() {
 	VibratorModeClick([VibratorModeSet.STANDARD, VibratorModeSet.ADVANCED]);
 }
 
-function AssetsItemVulvaVibratingEggDraw(data) {
+function AssetsItemVulvaVibratingEggScriptDraw(data) {
 	VibratorModeScriptDraw(data);
 }
