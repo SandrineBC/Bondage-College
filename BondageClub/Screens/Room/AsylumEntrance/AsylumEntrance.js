@@ -105,7 +105,7 @@ function AsylumEntranceWearNurseClothes(C) {
 
 // Wears the patient clothes on a character
 /**
- * Dresses a given character as a patient
+ * Dresses a given character as a patient. Removes all clothes and respects cosplay rules
  * @param {string | Character} C - The character to dress
  * @returns {void} - Nothing
  */
@@ -115,11 +115,14 @@ function AsylumEntranceWearPatientClothes(C) {
 	InventoryWear(C, "Pajama1", "ClothLower", "#FF0080");
 	InventoryWear(C, "Socks2", "Socks", "#CCCCCC");
 	InventoryRemove(C, "Shoes");
-	InventoryRemove(C, "Wings");
-	InventoryRemove(C, "TailStraps");
 	InventoryRemove(C, "Gloves");
 	InventoryRemove(C, "HairAccessory1");
-	InventoryRemove(C, "HairAccessory2");
+	if (C.IsNpc() || C.OnlineSharedSettings && !C.OnlineSharedSettings.BlockBodyCosplay) {
+		InventoryRemove(C, "HairAccessory2");
+		InventoryRemove(C, "Wings");
+		InventoryRemove(C, "TailStraps");
+	}
+	InventoryRemove(C, "HairAccessory3");
 	InventoryRemove(C, "Hat");
 }
 
@@ -132,11 +135,12 @@ function AsylumEntranceIsWearingPatientClothes() {
 	if ((InventoryGet(Player, "ClothLower") == null) || (InventoryGet(Player, "ClothLower").Asset.Name != "Pajama1")) return false;
 	if ((InventoryGet(Player, "Socks") == null) || (InventoryGet(Player, "Socks").Asset.Name != "Socks2")) return false;
 	if (InventoryGet(Player, "Shoes") != null) return false;
-	if (InventoryGet(Player, "Wings") != null) return false;
-	if (InventoryGet(Player, "TailStraps") != null) return false;
 	if (InventoryGet(Player, "Gloves") != null) return false;
 	if (InventoryGet(Player, "HairAccessory1") != null) return false;
-	if (InventoryGet(Player, "HairAccessory2") != null) return false;
+	if (InventoryGet(Player, "HairAccessory2") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
+	if (InventoryGet(Player, "Wings") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
+	if (InventoryGet(Player, "TailStraps") != null && !Player.OnlineSharedSettings.BlockBodyCosplay) return false;
+	if (InventoryGet(Player, "HairAccessory3") != null) return false;
 	if (InventoryGet(Player, "Hat") != null) return false;
 	return true;
 }
@@ -219,8 +223,9 @@ function AsylumEntranceFightNurseEnd() {
  */
 function AsylumEntrancePlayerJacket(Pose) {
 	InventoryWear(Player, "StraitJacket", "ItemArms", "Default", 3);
-	Player.FocusGroup = { Name: "ItemArms" };
-	InventoryItemArmsStraitJacketSetPose(Pose);
+    Player.FocusGroup = AssetGroupGet("Female3DCG", "ItemArms");
+    const Option = InventoryItemArmsStraitJacketOptions.find(o => o.Name === Pose);
+    ExtendedItemSetType(Player, InventoryItemArmsStraitJacketOptions, Option);
 	Player.FocusGroup = null;
 }
 
@@ -476,4 +481,57 @@ function AsylumEntranceGiveNurseUniform() {
 	ItemsToEarn.push({Name: "NurseUniform", Group: "Cloth"});
 	ItemsToEarn.push({Name: "NurseCap", Group: "Hat"});
 	InventoryAddMany(Player, ItemsToEarn);
+}
+
+/**
+ * Whether or not a patient has earned a set of Asylum restraints.
+ * @returns {boolean} - TRUE if the the player is a patient but is not eligible for their own set of Asylum restraints,
+ * FALSE otherwise.
+ */
+function AsylumEntrancePatientCannotGetRestraints() {
+	const reputation = ReputationGet("Asylum");
+	return reputation <= -1 && reputation > -100 && !LogQuery("ReputationMaxed", "Asylum");
+}
+
+/**
+ * Whether or not a patient has earned a set of Asylum restraints.
+ * @returns {boolean} - TRUE if the the player is a patient and is eligible for their own set of Asylum restraints,
+ * FALSE otherwise.
+ */
+function AsylumEntrancePatientCanGetRestraints() {
+	const reputation = ReputationGet("Asylum");
+	return reputation <= -100 && !LogQuery("ReputationMaxed", "Asylum");
+}
+
+/**
+ * Whether or not a nurse has earned a set of Asylum restraints.
+ * @returns {boolean} - TRUE if the the player is a nurse but is not eligible for their own set of Asylum restraints,
+ * FALSE otherwise.
+ */
+function AsylumEntranceNurseCannotGetRestraints() {
+	const reputation = ReputationGet("Asylum");
+	return reputation >= 1 && reputation < 100 && !LogQuery("ReputationMaxed", "Asylum");
+}
+
+/**
+ * Whether or not a nurse has earned a set of Asylum restraints.
+ * @returns {boolean} - TRUE if the the player is a nurse and is eligible for their own set of Asylum restraints,
+ * FALSE otherwise
+ */
+function AsylumEntranceNurseCanGetRestraints() {
+	const reputation = ReputationGet("Asylum");
+	return reputation >= 100 && !LogQuery("ReputationMaxed", "Asylum");
+}
+
+/**
+ * Called when the player has earned their own set of Asylum restraints.
+ * @returns {void} - Nothing
+ */
+function AsylumEntranceGiveRestraints() {
+	LogAdd("ReputationMaxed", "Asylum");
+	InventoryAddMany(Player, [
+		{Name: "MedicalBedRestraints", Group: "ItemArms"},
+		{Name: "MedicalBedRestraints", Group: "ItemLegs"},
+		{Name: "MedicalBedRestraints", Group: "ItemFeet"},
+	]);
 }

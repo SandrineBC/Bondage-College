@@ -123,7 +123,8 @@ function SarahLoad() {
 			InventoryWear(Sarah, "H0930", "Height", "Default");
 			InventoryWear(Sarah, "Small", "BodyUpper", "White");
 			InventoryWear(Sarah, "Small", "BodyLower", "White");
-			InventoryWear(Sarah, "Default", "Hands", "White");
+			InventoryWear(Sarah, "Default", "Hands", "Default");
+			InventoryWear(Sarah, "Default", "Head", "Default");
 			InventoryWear(Sarah, "HairBack19", "HairBack", "#edd6b0");
 			InventoryWear(Sarah, "HairFront11", "HairFront", "#edd6b0");
 			InventoryWear(Sarah, "Bra2", "Bra", "#a02424");
@@ -135,7 +136,7 @@ function SarahLoad() {
 				InventoryWear(Sarah, "SlaveCollar", "ItemNeck");
 				Sarah.Owner = Player.Name;
 			}
-			CharacterSetActivePose(Sarah, "Kneel");
+			CharacterSetActivePose(Sarah, "Kneel", true);
 			AmandaIntroTime = CurrentTime + 400000;
 			SarahCharacter.push(Sarah);
 			
@@ -158,7 +159,8 @@ function SarahLoad() {
 		InventoryWear(Amanda, "H0950", "Height", "Default");
 		InventoryWear(Amanda, "Normal", "BodyUpper", "White");
 		InventoryWear(Amanda, "Normal", "BodyLower", "White");
-		InventoryWear(Amanda, "Default", "Hands", "White");
+		InventoryWear(Amanda, "Default", "Hands", "Default");
+		InventoryWear(Amanda, "Default", "Head", "Default");
 		InventoryWear(Amanda, "HairBack15", "HairBack", "#623123");
 		InventoryWear(Amanda, "HairFront4", "HairFront", "#623123");
 		InventoryAdd(Amanda, "StraponPanties", "ItemPelvis");
@@ -194,7 +196,8 @@ function SarahLoad() {
 		InventoryWear(Sophie, "H0970", "Height", "Default");
 		InventoryWear(Sophie, "Large", "BodyUpper", "White");
 		InventoryWear(Sophie, "Large", "BodyLower", "White");
-		InventoryWear(Sophie, "Default", "Hands", "White");
+		InventoryWear(Sophie, "Default", "Hands", "Default");
+		InventoryWear(Sophie, "Default", "Head", "Default");
 		InventoryWear(Sophie, "HairBack16", "HairBack", "#CCCCCC");
 		InventoryWear(Sophie, "HairFront1", "HairFront", "#CCCCCC");
 		CharacterArchetypeClothes(Sophie, "Mistress", "#222222");
@@ -456,6 +459,7 @@ function SarahFightSophieEnd() {
 	if (!KidnapVictory && Player.IsNaked()) Sophie.Stage = "50";
 	if (!KidnapVictory) CharacterRelease(Sophie);
 	else CharacterRelease(Player);
+	if (KidnapVictory) LogAdd("KidnapSophie", "Sarah");
 	InventoryRemove(Sophie, "ItemHead");
 	InventoryRemove(Sophie, "ItemMouth");
 	InventoryRemove(Player, "ItemHead");
@@ -552,7 +556,7 @@ function SarahSophiePreparePunishCharacter(C) {
 	InventoryWear(C, "LeatherBelt", "ItemLegs");
 	var Cuffs = InventoryGet(C, "ItemArms");
 	Cuffs.Property = {};
-	Cuffs.Property.Restrain = "Wrist";
+	Cuffs.Property.Type = "Wrist";
 	Cuffs.Property.SetPose = ["BackBoxTie"];
 	Cuffs.Property.Effect = ["Block", "Prone", "Lock"];
 	CharacterRefresh(C);
@@ -698,7 +702,7 @@ function SarahSlaveLockedCuffs(C) {
 		if ((InventoryGet(C, "ItemPelvis") == null) || (InventoryGet(C, "ItemPelvis").Asset.Name != "MetalChastityBelt")) return false;
 		if ((InventoryGet(C, "ItemBreast") == null) || (InventoryGet(C, "ItemBreast").Asset.Name != "MetalChastityBra")) return false;
 		if ((InventoryGet(C, "ItemArms") == null) || (InventoryGet(C, "ItemArms").Asset.Name != "LeatherCuffs")) return false;
-		if ((InventoryGet(C, "ItemArms").Property == null) || (InventoryGet(C, "ItemArms").Property.Restrain == null)) return false;
+		if ((InventoryGet(C, "ItemArms").Property == null) || (InventoryGet(C, "ItemArms").Property.Type == null)) return false;
 		return true;
 	}
 }

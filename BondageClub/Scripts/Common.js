@@ -11,8 +11,30 @@ var CommonCSVCache = {};
 var CutsceneStage = 0;
 
 /**
+ * A map of keys to common font stack definitions. Each stack definition is a
+ * two-item array whose first item is an ordered list of fonts, and whose
+ * second item is the generic fallback font family (e.g. sans-serif, serif,
+ * etc.)
+ * @constant
+ * @type {Object.<String, [String[], String]>}
+ */
+const CommonFontStacks = {
+	Arial: [["Arial"], "sans-serif"],
+	TimesNewRoman: [["Times New Roman", "Times"], "serif"],
+	Papyrus: [["Papyrus", "Ink Free", "Segoe Script", "Gabriola"], "fantasy"],
+	ComicSans: [["Comic Sans MS", "Comic Sans", "Brush Script MT", "Segoe Print"], "cursive"],
+	Impact: [["Impact", "Arial Black", "Franklin Gothic", "Arial"], "sans-serif"],
+	HelveticaNeue: [["Helvetica Neue", "Helvetica", "Arial"], "sans-serif"],
+	Verdana: [["Verdana", "Helvetica Neue", "Arial"], "sans-serif"],
+	CenturyGothic: [["Century Gothic", "Apple Gothic", "AppleGothic", "Futura"], "sans-serif"],
+	Georgia: [["Georgia", "Times"], "serif"],
+	CourierNew: [["Courier New", "Courier"], "monospace"],
+	Copperplate: [["Copperplate", "Copperplate Gothic Light"], "fantasy"],
+};
+
+/**
  * Checks if a variable is a number
- * @param {*} n - Variable to check for 
+ * @param {*} n - Variable to check for
  * @returns {boolean} - Returns TRUE if the variable is a finite number
  */
 function CommonIsNumeric(n) {
@@ -158,7 +180,7 @@ function CommonReadCSV(Array, Path, Screen, File) {
 function CommonGet(Path, Callback) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("GET", Path);
-	xhr.onreadystatechange = function () { if (this.readyState == 4) Callback.bind(this)(); };
+	xhr.onreadystatechange = function () { if (this.readyState == 4) Callback.bind(this)(xhr); };
 	xhr.send(null);
 }
 
@@ -271,6 +293,8 @@ function CommonCallFunctionByName(FunctionName/*, ...args */) {
 function CommonSetScreen(NewModule, NewScreen) {
 	CurrentModule = NewModule;
 	CurrentScreen = NewScreen;
+	CommonGetFont.clearCache();
+	CommonGetFontName.clearCache();
 	TextLoad();
 	if (typeof window[CurrentScreen + "Load"] === "function")
 		CommonDynamicFunction(CurrentScreen + "Load()");
@@ -286,13 +310,26 @@ function CommonTime() {
 
 /**
  * Checks if a given value is a valid HEX color code
- * @param {string} Value - Potential HEX color code 
- * @returns {boolean} - Returns TRUE if the string is a valid HEX color 
+ * @param {string} Value - Potential HEX color code
+ * @returns {boolean} - Returns TRUE if the string is a valid HEX color
  */
 function CommonIsColor(Value) {
 	if ((Value == null) || (Value.length < 3)) return false;
 	if (/^#[0-9A-F]{3}$/i.test(Value)) Value = "#" + Value[1] + Value[1] + Value[2] + Value[2] + Value[3] + Value[3];	//convert short hand hex color to standard format
 	return /^#[0-9A-F]{6}$/i.test(Value);
+}
+
+/**
+ * Checks whether an item's color has a valid value that can be interpreted by the drawing
+ * functions. Valid values are null, undefined, strings, and an array containing any of the
+ * aforementioned types.
+ * @param {*} Color - The Color value to check
+ * @returns {boolean} - Returns TRUE if the color is a valid item color
+ */
+function CommonColorIsValid(Color) {
+	if (Color == null || typeof Color === "string") return true;
+	if (Array.isArray(Color)) return Color.every(C => C == null || typeof C === "string");
+	return false;
 }
 
 /**
@@ -311,7 +348,7 @@ function CommonRandomItemFromList(ItemPrevious, ItemList) {
 /**
  * Converts a string of numbers split by commas to an array, sanitizes the array by removing all NaN or undefined elements.
  * @param {string} s - String of numbers split by commas
- * @returns {number[]} - Array of valid numbers from the given string 
+ * @returns {number[]} - Array of valid numbers from the given string
  */
 function CommonConvertStringToArray(s) {
 	var arr = [];
@@ -337,3 +374,124 @@ function CommonConvertArrayToString(Arr) {
 	}
 	return S;
 }
+
+/**
+ * Checks whether two item colors are equal. An item color may either be a string or an array of strings.
+ * @param {string|string[]} C1 - The first color to check
+ * @param {string|string[]} C2 - The second color to check
+ * @returns {boolean} - TRUE if C1 and C2 represent the same item color, FALSE otherwise
+ */
+function CommonColorsEqual(C1, C2) {
+	if (Array.isArray(C1) && Array.isArray(C2)) {
+		return CommonArraysEqual(C1, C2);
+	}
+	return C1 === C2;
+}
+
+/**
+ * Checks whether two arrays are equal. The arrays are considered equal if they have the same length and contain the same items in the same
+ * order, as determined by === comparison
+ * @param {*[]} a1 - The first array to compare
+ * @param {*[]} a2 - The second array to compare
+ * @returns {boolean} - TRUE if both arrays have the same length and contain the same items in the same order, FALSE otherwise
+ */
+function CommonArraysEqual(a1, a2) {
+	return a1.length === a2.length && a1.every((item, i) => item === a2[i]);
+}
+
+/**
+ * Creates a debounced wrapper for the provided function with the provided wait time. The wrapped function will not be called as long as
+ * the debounced function continues to be called. If the debounced function is called, and then not called again within the wait time, the
+ * wrapped function will be called.
+ * @param {function} func - The function to debounce
+ * @param {number} wait - The wait time in milliseconds that needs to pass after calling the debounced function before the wrapped function
+ * is invoked
+ * @returns {function} - A debounced version of the provided function
+ */
+function CommonDebounce(func, wait) {
+	let timeout, args, context, timestamp, result;
+	wait = typeof wait === "number" ? wait : 100;
+
+	function later() {
+		const last = CommonTime() - timestamp;
+		if (last >= 0 && last < wait) {
+			timeout = setTimeout(later, wait - last);
+		} else {
+			timeout = null;
+			result = func.apply(context, args);
+			context = args = null;
+		}
+	}
+
+	return function () {
+		context = this;
+		args = arguments;
+		timestamp = CommonTime();
+		if (!timeout) {
+			timeout = setTimeout(later, wait);
+		}
+		return result;
+	};
+}
+/**
+ * Creates a simple memoizer. 
+ * The memoized function does calculate its result exactly once and from that point on, uses
+ * the result stored in a local cache to speed up things.
+ * @param {function} func - The function to memoize
+ * @returns {any} - The result of the memoized function
+ */
+function CommonMemoize(func) {
+	var memo = {};
+
+	var memoized = function () {
+		var index = [];
+		for (var i = 0; i < arguments.length; i++) {
+			if (typeof arguments[i] === "object") {
+				index.push(JSON.stringify(arguments[i]));
+			} else {
+				index.push(String(arguments[i]));
+			}
+		} // for
+		if (!(index in memo)) {
+			memo[index] = func.apply(this, arguments);
+		}
+		return memo[index];
+	}; // function
+
+	// add a clear cache method
+	memoized.clearCache = function () {
+		memo = {};
+	}
+	return memoized;
+} // CommonMemoize
+
+/**
+ * Memoized getter function. Returns a font string specifying the player's
+ * preferred font and the provided size. This is memoized as it is called on
+ * every frame in many cases.
+ * @function
+ * @param {Number} size - The font size that should be specified in the
+ * returned font string
+ * @returns {String} - A font string specifying the requested font size and
+ * the player's preferred font stack. For example:
+ * 12px "Courier New", "Courier", monospace
+ */
+const CommonGetFont = CommonMemoize((size) => {
+	return `${size}px ${CommonGetFontName()}`;
+});
+
+/**
+ * Memoized getter function. Returns a font string specifying the player's
+ * preferred font stack. This is memoized as it is called on every frame in
+ * many cases.
+ * @function
+ * @returns {String} - A font string specifying the player's preferred font
+ * stack. For example:
+ * "Courier New", "Courier", monospace
+ */
+const CommonGetFontName = CommonMemoize(() => {
+	const pref = Player && Player.GraphicsSettings && Player.GraphicsSettings.Font;
+	const fontStack = CommonFontStacks[pref] || CommonFontStacks.Arial;
+	const font = fontStack[0].map(fontName => `"${fontName}"`).join(", ");
+	return `${font}, ${fontStack[1]}`;
+});

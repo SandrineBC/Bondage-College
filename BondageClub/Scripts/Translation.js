@@ -115,17 +115,22 @@ var TranslationDictionary = [
 		EnglishName: "French",
 		Files: [
 			"Assets/Female3DCG/Female3DCG_FR.txt",
+			"Assets/Female3DCG/ColorGroups_FR.txt",
+			"Assets/Female3DCG/LayerNames_FR.txt",
 			"Screens/Character/Appearance/Text_Appearance_FR.txt",
 			"Screens/Character/BackgroundSelection/Text_BackgroundSelection_FR.txt",
 			"Screens/Character/Cheat/Text_Cheat_FR.txt",
+			"Screens/Character/Relog/Text_Relog_FR.txt",
 			"Screens/Character/Creation/Text_Creation_FR.txt",
 			"Screens/Character/FriendList/Text_FriendList_FR.txt",
 			"Screens/Character/InformationSheet/Text_InformationSheet_FR.txt",
 			"Screens/Character/Login/Text_Login_FR.txt",
 			"Screens/Character/OnlineProfile/Text_OnlineProfile_FR.txt",
+			"Screens/Character/ItemColor/ItemColor_FR.txt",
 			"Screens/Character/PasswordReset/Text_PasswordReset_FR.txt",
 			"Screens/Character/Player/Dialog_Player_FR.txt",
 			"Screens/Character/Preference/Text_Preference_FR.txt",
+			"Screens/Character/Preference/ActivityDictionary_FR.txt",
 			"Screens/Character/Title/Text_Title_FR.txt",
 			"Screens/Character/Wardrobe/Text_Wardrobe_FR.txt",
 			"Screens/Cutscene/NPCCollaring/Text_NPCCollaring_FR.txt",
@@ -141,6 +146,8 @@ var TranslationDictionary = [
 			"Screens/MiniGame/SlaveAuction/Text_SlaveAuction_FR.txt",
 			"Screens/MiniGame/Tennis/Text_Tennis_FR.txt",
 			"Screens/MiniGame/Therapy/Text_Therapy_FR.txt",
+			"Screens/MiniGame/DojoStruggle/Text_DojoStruggle_FR.txt",
+			"Screens/MiniGame/PuppyWalker/Text_PuppyWalker_FR.txt",
 			"Screens/Online/ChatCreate/Text_ChatCreate_FR.txt",
 			"Screens/Online/ChatAdmin/Text_ChatAdmin_FR.txt",
 			"Screens/Online/ChatRoom/Dialog_Online_FR.txt",
@@ -164,6 +171,9 @@ var TranslationDictionary = [
 			"Screens/Room/CollegeTennis/Text_CollegeTennis_FR.txt",
 			"Screens/Room/CollegeTheater/Text_CollegeTheater_FR.txt",
 			"Screens/Room/Introduction/Dialog_NPC_Introduction_Sub_FR.txt",
+			"Screens/Room/LARP/Text_LARP_FR.txt",
+			"Screens/Room/DailyJob/Dialog_NPC_DailyJob_DojoTeacher_FR.txt",
+			"Screens/Room/DailyJob/Dialog_NPC_DailyJob_PuppyMistress_FR.txt",
 			"Screens/Room/MaidQuarters/Dialog_NPC_MaidQuarters_InitiationMaids_FR.txt",
 			"Screens/Room/MainHall/Dialog_NPC_MainHall_Maid_FR.txt",
 			"Screens/Room/MainHall/Text_MainHall_FR.txt",
@@ -311,10 +321,9 @@ function TranslationParseTXT(str) {
     }
 
 	// Removes any comment rows (starts with ###)
-    for (let row = 0; row < arr.length; row++)
+	for (let row = arr.length - 1; row >= 0; row--)
 		if (arr[row].indexOf("###") == 0) {
 			arr.splice(row, 1);
-			row = row - 1;
 		}
 
 	// Trims the full translated array
@@ -375,9 +384,10 @@ function TranslationDialog(C) {
 	// If we play in a foreign language
 	if ((TranslationLanguage != null) && (TranslationLanguage.trim() != "") && (TranslationLanguage.trim().toUpperCase() != "EN")) {
 
+		var OnlinePlayer = C.AccountName.indexOf("Online-") >= 0;
 		// Finds the full path of the translation file to use
-		var FullPath = ((C.ID == 0) ? "Screens/Character/Player/Dialog_Player" : "Screens/" + CurrentModule + "/" + CurrentScreen + "/Dialog_" + C.AccountName) + "_" + TranslationLanguage + ".txt";
-
+		var FullPath = (OnlinePlayer ? "Screens/Online/ChatRoom/Dialog_Online" :  (C.ID == 0) ? "Screens/Character/Player/Dialog_Player" : "Screens/" + CurrentModule + "/" + CurrentScreen + "/Dialog_" + C.AccountName) + "_" + TranslationLanguage + ".txt";
+			
 		// If the translation file is already loaded, we translate from it
 		if (TranslationCache[FullPath]) {
 			TranslationDialogArray(C, TranslationCache[FullPath]);

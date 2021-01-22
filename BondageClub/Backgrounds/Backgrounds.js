@@ -17,7 +17,7 @@ var BackgroundsTagDungeon = "Dungeon";
 var BackgroundsTagAsylum = "Asylum";
 
 /**
- * List of all tags
+ * List of all tags to create online chat rooms
  * @constant
  * @type {string[]}
  */
@@ -28,6 +28,17 @@ var BackgroundsTagList = [
     BackgroundsTagAquatic,
     BackgroundsTagSpecial,
     BackgroundsTagSciFiFantasy,
+    BackgroundsTagClub,
+    BackgroundsTagHouse,
+    BackgroundsTagDungeon
+];
+
+/**
+ * List of all tags to setup your main hall or private room
+ * @constant
+ * @type {string[]}
+ */
+var BackgroundsPrivateRoomTagList = [
     BackgroundsTagClub,
     BackgroundsTagHouse,
     BackgroundsTagDungeon
@@ -68,6 +79,8 @@ var BackgroundsList = [
     { Name: "XmasDay", Tag: [BackgroundsTagIndoor, BackgroundsTagSpecial] },
     { Name: "StreetNight", Tag: [BackgroundsTagOutdoor] },
     { Name: "SnowyStreet", Tag: [BackgroundsTagOutdoor, BackgroundsTagSpecial] },
+    { Name: "BoutiqueMain", Tag: [BackgroundsTagIndoor] },
+    { Name: "BoutiqueBack", Tag: [BackgroundsTagIndoor] },
     { Name: "DystopianCity", Tag: [BackgroundsTagOutdoor, BackgroundsTagSciFiFantasy] },
     { Name: "IndoorPool", Tag: [BackgroundsTagIndoor, BackgroundsTagAquatic, BackgroundsTagHouse] },
     { Name: "OutdoorPool", Tag: [BackgroundsTagOutdoor, BackgroundsTagAquatic] },
@@ -134,7 +147,7 @@ var BackgroundsList = [
     { Name: "PartyBasement", Tag: [BackgroundsTagIndoor, BackgroundsTagHouse] },
     { Name: "CosyChalet", Tag: [BackgroundsTagIndoor, BackgroundsTagHouse] },
     { Name: "BalconyNight", Tag: [BackgroundsTagOutdoor, BackgroundsTagHouse] },
-    { Name: "WrestlingRing", Tag: [BackgroundsTagIndoor, BackgroundsTagClub] },
+    { Name: "WrestlingRing", Tag: [BackgroundsTagIndoor] },
     { Name: "RustySaloon", Tag: [BackgroundsTagIndoor] },
     { Name: "OldFarm", Tag: [BackgroundsTagOutdoor] },
     { Name: "AsylumEntrance", Tag: [BackgroundsTagAsylum] },
@@ -142,7 +155,30 @@ var BackgroundsList = [
     { Name: "AsylumMeeting", Tag: [BackgroundsTagAsylum] },
     { Name: "AsylumTherapy", Tag: [BackgroundsTagAsylum] },
     { Name: "PaddedCell", Tag: [BackgroundsTagAsylum] },
-    { Name: "PaddedCell2", Tag: [BackgroundsTagAsylum] }
+    { Name: "PaddedCell2", Tag: [BackgroundsTagAsylum] },
+    { Name: "RainyForestPathDay", Tag: [BackgroundsTagOutdoor] },
+    { Name: "RainyForstPathNight", Tag: [BackgroundsTagOutdoor] },
+    { Name: "RainyStreetDay", Tag: [BackgroundsTagOutdoor] },
+    { Name: "RainyStreetNight", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyChaletDay", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyChaletNight", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyDeepForest", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyForestPathDay", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyForestPathNight", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyLakeNight", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyStreetDay1", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyStreetDay2", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyStreetNight2", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyTown1", Tag: [BackgroundsTagOutdoor] },
+    { Name: "SnowyTown2", Tag: [BackgroundsTagOutdoor] },
+    { Name: "NightClub", Tag: [BackgroundsTagIndoor] },
+    { Name: "EgyptianExhibit", Tag: [BackgroundsTagIndoor] },
+    { Name: "SciFiOutdoors", Tag: [BackgroundsTagOutdoor, BackgroundsTagSciFiFantasy] },
+    { Name: "Castle", Tag: [BackgroundsTagOutdoor, BackgroundsTagSciFiFantasy] },
+    { Name: "EgyptianTomb", Tag: [BackgroundsTagIndoor] },
+    { Name: "PoolBottom", Tag: [BackgroundsTagAquatic] },
+    { Name: "LatexRoom", Tag: [BackgroundsTagIndoor, BackgroundsTagDungeon, BackgroundsTagAsylum] },
+    { Name: "OutsideCells", Tag: [BackgroundsTagAsylum] },
 ];
 
 /**

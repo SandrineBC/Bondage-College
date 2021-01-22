@@ -100,7 +100,7 @@ function BackgroundSelectionTagChanged() {
 function BackgroundSelectionRun() {
 
 	DrawText(TextGet("Selection").replace("SelectedBackground", BackgroundSelectionSelectName), 300, 65, "White", "Black");
-	if (BackgroundSelectionTagList.length >= 2) ElementPositionFix("TagDropDown", 36, 575, 35, 300, 65);
+	if (BackgroundSelectionTagList.length >= 2) ElementPositionFix("TagDropDown", 36, 550, 35, 300, 65);
 	DrawText(TextGet("Filter").replace("Filtered", BackgroundSelectionView.length).replace("Total", BackgroundSelectionAll.length), 1000, 65, "White", "Black");
 
 	DrawButton(1585, 25, 90, 90, "", "White", "Icons/Prev.png", TextGet("Prev"));
@@ -116,8 +116,8 @@ function BackgroundSelectionRun() {
 	var X = 45;
 	var Y = 150;
 	for (let i = BackgroundSelectionOffset; i < BackgroundSelectionView.length && i - BackgroundSelectionOffset < BackgroundSelectionSize; ++i) {
-		if (BackgroundSelectionView[i].Name == BackgroundSelectionSelect) DrawButton(X - 4, Y - 4, 450 + 8, 225 + 8, BackgroundSelectionView[i], "Blue");
-		else DrawButton(X, Y, 450, 225, BackgroundSelectionView[i].Name, "White");
+		if (BackgroundSelectionView[i].Name == BackgroundSelectionSelect) DrawButton(X - 4, Y - 4, 450 + 8, 225 + 8, BackgroundSelectionView[i].Description, "Blue");
+		else DrawButton(X, Y, 450, 225, BackgroundSelectionView[i].Description, "White");
 		DrawImageResize("Backgrounds/" + BackgroundSelectionView[i].Name + ".jpg", X + 2, Y + 2, 446, 221);
 		DrawTextFit(BackgroundSelectionView[i].Description, X + 227, Y + 252, 450, "Black");
 		DrawTextFit(BackgroundSelectionView[i].Description, X + 225, Y + 250, 450, "White");

@@ -134,99 +134,175 @@ function InventoryAvailable(C, InventoryName, InventoryGroup) {
 }
 
 /**
-* Returns an error message if a prerequisite clashes with the character items and clothes
+* Returns an error message if a prerequisite clashes with the character's items and clothes
 * @param {Character} C - The character on which we check for prerequisites
 * @param {String} Prerequisite - The name of the prerequisite
 * @returns {String} - The error tag, can be converted to an error message
 */
 function InventoryPrerequisiteMessage(C, Prerequisite) {
+	switch (Prerequisite) {
+		// Basic prerequisites that can apply to many items
+		case "NoItemFeet": return (InventoryGet(C, "ItemFeet") != null) ? "MustFreeFeetFirst" : "";
+		case "NoItemArms": return (InventoryGet(C, "ItemArms") != null) ? "MustFreeArmsFirst" : "";
+		case "NoItemLegs": return (InventoryGet(C, "ItemLegs") != null) ? "MustFreeLegsFirst" : "";
+		case "NoItemHands": return (InventoryGet(C, "ItemHands") != null) ? "MustFreeHandsFirst" : "";
+		case "LegsOpen": return CharacterItemsHavePose(C, "LegsClosed") ? "LegsCannotOpen" : "";
+		case "NotKneeling": return CharacterItemsHavePose(C, "Kneel") ? "MustStandUpFirst" : "";
+		case "CanKneel": return C.Effect.includes("BlockKneel") ? "MustBeAbleToKneel" : "";
+		case "NotMounted": return C.Effect.includes("Mounted") ? "CannotBeUsedWhenMounted" : "";
+		case "NotHorse": return C.Pose.includes("Horse") ? "CannotBeUsedWhenMounted" : "";
+		case "NotSuspended": return C.Pose.includes("Suspension") || C.Pose.includes("SuspensionHogtied") ? "RemoveSuspensionForItem" : "";
+		case "NotHogtied": return C.Pose.includes("Hogtied") ? "ReleaseHogtieForItem" : "";
+		case "NotYoked": return CharacterItemsHavePose(C, "Yoked") ? "CannotBeUsedWhenYoked" : "";
+		case "NotKneelingSpread": return C.Pose.includes("KneelingSpread") ? "MustStandUpFirst" : "";
+		case "NotChaste": return C.Effect.includes("Chaste") ? "RemoveChastityFirst" : "";
+		case "NotChained": return C.Effect.includes("IsChained") ? "RemoveChainForItem" : "";
+		case "NoFeetSpreader": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar"]) ? "CannotBeUsedWithFeetSpreader" : "";
+		case "NotShackled": return C.Effect.includes("Shackled") ? "RemoveShacklesFirst" : "";
+		case "Collared": return (InventoryGet(C, "ItemNeck") == null) ? "MustCollaredFirst" : "";
+		case "CannotHaveWand": return InventoryIsItemInList(C, "ItemArms", ["FullLatexSuit"]) ? "CannotHaveWand" : "";
+		case "CannotBeSuited": return InventoryIsItemInList(C, "ItemVulva", ["WandBelt", "HempRopeBelt"]) ? "CannotHaveWand" : "";
+		case "CannotBeHogtiedWithAlphaHood": return InventoryDoesItemHavePrerequisite(C, "ItemHood", "CanUseAlphaHood") ? Prerequisite : "";
+		case "AllFours": return CharacterItemsHavePose(C, "AllFours") ? "CannotUse" : "";
+		case "OnBed": return !C.Effect.includes("OnBed") ? "MustBeOnBed" : "";
+		case "CuffedArms": return  !C.Effect.includes("CuffedArms") ? "MustBeArmCuffedFirst" : "";
+		case "CuffedFeet": return !C.Effect.includes("CuffedFeet") ? "MustBeFeetCuffedFirst" : "";
+		case "NoOuterClothes": return InventoryHasItemInAnyGroup(C, ["Cloth", "ClothLower"]) ? "RemoveClothesForItem" : "";
+		case "NoMaidTray": return InventoryIsItemInList(C, "ItemMisc", ["WoodenMaidTray", "WoodenMaidTrayFull"]) ? "CannotBeUsedWhileServingDrinks" : "";
 
-	// Basic prerequisites that can apply to many items
-	if (Prerequisite == "NoItemFeet") return (InventoryGet(C, "ItemFeet") != null) ? "MustFreeFeetFirst" : "";
-	if (Prerequisite == "NoItemArms") return (InventoryGet(C, "ItemArms") != null) ? "MustFreeArmsFirst" : "";
-	if (Prerequisite == "NoItemLegs") return (InventoryGet(C, "ItemLegs") != null) ? "MustFreeLegsFirst" : "";
-	if (Prerequisite == "NoItemHands") return (InventoryGet(C, "ItemHands") != null) ? "MustFreeHandsFirst" : "";
-	if (Prerequisite == "LegsOpen") return (C.Pose.indexOf("LegsClosed") >= 0) ? "LegsCannotOpen" : "";
-	if (Prerequisite == "NotKneeling") return (C.Pose.indexOf("Kneel") >= 0) ? "MustStandUpFirst" : "";
-	if (Prerequisite == "CanKneel") return (C.Effect.indexOf("BlockKneel") >= 0) ? "MustBeAbleToKneel" : "";
-	if (Prerequisite == "NotMounted") return (C.Effect.indexOf("Mounted") >= 0) ? "CannotBeUsedWhenMounted" : "";
-	if (Prerequisite == "NotHorse") return (C.Pose.indexOf("Horse") >= 0) ? "CannotBeUsedWhenMounted" : "";
-	if (Prerequisite == "NotSuspended") return ((C.Pose.indexOf("Suspension") >= 0) || (C.Pose.indexOf("SuspensionHogtied") >=0)) ? "RemoveSuspensionForItem" : "";
-	if (Prerequisite == "NotHogtied") return (C.Pose.indexOf("Hogtied") >= 0) ? "ReleaseHogtieForItem" : "";
-	if (Prerequisite == "CanUseAlphaHood") return (C.Appearance.find(A => A.Asset.Prerequisite && A.Asset.Prerequisite.includes("CannotUseWithAlphaHood"))) ? "ReleaseAlphaBlockingItem" : "";
-	if (Prerequisite == "NotYoked") return (C.Pose.indexOf("Yoked") >= 0) ? "CannotBeUsedWhenYoked" : "";
-	if (Prerequisite == "NotKneelingSpread") return (C.Pose.indexOf("KneelingSpread") >= 0) ? "MustStandUpFirst" : "";
-	if (Prerequisite == "NotChaste") return (C.Effect.indexOf("Chaste") >= 0) ? "RemoveChastityFirst" : "";
-	if (Prerequisite == "NotChained") return (C.Effect.indexOf("IsChained") >= 0) ? "RemoveChainForItem" : "";
-	if (Prerequisite == "NoFeetSpreader") return ((InventoryGet(C, "ItemFeet") != null) && (InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderMetal" || InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderVibratingDildoBar" || InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderDildoBar")) ? "CannotBeUsedWithFeetSpreader" : "";
-	if (Prerequisite == "NotShackled") return (C.Effect.indexOf("Shackled") >= 0) ? "RemoveShacklesFirst" : "";
-	if (Prerequisite == "Collared") return (InventoryGet(C, "ItemNeck") == null) ? "MustCollaredFirst" : "";
-	if (Prerequisite == "CannotHaveWand") return ((InventoryGet(C, "ItemArms") != null) && (InventoryGet(C, "ItemArms").Asset.Name == "FullLatexSuit")) ? "CannotHaveWand" : "";
-	if (Prerequisite == "CannotBeSuited") return ((InventoryGet(C, "ItemVulva") != null) && (InventoryGet(C, "ItemVulva").Asset.Name == "WandBelt")) ? "CannotHaveWand" : "";
-	if (Prerequisite == "CannotBeHogtiedWithAlphaHood" || Prerequisite == "CannotUseWithAlphaHood") return ((InventoryGet(C, "ItemHood") != null) && (InventoryGet(C, "ItemHood").Asset.Prerequisite != null) && (InventoryGet(C, "ItemHood").Asset.Prerequisite.indexOf("CanUseAlphaHood") >= 0)) ? Prerequisite : "";
-	if (Prerequisite == "StraitDressOpen") return (C.Pose.indexOf("StraitDressOpen") >= 0) ? "StraitDressOpen" : "";
-	if (Prerequisite == "AllFours") return (C.Pose.indexOf("AllFours") >= 0) ? "StraitDressOpen" : "";
-	if (Prerequisite == "OnBed") return ((InventoryGet(C, "ItemDevices") == null) || (InventoryGet(C, "ItemDevices").Asset.Name != "Bed")) ? "MustBeOnBed" : "";
-	if (Prerequisite == "CuffedArms") return  (C.Effect.indexOf("CuffedArms") <= -1) ? "MustBeArmCuffedFirst" : "";
-	if (Prerequisite == "CuffedFeet") return (C.Effect.indexOf("CuffedFeet") <= -1) ? "MustBeFeetCuffedFirst" : "";
+		// Checks for torso access based on clothes
+		case "AccessTorso": return !InventoryDoesItemExposeGroup(C, "Cloth", "ItemTorso") ? "RemoveClothesForItem" : "";
 
-	// Checks for torso access based on clothes
-	var Cloth = InventoryGet(C, "Cloth");
-	if ((Prerequisite == "AccessTorso") && (Cloth != null) && !Cloth.Asset.Expose.includes("ItemTorso")) return "RemoveClothesForItem";
+		// Breast items can be blocked by clothes
+		case "AccessBreast": return !InventoryDoesItemExposeGroup(C, "Cloth", "ItemBreast") || !InventoryDoesItemExposeGroup(C, "Bra", "ItemBreast") ? "RemoveClothesForItem" : "";
+		case "AccessBreastSuitZip": return !InventoryDoesItemExposeGroup(C, "Cloth", "ItemNipplesPiercings") || !InventoryDoesItemExposeGroup(C, "Suit", "ItemNipplesPiercings") ? "UnZipSuitForItem" : "";
 
-	// Breast items can be blocked by clothes
-	if ((Prerequisite == "AccessBreast") && (((Cloth != null) && !Cloth.Asset.Expose.includes("ItemBreast"))
-			|| (InventoryGet(C, "Bra") != null && !InventoryGet(C, "Bra").Asset.Expose.includes("ItemBreast")))) return "RemoveClothesForItem";
-	if ((Prerequisite == "AccessBreastSuitZip") && (((Cloth != null) && !Cloth.Asset.Expose.includes("ItemNipplesPiercings"))
-		    || (InventoryGet(C, "Suit") != null && !InventoryGet(C, "Suit").Asset.Expose.includes("ItemNipplesPiercings")))) return "UnZipSuitForItem";
+		// Vulva/Butt items can be blocked by clothes, panties and some socks
+		case "AccessVulva": return InventoryDoesItemBlockGroup(C, "Cloth", "ItemVulva")
+			|| !InventoryDoesItemExposeGroup(C, "ClothLower", "ItemVulva")
+			|| !InventoryDoesItemExposeGroup(C, "Panties", "ItemVulva")
+			|| InventoryDoesItemBlockGroup(C, "Socks", "ItemVulva")
+			? "RemoveClothesForItem" : "";
+		case "AccessVulvaSuitZip": return !InventoryDoesItemExposeGroup(C, "SuitLower", "ItemVulvaPiercings") ? "UnZipSuitForItem" : "";
 
-	// Vulva/Butt items can be blocked by clothes, panties and some socks
-	if ((Prerequisite == "AccessVulva") && (((Cloth != null) && Cloth.Asset.Block != null && Cloth.Asset.Block.includes("ItemVulva"))
-			|| (InventoryGet(C, "ClothLower") != null && !InventoryGet(C, "ClothLower").Asset.Expose.includes("ItemVulva"))
-			|| (InventoryGet(C, "Panties") != null && !InventoryGet(C, "Panties").Asset.Expose.includes("ItemVulva"))
-			|| (InventoryGet(C, "Socks") != null && (InventoryGet(C, "Socks").Asset.Block != null) && InventoryGet(C, "Socks").Asset.Block.includes("ItemVulva")))) return "RemoveClothesForItem";
-	if ((Prerequisite == "AccessVulvaSuitZip") && (
-		(InventoryGet(C, "SuitLower") != null && !InventoryGet(C, "SuitLower").Asset.Expose.includes("ItemVulvaPiercings")))) return "UnZipSuitForItem";
+		// For body parts that must be naked
+		case "NakedFeet": return InventoryHasItemInAnyGroup(C, ["ItemBoots", "Socks", "Shoes"]) ? "RemoveClothesForItem" : "";
+		case "NakedHands": return InventoryHasItemInAnyGroup(C, ["ItemHands", "Gloves"]) ? "RemoveClothesForItem" : "";
 
-	// For body parts that must be naked
-	if ((Prerequisite == "NakedFeet") && ((InventoryGet(C, "ItemBoots") != null) || (InventoryGet(C, "Socks") != null) || (InventoryGet(C, "Shoes") != null))) return "RemoveClothesForItem";
-	if ((Prerequisite == "NakedHands") && ((InventoryGet(C, "ItemHands") != null) || (InventoryGet(C, "Gloves") != null))) return "RemoveClothesForItem";
+		// Toe Tied
+		case "ToeTied": return InventoryIsItemInList(C, "ItemFeet", ["SpreaderMetal", "SpreaderVibratingDildoBar", "SpreaderDildoBar"])
+			|| InventoryIsItemInList(C, "ItemLegs", ["WoodenHorse"])
+			|| InventoryIsItemInList(C, "ItemDevices", ["OneBarPrison", "SaddleStand"])
+			? "LegsCannotClose" : "";
 
-	// Toe Tied
-	if (Prerequisite == "ToeTied" && (InventoryGet(C, "ItemFeet") != null) && (InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderMetal" || InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderVibratingDildoBar" || InventoryGet(C, "ItemFeet").Asset.Name == "SpreaderDildoBar")) return "LegsCannotClose";
-	if (Prerequisite == "ToeTied" && (InventoryGet(C, "ItemLegs") != null) && (InventoryGet(C, "ItemLegs").Asset.Name == "WoodenHorse")) return "LegsCannotClose";
-	if (Prerequisite == "ToeTied" && (InventoryGet(C, "ItemDevices") != null) && (InventoryGet(C, "ItemDevices").Asset.Name == "OneBarPrison")) return "LegsCannotClose";
-	if (Prerequisite == "ToeTied" && (InventoryGet(C, "ItemDevices") != null) && (InventoryGet(C, "ItemDevices").Asset.Name == "SaddleStand")) return "LegsCannotClose";
+		// Display Frame
+		case "DisplayFrame": return InventoryHasItemInAnyGroup(C, ["ItemArms", "ItemLegs", "ItemFeet", "ItemBoots"])
+			? "RemoveRestraintsFirst"
+			: InventoryHasItemInAnyGroup(C, ["Cloth", "ClothLower", "Shoes"])
+			? "RemoveClothesForItem" : "";
 
-	// Display Frame
-	if (Prerequisite == "DisplayFrame" && (InventoryGet(C, "ItemArms") != null || InventoryGet(C, "ItemLegs") != null || InventoryGet(C, "ItemFeet") != null || InventoryGet(C, "ItemBoots") != null)) return "RemoveRestraintsFirst";
-	if (Prerequisite == "DisplayFrame" && (InventoryGet(C, "Cloth") != null || InventoryGet(C, "ClothLower") != null || InventoryGet(C, "Shoes") != null)) return "RemoveClothesForItem";
+		// Gas mask (Or face covering items going below the chin)
+		case "GasMask": return InventoryIsItemInList(C, "ItemArms", ["Pillory"]) || InventoryIsItemInList(C, "ItemDevices", ["TheDisplayFrame"]) ? "RemoveRestraintsFirst" : "";
+		case "NotMasked": return InventoryIsItemInList(C, "ItemHood", "OldGasMask") ? "RemoveFaceMaskFirst" : "";
 
-	// Gas mask (Or face covering items going below the chin)
-	if (Prerequisite == "GasMask" && (InventoryGet(C, "ItemArms") != null && InventoryGet(C, "ItemArms").Asset.Name == "Pillory" || InventoryGet(C, "ItemDevices") != null && InventoryGet(C, "ItemDevices").Asset.Name == "TheDisplayFrame")) return "RemoveRestraintsFirst";
-	if (Prerequisite == "NotMasked"  && (InventoryGet(C, "ItemHood") != null) && (InventoryGet(C, "ItemHood").Asset.Name == "OldGasMask")) return "RemoveFaceMaskFirst";
-	
-	// Blocked remotes on self
-	if (Prerequisite == "RemotesAllowed" && LogQuery("BlockRemoteSelf", "OwnerRule") && C.ID == 0) return "OwnerBlockedRemotes";
-		
-	// Layered Gags, Prevent gags marked with "GagUnique" from being equipped over gags with "GagFlat" and "GagCorset"
-	if (Prerequisite == "GagUnique" && C.FocusGroup) {
-		// Index of the gag we're trying to add (1-indexed)
-		var GagIndex = Number(C.FocusGroup.Name.replace("ItemMouth", "") || 1);
-		var MouthItems = [InventoryGet(C, "ItemMouth"), InventoryGet(C, "ItemMouth2"), InventoryGet(C, "ItemMouth3")];
-		var MinBlockingIndex = 0;
-		for (let i = 0; i < MouthItems.length && !MinBlockingIndex; i++) {
-			// Find the lowest indexed slot in which there is a "GagFlat" or "GagCorset" item, drop out of the loop if we find one
-			var AssetPrerequisite = MouthItems[i] && MouthItems[i].Asset.Prerequisite;
-			if (AssetPrerequisite === "GagFlat" || AssetPrerequisite === "GagCorset") MinBlockingIndex = i + 1;
-		}
-		// Not allowed to add a "GagUnique" if there is a "GagFlat"/"GagCorset" anywhere below it
-		if (MinBlockingIndex && GagIndex > MinBlockingIndex) return "CannotBeUsedOverFlatGag";
+		// Blocked remotes on self
+		case "RemotesAllowed": return LogQuery("BlockRemoteSelf", "OwnerRule") && C.ID === 0 ? "OwnerBlockedRemotes" : "";
+
+		// Layered Gags, prevent gags from being equipped over other gags they are incompatible with
+		case "GagUnique": return C.FocusGroup && InventoryPrerequisiteConflictingGags(C, ["GagFlat", "GagCorset", "GagUnique"]);
+		case "GagCorset": return C.FocusGroup && InventoryPrerequisiteConflictingGags(C, ["GagCorset"]);
+
+		// Returns no message, indicating that all prerequisites are fine
+		default: return "";
 	}
+}
 
-	// Returns no message, indicating that all prerequisites are fine
-	return "";
+/**
+ * Prerequisite utility function that returns TRUE if the given character has an item equipped in the provided group
+ * whose name matches one of the names in the provided list.
+ * @param {Character} C - The character for whom to check equipped items
+ * @param {String} ItemGroup - The name of the item group to check
+ * @param {String[]} ItemList - A list of item names to check against
+ * @returns {boolean} - TRUE if the character has an item from the item list equipped in the named slot, FALSE
+ * otherwise
+ */
+function InventoryIsItemInList(C, ItemGroup, ItemList) {
+	const Item = InventoryGet(C, ItemGroup);
+	return Item && ItemList.includes(Item.Asset.Name);
+}
 
+/**
+ * Prerequisite utility function that returns TRUE if the given character has an item equipped in the provided group
+ * which has the provided prerequisite.
+ * @param {Character} C - The character whose items should be checked
+ * @param {String} ItemGroup - The name of the item group to check
+ * @param {String} Prerequisite - The name of the prerequisite to look for
+ * @returns {boolean} - TRUE if the character has an item equipped in the named slot which has the named prerequisite,
+ * FALSE otherwise
+ */
+function InventoryDoesItemHavePrerequisite(C, ItemGroup, Prerequisite) {
+	const Item = InventoryGet(C, ItemGroup);
+	return Item && Item.Asset.Prerequisite && Item.Asset.Prerequisite.includes(Prerequisite);
+}
+
+/**
+ * Prerequisite utility function that returns TRUE if the given character has an item equipped in the provided group
+ * which blocks the target group.
+ * @param {Character} C - The character whose items should be checked
+ * @param {String} ItemGroup - The name of the group whose item should be checked
+ * @param {String} TargetGroup - The name of the group that should be checked for being blocked
+ * @returns {boolean} - TRUE if the character has an item equipped in the named slot which blocks the target group,
+ * FALSE otherwise
+ */
+function InventoryDoesItemBlockGroup(C, ItemGroup, TargetGroup) {
+	const Item = InventoryGet(C, ItemGroup);
+	return Item && Item.Asset.Block && Item.Asset.Block.includes(TargetGroup);
+}
+
+/**
+ * Prerequisite utility function that returns TRUE if the given character has an item equipped in the provided group
+ * which exposes the target group.
+ * @param {Character} C - The character whose items should be checked
+ * @param {String} ItemGroup - The name of the group whose item should be checked
+ * @param {String} TargetGroup - The name of the group that should be checked for being exposed
+ * @returns {boolean} - TRUE if the character has an item equipped in the named slot which exposes the target group,
+ * FALSE otherwise
+ */
+function InventoryDoesItemExposeGroup(C, ItemGroup, TargetGroup) {
+	const Item = InventoryGet(C, ItemGroup);
+	return !Item || Item.Asset.Expose.includes(TargetGroup);
+}
+
+/**
+ * Prerequisite utility function that returns TRUE if the given character has an item equipped in any of the named group
+ * slots.
+ * @param {Character} C - The character whose items should be checked
+ * @param {String[]} GroupList - The list of groups to check for items in
+ * @returns {boolean} - TRUE if the character has any item equipped in any of the named groups, FALSE otherwise.
+ */
+function InventoryHasItemInAnyGroup(C, GroupList) {
+	return GroupList.some(GroupName => !!InventoryGet(C, GroupName));
+}
+
+/**
+ * Check if there are any gags with prerequisites that block the new gag from being applied
+ * @param {Character} C - The character on which we check for prerequisites
+ * @param {Array} BlockingPrereqs - The prerequisites we check for on lower gags
+ * @returns {String} - Returns the prerequisite message if the gag is blocked, or an empty string if not
+ */
+function InventoryPrerequisiteConflictingGags(C, BlockingPrereqs) {
+	// Index of the gag we're trying to add (1-indexed)
+	var GagIndex = Number(C.FocusGroup.Name.replace("ItemMouth", "") || 1);
+	var MouthItems = [InventoryGet(C, "ItemMouth"), InventoryGet(C, "ItemMouth2"), InventoryGet(C, "ItemMouth3")];
+	var MinBlockingIndex = 0;
+	for (let i = 0; i < MouthItems.length && !MinBlockingIndex; i++) {
+		// Find the lowest indexed slot in which there is a gag with a prerequisite that blocks the new gag
+		var AssetPrerequisite = MouthItems[i] && MouthItems[i].Asset.Prerequisite;
+		if (BlockingPrereqs.indexOf(AssetPrerequisite) >= 0) MinBlockingIndex = i + 1;
+	}
+	// Not allowed to add the new gag if there is a blocking gag anywhere below it
+	if (MinBlockingIndex && GagIndex > MinBlockingIndex) return "CannotBeUsedOverGag";
+	else return "";
 }
 
 /**
@@ -280,7 +356,7 @@ function InventoryGet(C, AssetGroup) {
 function InventoryWear(C, AssetName, AssetGroup, ItemColor, Difficulty, MemberNumber) {
 	for (let A = 0; A < Asset.length; A++)
 		if ((Asset[A].Name == AssetName) && (Asset[A].Group.Name == AssetGroup)) {
-			CharacterAppearanceSetItem(C, AssetGroup, Asset[A], ((ItemColor == null) || (ItemColor == "Default")) ? Asset[A].DefaultColor : ItemColor, Difficulty, MemberNumber);
+			CharacterAppearanceSetItem(C, AssetGroup, Asset[A], ((ItemColor == null || ItemColor == "Default") && Asset[A].DefaultColor != null) ? Asset[A].DefaultColor : ItemColor, Difficulty, MemberNumber);
 			InventoryExpressionTrigger(C, InventoryGet(C, AssetGroup));
 			return;
 		}
@@ -313,65 +389,129 @@ function InventoryLocked(C, AssetGroup, CheckProperties) {
 }
 
 /**
-* Makes the character wear a random item from a body area, the character doesn't need to own the item
+* Makes the character wear a random item from a body area
 * @param {Character} C - The character that must wear the item
 * @param {String} GroupName - The name of the asset group (body area)
 * @param {Int} Difficulty - The difficulty level to escape from the item
+* @param {Boolean} Refresh - Do not call CharacterRefresh if false
+* @param {Boolean} MustOwn - If TRUE, only assets that the character owns can be worn. Otherwise any asset can be used
+* @returns {void} - Nothing
 */
-function InventoryWearRandom(C, GroupName, Difficulty) {
+function InventoryWearRandom(C, GroupName, Difficulty, Refresh, MustOwn) {
 	if (!InventoryLocked(C, GroupName)) {
+		var IsClothes = false;
 
 		// Finds the asset group and make sure it's not blocked
 		for (let A = 0; A < AssetGroup.length; A++)
 			if (AssetGroup[A].Name == GroupName) {
-				var FG = C.FocusGroup;
-				C.FocusGroup = AssetGroup[A];
-				var IsBlocked = InventoryGroupIsBlocked(C);
-				C.FocusGroup = FG;
+				IsClothes = AssetGroup[A].Clothing;
+				var IsBlocked = InventoryGroupIsBlocked(C, GroupName);
 				if (IsBlocked) return;
 				break;
 			}
 
-		// Builds a list of all possible items and uses one of them, visible if possible, prevents the user from blocking everything to cheat
-		var ListFull = [];
-		var ListPermittedVisible = [];
-		var ListPermitted = [];
-		for (let A = 0; A < Asset.length; A++)
-			if ((Asset[A].Group.Name == GroupName) && Asset[A].Wear && Asset[A].Enable && Asset[A].Random && InventoryAllow(C, Asset[A].Prerequisite, false)) {
-				ListFull.push(Asset[A]);
-				if (!InventoryIsPermissionBlocked(C, Asset[A].Name, Asset[A].Group.Name))
-					if (!CharacterAppearanceItemIsHidden(Asset[A].Name, GroupName)) ListPermittedVisible.push(Asset[A]);
-					else ListPermitted.push(Asset[A]);
-			}
-		if (ListFull.length == 0) return;
-		var RandomAsset = ListPermittedVisible.length > 0 ? ListPermittedVisible[Math.floor(Math.random() * ListPermittedVisible.length)] : ListPermitted.length > 0 ? ListPermitted[Math.floor(Math.random() * ListPermitted.length)] : ListFull[Math.floor(Math.random() * ListFull.length)];
-		CharacterAppearanceSetItem(C, GroupName, RandomAsset, RandomAsset.DefaultColor, Difficulty);
-		CharacterRefresh(C);
+		// Restrict the options to assets owned by the character if required
+		var AssetList = null;
+		if (MustOwn) {
+			CharacterAppearanceBuildAssets(C);
+			AssetList = CharacterAppearanceAssets;
+		}
 
+		// Get and apply a random asset
+		var SelectedAsset = InventoryGetRandom(C, GroupName, AssetList);
+
+		// Pick a random color for clothes from their schema
+		var SelectedColor = IsClothes ? SelectedAsset.Group.ColorSchema[Math.floor(Math.random() * SelectedAsset.Group.ColorSchema.length)] : null;
+
+		CharacterAppearanceSetItem(C, GroupName, SelectedAsset, SelectedColor, Difficulty, null, Refresh);
 	}
+}
+
+/**
+ * Select a random asset from a group, narrowed to the most preferable available options (i.e unblocked/visible/unlimited) based on their binary "rank"
+ * @param {Character} C - The character to pick the asset for
+ * @param {String} GroupName - The asset group to pick the asset from. Set to an empty string to not filter by group.
+ * @param {Array} AllowedAssets - Optional parameter: A list of assets from which one can be selected. If not provided, the full list of all assets is used.
+ * @returns {Asset} - The randomly selected asset
+ */
+function InventoryGetRandom(C, GroupName, AllowedAssets) {
+	var List = [];
+	var AssetList = AllowedAssets || Asset;
+	var RandomOnly = (AllowedAssets == null);
+
+	var MinRank = Math.pow(2, 10);
+	var BlockedRank = Math.pow(2, 2);
+	var HiddenRank = Math.pow(2, 1);
+	var LimitedRank = Math.pow(2, 0);
+		
+	for (let A = 0; A < AssetList.length; A++)
+		if (((AssetList[A].Group.Name == GroupName && AssetList[A].Wear) || GroupName == null || GroupName == "") && (RandomOnly == false || AssetList[A].Random) && AssetList[A].Enable && InventoryAllow(C, AssetList[A].Prerequisite, false)) {
+			var CurrRank = 0;
+
+			if (InventoryIsPermissionBlocked(C, AssetList[A].Name, AssetList[A].Group.Name)) {
+				if (BlockedRank > MinRank) continue;
+				else CurrRank += BlockedRank;
+			}
+
+			if (CharacterAppearanceItemIsHidden(AssetList[A].Name, GroupName)) {
+				if (HiddenRank > MinRank) continue;
+				else CurrRank += HiddenRank;
+			}
+
+			if (InventoryIsPermissionLimited(C, AssetList[A].Name, AssetList[A].Group.Name)) {
+				if (LimitedRank > MinRank) continue;
+				else CurrRank += LimitedRank;
+			}
+
+			MinRank = Math.min(MinRank, CurrRank);
+			List.push({ Asset: AssetList[A], Rank: CurrRank });
+		}
+
+	var PreferredList = List.filter(L => L.Rank == MinRank);
+	if (PreferredList.length == 0) return null;
+
+	var RandomAsset = PreferredList[Math.floor(Math.random() * PreferredList.length)].Asset;
+	return RandomAsset;
 }
 
 /**
 * Removes a specific item from a character body area
 * @param {Character} C - The character on which we must remove the item
 * @param {String} AssetGroup - The name of the asset group (body area)
+* @param {false} [Refresh] - do not call CharacterRefresh if false
 */
-function InventoryRemove(C, AssetGroup) {
+function InventoryRemove(C, AssetGroup, Refresh) {
 
 	// First loop to find the item and any sub item to remove with it
 	for (var E = 0; E < C.Appearance.length; E++)
 		if (C.Appearance[E].Asset.Group.Name == AssetGroup) {
-			let AssetToRemove = C.Appearance[E].Asset
-			for (let R = 0; R < AssetToRemove.RemoveItemOnRemove.length; R++)
-				if ((AssetToRemove.RemoveItemOnRemove[R].Name == "") || ((AssetToRemove.RemoveItemOnRemove[R].Name != "") && (InventoryGet(C, AssetToRemove.RemoveItemOnRemove[R].Group) != null) && (InventoryGet(C, AssetToRemove.RemoveItemOnRemove[R].Group).Asset.Name == AssetToRemove.RemoveItemOnRemove[R].Name)))
-					InventoryRemove(C, AssetToRemove.RemoveItemOnRemove[R].Group);
+			let AssetToRemove = C.Appearance[E].Asset;
+			let AssetToCheck = null;
+			for (let R = 0; R < AssetToRemove.RemoveItemOnRemove.length; R++) {
+				AssetToCheck = AssetToRemove.RemoveItemOnRemove[R];
+				if (!AssetToCheck.Name) {
+					// Just try to force remove a group, if no item is specified
+					InventoryRemove(C, AssetToCheck.Group, false);
+				} else {
+					let AssetFound = InventoryGet(C, AssetToCheck.Group);
+					// If a name is specified check if the item is worn
+					if (AssetFound && (AssetFound.Asset.Name == AssetToCheck.Name))
+						// If there is no type check or there is a type check and the item type matches, remove it
+						if (AssetToCheck.Type) {
+							if (AssetFound.Property && AssetFound.Property.Type === AssetToCheck.Type)
+								InventoryRemove(C, AssetToCheck.Group, false);
+						} else {
+							InventoryRemove(C, AssetToCheck.Group, false);
+						}
+				}
+			}
 		}
 
 	// Second loop to find the item again, and remove it from the character appearance
 	for (let E = 0; E < C.Appearance.length; E++)
 		if (C.Appearance[E].Asset.Group.Name == AssetGroup) {
 			C.Appearance.splice(E, 1);
-			CharacterRefresh(C);
+			if (Refresh || Refresh == null) CharacterRefresh(C);
 			return;
 		}
 
@@ -381,23 +521,38 @@ function InventoryRemove(C, AssetGroup) {
 * Returns TRUE if the body area (Asset Group) for a character is blocked and cannot be used
 * @param {Character} C - The character on which we validate the group
 * @param {String} GroupName - The name of the asset group (body area)
+* @param {Boolean} Activity - if TRUE check if activity is allowed on the asset group 
 * @returns {Boolean} - TRUE if the group is blocked
 */
-function InventoryGroupIsBlocked(C, GroupName) {
+function InventoryGroupIsBlocked(C, GroupName, Activity) {
 
+	if (Activity == null) Activity = false;
+	
 	// Default to characters focused group
 	if (GroupName == null) GroupName = C.FocusGroup.Name;
 
+    if (Activity) {
+		for (let E = 0; E < C.Appearance.length; E++) {
+			if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Asset.AllowActivityOn != null) && (C.Appearance[E].Asset.AllowActivityOn.includes(GroupName))){
+				Activity = true;
+				break;
+			} else if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Property != null) && (C.Appearance[E].Property.AllowActivityOn != null) && (C.Appearance[E].Property.AllowActivityOn.indexOf(GroupName) >= 0)){
+				Activity = true;
+				break;
+			} else Activity = false;
+		}
+    }
+
 	// Items can block each other (hoods blocks gags, belts blocks eggs, etc.)
 	for (let E = 0; E < C.Appearance.length; E++) {
-		if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Asset.Block != null) && (C.Appearance[E].Asset.Block.includes(GroupName))) return true;
-		if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Property != null) && (C.Appearance[E].Property.Block != null) && (C.Appearance[E].Property.Block.indexOf(GroupName) >= 0)) return true;
+		if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Asset.Block != null) && (C.Appearance[E].Asset.Block.includes(GroupName)) && !Activity) return true;
+		if (!C.Appearance[E].Asset.Group.Clothing && (C.Appearance[E].Property != null) && (C.Appearance[E].Property.Block != null) && Array.isArray(C.Appearance[E].Property.Block) && (C.Appearance[E].Property.Block.indexOf(GroupName) >= 0) && !Activity) return true;
 	}
 
 	// If another character is enclosed, items other than the enclosing one cannot be used
 	if ((C.ID != 0) && C.IsEnclose()) {
 		for (let E = 0; E < C.Appearance.length; E++)
-			if ((C.Appearance[E].Asset.Group.Name == GroupName) && InventoryItemHasEffect(C.Appearance[E], "Enclose"))
+			if ((C.Appearance[E].Asset.Group.Name == GroupName) && InventoryItemHasEffect(C.Appearance[E], "Enclose", true))
 				return false;
 		return true;
 	}
@@ -427,6 +582,23 @@ function InventoryItemHasEffect(Item, Effect, CheckProperties) {
 		if ((Item.Asset && Item.Asset.Effect && Item.Asset.Effect.indexOf(Effect) >= 0) || (CheckProperties && Item.Property && Item.Property.Effect && Item.Property.Effect.indexOf(Effect) >= 0)) return true;
 		else return false;
 	}
+}
+
+/**
+ * Returns the value of a given property of an appearance item, prioritizes the Property object.
+ * @param {object} Item - The appearance item to scan 
+ * @param {string} PropertyName - The property name to get.
+ * @param {boolean} CheckGroup - Whether or not to fall back to the item's group if the property is not found on
+ * Property or Asset.
+ * @returns {any} - The value of the requested property for the given item. Returns undefined if the property or the
+ * item itself does not exist.
+ */
+function InventoryGetItemProperty(Item, PropertyName, CheckGroup) {
+    if (!Item || !PropertyName || !Item.Asset) return;
+    let Property = Item.Property && Item.Property[PropertyName];
+    if (typeof Property === "undefined") Property = Item.Asset[PropertyName];
+    if (typeof Property === "undefined" && CheckGroup) Property = Item.Asset.Group[PropertyName];
+    return Property;
 }
 
 /**
@@ -563,14 +735,18 @@ function InventoryHasLockableItems(C) {
 function InventoryLock(C, Item, Lock, MemberNumber) {
 	if (typeof Item === 'string') Item = InventoryGet(C, Item);
 	if (typeof Lock === 'string') Lock = { Asset: AssetGet(C.AssetFamily, "ItemMisc", Lock) };
-	if (Item && Lock && Item.Asset.AllowLock) {
-		if (Item.Property == null) Item.Property = {};
-		if (Item.Property.Effect == null) Item.Property.Effect = [];
-		if (Item.Property.Effect.indexOf("Lock") < 0) Item.Property.Effect.push("Lock");
-		Item.Property.LockedBy = Lock.Asset.Name;
-		if (MemberNumber != null) Item.Property.LockMemberNumber = MemberNumber;
-		if (Lock.Asset.RemoveTimer > 0) TimerInventoryRemoveSet(C, Item.Asset.Group.Name, Lock.Asset.RemoveTimer);
-		CharacterRefresh(C);
+	if (Item && Lock && Lock.Asset.IsLock) {
+		if (Item.Asset.AllowLock && (!Item.Property || Item.Property.AllowLock !== false)) {
+			if (!Item.Asset.AllowLockType || Item.Asset.AllowLockType.includes(Item.Property.Type)) {
+				if (Item.Property == null) Item.Property = {};
+				if (Item.Property.Effect == null) Item.Property.Effect = [];
+				if (Item.Property.Effect.indexOf("Lock") < 0) Item.Property.Effect.push("Lock");
+				Item.Property.LockedBy = Lock.Asset.Name;
+				if (MemberNumber != null) Item.Property.LockMemberNumber = MemberNumber;
+				if (Lock.Asset.RemoveTimer > 0) TimerInventoryRemoveSet(C, Item.Asset.Group.Name, Lock.Asset.RemoveTimer);
+				CharacterRefresh(C, true);
+			}
+		}
 	}
 }
 
@@ -585,6 +761,9 @@ function InventoryUnlock(C, Item) {
 		Item.Property.Effect.splice(Item.Property.Effect.indexOf("Lock"), 1);
 		delete Item.Property.LockedBy;
 		delete Item.Property.RemoveTimer;
+		delete Item.Property.LockSet;
+		delete Item.Property.Password;
+		delete Item.Property.Hint;
 		delete Item.Property.LockMemberNumber;
 		CharacterRefresh(C);
 	}
@@ -603,7 +782,7 @@ function InventoryLockRandom(C, Item, FromOwner) {
 			if (Asset[A].IsLock && Asset[A].Random && !Asset[A].LoverOnly && (FromOwner || !Asset[A].OwnerOnly))
 				List.push(Asset[A]);
 		if (List.length > 0) {
-			var Lock = { Asset: List[Math.floor(Math.random() * List.length)] };
+			var Lock = { Asset: InventoryGetRandom(C, null, List) };
 			InventoryLock(C, Item, Lock);
 		}
 	}
@@ -654,16 +833,35 @@ function InventoryIsWorn(C, AssetName, AssetGroup) {
 }
 
 /**
+ * Toggles an item's permission for the player
+ * @param {object} Item - Appearance item to toggle
+ * @param {object} Type - Type of the item to toggle
+ * @returns {void} - Nothing 
+ */
+function InventoryTogglePermission(Item, Type) { 
+	if (InventoryIsPermissionBlocked(Player, Item.Asset.Name, Item.Asset.Group.Name, Type)) {
+		Player.BlockItems = Player.BlockItems.filter(B => B.Name != Item.Asset.Name || B.Group != Item.Asset.Group.Name || B.Type != Type);
+		Player.LimitedItems.push({ Name: Item.Asset.Name, Group: Item.Asset.Group.Name, Type: Type });
+	}
+	else if (InventoryIsPermissionLimited(Player, Item.Asset.Name, Item.Asset.Group.Name, Type))
+		Player.LimitedItems = Player.LimitedItems.filter(B => B.Name != Item.Asset.Name || B.Group != Item.Asset.Group.Name || B.Type != Type);
+	else
+		Player.BlockItems.push({ Name: Item.Asset.Name, Group: Item.Asset.Group.Name, Type: Type });
+	ServerSend("AccountUpdate", { BlockItems: Player.BlockItems, LimitedItems: Player.LimitedItems });
+}
+
+/**
 * Returns TRUE if a specific item / asset is blocked by the character item permissions
 * @param {Character} C - The character on which we check the permissions
 * @param {String} AssetName - The asset / item name to scan
 * @param {String} AssetGroup - The asset group name to scan
+* @param {String} AssetType - The asset type to scan
 * @returns {Boolean} - TRUE if asset / item is blocked
 */
-function InventoryIsPermissionBlocked(C, AssetName, AssetGroup) {
+function InventoryIsPermissionBlocked(C, AssetName, AssetGroup, AssetType) {
 	if ((C != null) && (C.BlockItems != null) && Array.isArray(C.BlockItems))
 		for (let B = 0; B < C.BlockItems.length; B++)
-			if ((C.BlockItems[B].Name == AssetName) && (C.BlockItems[B].Group == AssetGroup))
+			if ((C.BlockItems[B].Name == AssetName) && (C.BlockItems[B].Group == AssetGroup) && (C.BlockItems[B].Type == AssetType))
 				return true;
 	return false;
 }
@@ -673,12 +871,13 @@ function InventoryIsPermissionBlocked(C, AssetName, AssetGroup) {
  * @param {Character} C - The character on which we check the permissions
  * @param {String} AssetName - The asset / item name to scan
  * @param {String} AssetGroup - The asset group name to scan
+ * @param {String} AssetType - The asset type to scan
  * @returns {Boolean} - TRUE if asset / item is limited
  */
-function InventoryIsPermissionLimited(C, AssetName, AssetGroup) {
+function InventoryIsPermissionLimited(C, AssetName, AssetGroup, AssetType) {
 	if ((C != null) && (C.LimitedItems != null) && Array.isArray(C.LimitedItems))
 		for (let B = 0; B < C.LimitedItems.length; B++)
-			if ((C.LimitedItems[B].Name == AssetName) && (C.LimitedItems[B].Group == AssetGroup))
+			if ((C.LimitedItems[B].Name == AssetName) && (C.LimitedItems[B].Group == AssetGroup) && (C.LimitedItems[B].Type == AssetType))
 				return true;
 	return false;
 }
@@ -687,10 +886,11 @@ function InventoryIsPermissionLimited(C, AssetName, AssetGroup) {
  * Returns TRUE if the item is not limited, if the player is an owner or a lover of the character, or on their whitelist
  * @param {Character} C - The character on which we check the limited permissions for the item
  * @param {Item} Item - The item being interacted with
+ * @param {String} ItemType - The asset type to scan
  * @returns {Boolean} - TRUE if item is allowed
  */
-function InventoryCheckLimitedPermission(C, Item) {
-	if (!InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name)) return true;
+function InventoryCheckLimitedPermission(C, Item, ItemType) {
+	if (!InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name, ItemType)) return true;
 	if ((C.ID == 0) || C.IsLoverOfPlayer() || C.IsOwnedByPlayer()) return true;
 	if ((C.ItemPermission < 3) && !(C.WhiteList.indexOf(Player.MemberNumber) < 0)) return true;
 	return false;
@@ -710,12 +910,24 @@ function InventoryIsKey(Item) {
 }
 
 /**
- * Serialises the provided character's inventory into a string for easy comparisons, inventory items are uniquely identified by their name
- * and group
+ * Serialises the provided character's inventory into a string for easy comparisons, inventory items are uniquely identified by their name and group
  * @param {Character} C - The character whose inventory we should serialise
  * @return {string} - A simple string representation of the character's inventory
  */
 function InventoryStringify(C) {
 	if (!C || !Array.isArray(C.Inventory)) return "";
 	return C.Inventory.map(({ Name, Group }) => Group + Name ).join();
+}
+
+/**
+ * Returns TRUE if the inventory category is blocked in the current chat room
+ * @param {array} Category - An array of string containing all the categories to validate
+ * @return {boolean} - TRUE if it's blocked
+ */
+function InventoryChatRoomAllow(Category) {
+	if ((CurrentScreen == "ChatRoom") && (Category != null) && (Category.length > 0) && (ChatRoomData != null) && (ChatRoomData.BlockCategory != null) && (ChatRoomData.BlockCategory.length > 0))
+		for (let C = 0; C < Category.length; C++)
+			if (ChatRoomData.BlockCategory.indexOf(Category[C]) >= 0)
+				return false;
+	return true;
 }

@@ -33,7 +33,9 @@ function NurseryPlayerLostBinky() { return Player.CanTalk() && !NurseryPlayerKee
 function NurseryPlayerLostBinkyAgain() { return Player.CanTalk() && NurseryPlayerKeepsLoosingBinky }
 function NurseryPlayerWearingBabyDress() { return (CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name") == "AdultBabyDress1" || CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name") == "AdultBabyDress2" || CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name") == "AdultBabyDress3") }
 function NurseryPlayerReadyToAppologise() { return (NurseryPlayerBadBabyStatus <= 1) }
-function NurseryPlayerDiapered() { return (CharacterAppearanceGetCurrentValue(Player, "Panties", "Name") == "Diapers1") }
+function NurseryPlayerDiapered() {
+	return (CharacterAppearanceGetCurrentValue(Player, "Panties", "Name").toUpperCase().indexOf("DIAPER", 0) >= 0);
+}
 function NurseryPlayerReadyDiapered() { return (NurseryPlayerDiapered() && !NurseryPlayerInappropriateCloth) }
 function NurseryPlayerCanRegress() { return !InventoryGet(Player, "ItemMouth3") && !InventoryGroupIsBlocked(Player, "ItemMouth3") }
 
@@ -112,7 +114,7 @@ function NurseryClick() {
 			NurseryGateMsg = true;
 			NurseryJustClicked = true;
 		}
-		if ((MouseX >= 1885) && (MouseX < 1975) && (MouseY >= 505) && (MouseY < 595) && Player.CanKneel()) CharacterSetActivePose(Player, (Player.ActivePose == null) ? "Kneel" : null);
+		if ((MouseX >= 1885) && (MouseX < 1975) && (MouseY >= 505) && (MouseY < 595) && Player.CanKneel()) CharacterSetActivePose(Player, (Player.ActivePose == null) ? "Kneel" : null, true);
 	}
 	if (NurserySituation == "AtGate") {
 		if ((MouseX >= 500) && (MouseX < 1000) && (MouseY >= 0) && (MouseY < 1000)) CharacterSetCurrent(Player);
@@ -336,7 +338,7 @@ function NurseryPlayerRestrained(RestraintSet) {
 	}
 	if (RestraintSet == 6) {
 		NurseryPlayerRestrained(3)
-		CharacterSetActivePose(Player, "Kneel");
+		CharacterSetActivePose(Player, "Kneel", true);
 		InventoryWear(Player, "LeatherBelt", "ItemLegs", "#cccccc");
 		NurseryPlayerNeedsPunishing(2);
 	}
