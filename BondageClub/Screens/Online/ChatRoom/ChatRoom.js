@@ -1199,9 +1199,8 @@ function ChatRoomMessage(data) {
 					if (ChatRoomLeashList.indexOf(SenderCharacter.MemberNumber) >= 0) {
 						ChatRoomLeashList.splice(ChatRoomLeashList.indexOf(SenderCharacter.MemberNumber), 1)
 					} 
-//				if (data.Type == "Hidden") return;
 				}
- 				return;
+ 				return; 
 			}
 
 			// Checks if the message is a notification about the user entering or leaving the room
@@ -2107,7 +2106,7 @@ function ChatRoomPayQuest(data) {
 }
 
 /**
- * Receiving funcrion for the moeny giving. Checks, if the target player is eligible to receive money
+ * Receiving function for the moeny giving. Checks, if the target player is eligible to receive money
  * and blocks moey spamming.
  * @param {*} data - The data, we receive from the server
  * @param {string} data.Content - A strin in the format MoneyGiftXXX where XXX is the amount of monney that is given
