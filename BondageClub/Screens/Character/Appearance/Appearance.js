@@ -552,104 +552,95 @@ function AppearanceRun() {
 	}
 	
 	// In regular dress-up mode 
-	if (CharacterAppearanceMode == "") {
+	switch (CharacterAppearanceMode) {
+		case "":
+			// Draw the top buttons with images
+			if (C.ID == 0) {
+				DrawButton(1183, 25, 90, 90, "", "White", "Icons/" + ((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset") + ".png", TextGet(LogQuery("Wardrobe", "PrivateRoom") ? "Wardrobe" : "ResetClothes"));
+				if (!DialogItemPermissionMode) DrawButton(1300, 25, 90, 90, "", "White", "Icons/WearRandom.png", TextGet("WearRandom"));
+				DrawButton(1417, 25, 90, 90, "", "White", "Icons/Random.png", TextGet("Random"));
+			} else if (LogQuery("Wardrobe", "PrivateRoom")) DrawButton(1417, 25, 90, 90, "", "White", "Icons/Wardrobe.png", TextGet("Wardrobe"));
+			DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
+			DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
 
-		// Draw the top buttons with images
-		if (C.ID == 0) {
-			DrawButton(1183, 25, 90, 90, "", "White", "Icons/" + ((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset") + ".png", TextGet(LogQuery("Wardrobe", "PrivateRoom") ? "Wardrobe" : "ResetClothes"));
-			if (!DialogItemPermissionMode) DrawButton(1300, 25, 90, 90, "", "White", "Icons/WearRandom.png", TextGet("WearRandom"));
-			DrawButton(1417, 25, 90, 90, "", "White", "Icons/Random.png", TextGet("Random"));
-		} else if (LogQuery("Wardrobe", "PrivateRoom")) DrawButton(1417, 25, 90, 90, "", "White", "Icons/Wardrobe.png", TextGet("Wardrobe"));
-		DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
-		DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
+			// Creates buttons for all groups
+			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
+				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && AssetGroup[A].AllowCustomize) {
+					const Item = InventoryGet(C, AssetGroup[A].Name);
+					const ButtonColor = WardrobeGroupAccessible(C, AssetGroup[A]) ? "White" : "#888";
+					if (AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (AssetGroup[A].Category == "Appearance") && (Item != null) && WardrobeGroupAccessible(C, AssetGroup[A]))
+						DrawButton(1210, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", ButtonColor, "Icons/Small/Naked.png", TextGet("StripItem"));
+					if (!AssetGroup[A].AllowNone)
+						DrawBackNextButton(1300, 145 + (A - CharacterAppearanceOffset) * 95, 400, 65, AssetGroup[A].Description + ": " + CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Description"), ButtonColor, "",
+							() => WardrobeGroupAccessible(C, AssetGroup[A]) ? CharacterAppearanceNextItem(C, AssetGroup[A].Name, false, true) : "",
+							() => WardrobeGroupAccessible(C, AssetGroup[A]) ? CharacterAppearanceNextItem(C, AssetGroup[A].Name, true, true) : "",
+							!WardrobeGroupAccessible(C, AssetGroup[A]));
+					else
+						DrawButton(1300, 145 + (A - CharacterAppearanceOffset) * 95, 400, 65, AssetGroup[A].Description + ": " + CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Description"), ButtonColor, null, null, !WardrobeGroupAccessible(C, AssetGroup[A]));
+					var Color = CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Color", "");
+					const ColorButtonText = ItemColorGetColorButtonText(Color);
+					const ColorButtonColor = ColorButtonText.startsWith("#") ? ColorButtonText : "#fff";
+					const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1);
+					const CanPickColor = CanCycleColors && AssetGroup[A].AllowColorize;
+					const ColorIsSimple = ItemColorIsSimple(Item);
+					DrawButton(1725, 145 + (A - CharacterAppearanceOffset) * 95, 160, 65, ColorButtonText, CanCycleColors ? ColorButtonColor : "#aaa", null, null, !CanCycleColors);
+					DrawButton(1910, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", CanPickColor ? "#fff" : "#aaa", CanPickColor ? ColorIsSimple ? "Icons/Color.png" : "Icons/MultiColor.png" : "Icons/ColorBlocked.png", null, !CanPickColor);
+				}
+			break;
+		case "Wardrobe":
+			// Draw the wardrobe top controls & buttons
+			DrawButton(1417, 25, 90, 90, "", "White", "Icons/Dress.png", TextGet("DressManually"));
+			DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
+			DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
+			DrawText(CharacterAppearanceWardrobeText, 1645, 220, "White", "Gray");
+			ElementPosition("InputWardrobeName", 1645, 315, 690);
 
-		// Creates buttons for all groups
-		for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
-			if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && AssetGroup[A].AllowCustomize) {
-				const Item = InventoryGet(C, AssetGroup[A].Name);
-				const ButtonColor = WardrobeGroupAccessible(C, AssetGroup[A]) ? "White" : "#888";
-				if (AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (AssetGroup[A].Category == "Appearance") && (Item != null) && WardrobeGroupAccessible(C, AssetGroup[A]))
-					DrawButton(1210, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", ButtonColor, "Icons/Small/Naked.png", TextGet("StripItem"));
-				if (!AssetGroup[A].AllowNone)
-					DrawBackNextButton(1300, 145 + (A - CharacterAppearanceOffset) * 95, 400, 65, AssetGroup[A].Description + ": " + CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Description"), ButtonColor, "",
-						() => WardrobeGroupAccessible(C, AssetGroup[A]) ? CharacterAppearanceNextItem(C, AssetGroup[A].Name, false, true) : "",
-						() => WardrobeGroupAccessible(C, AssetGroup[A]) ? CharacterAppearanceNextItem(C, AssetGroup[A].Name, true, true) : "",
-						!WardrobeGroupAccessible(C, AssetGroup[A]));
-				else
-					DrawButton(1300, 145 + (A - CharacterAppearanceOffset) * 95, 400, 65, AssetGroup[A].Description + ": " + CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Description"), ButtonColor, null, null, !WardrobeGroupAccessible(C, AssetGroup[A]));
-				var Color = CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Color", "");
-				const ColorButtonText = ItemColorGetColorButtonText(Color);
-				const ColorButtonColor = ColorButtonText.startsWith("#") ? ColorButtonText : "#fff";
-				const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1);
-				const CanPickColor = CanCycleColors && AssetGroup[A].AllowColorize;
-				const ColorIsSimple = ItemColorIsSimple(Item);
-				DrawButton(1725, 145 + (A - CharacterAppearanceOffset) * 95, 160, 65, ColorButtonText, CanCycleColors ? ColorButtonColor : "#aaa", null, null, !CanCycleColors);
-				DrawButton(1910, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", CanPickColor ? "#fff" : "#aaa", CanPickColor ? ColorIsSimple ? "Icons/Color.png" : "Icons/MultiColor.png" : "Icons/ColorBlocked.png", null, !CanPickColor);
+			// Draw 6 wardrobe options
+			for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++) {
+				DrawButton(1300, 430 + (W - CharacterAppearanceWardrobeOffset) * 95, 500, 65, "", "White", "");
+				DrawTextFit((W + 1).toString() + (W < 9 ? ":  " : ": ") + Player.WardrobeCharacterNames[W], 1550, 463 + (W - CharacterAppearanceWardrobeOffset) * 95, 496, "Black");
+				DrawButton(1820, 430 + (W - CharacterAppearanceWardrobeOffset) * 95, 160, 65, "Save", "White", "");
 			}
-	}
-	
-	// In wardrobe mode
-	if (CharacterAppearanceMode == "Wardrobe") {
-
-		// Draw the wardrobe top controls & buttons
-		DrawButton(1417, 25, 90, 90, "", "White", "Icons/Dress.png", TextGet("DressManually"));
-		DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
-		DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
-		DrawText(CharacterAppearanceWardrobeText, 1645, 220, "White", "Gray");
-		ElementPosition("InputWardrobeName", 1645, 315, 690);
-
-		// Draw 6 wardrobe options
-		for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++) {
-			DrawButton(1300, 430 + (W - CharacterAppearanceWardrobeOffset) * 95, 500, 65, "", "White", "");
-			DrawTextFit((W + 1).toString() + (W < 9 ? ":  " : ": ") + Player.WardrobeCharacterNames[W], 1550, 463 + (W - CharacterAppearanceWardrobeOffset) * 95, 496, "Black");
-			DrawButton(1820, 430 + (W - CharacterAppearanceWardrobeOffset) * 95, 160, 65, "Save", "White", "");
-		}
-
-	}
-
-	// In item coloring mode
-	if (CharacterAppearanceMode == "Color") {
-		// Leave the color picker if the item is gone.
-		if (!InventoryGet(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName)) ItemColorCancelAndExit();
-		// Draw the color picker
-	    ItemColorDraw(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
-	}
-
-	// In cloth selection mode
-	if (CharacterAppearanceMode == "Cloth") {
-
-		// Draw the wardrobe top controls & buttons
-		if (!DialogItemPermissionMode && InventoryGet(C, C.FocusGroup.Name) && InventoryGet(C, C.FocusGroup.Name).Asset.Extended) DrawButton(1183, 25, 90, 90, "", "White", "Icons/Use.png", DialogFind(Player, "Use"));
-		if (C.ID == 0 && !DialogItemPermissionMode) DrawButton(1300, 25, 90, 90, "", "White", "Icons/WearRandom.png", TextGet("WearRandom"));
-		if (C.ID == 0) DrawButton(1417, 25, 90, 90, "", (Player.GetDifficulty() >= 3) ? "Pink" : "White", DialogItemPermissionMode ? "Icons/DialogNormalMode.png" : "Icons/DialogPermissionMode.png", DialogFind(Player, DialogItemPermissionMode ? "DialogNormalMode" : "DialogPermissionMode"));
-		if (!DialogItemPermissionMode) DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
-		if (DialogInventory.length > 9) DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
+			break;
+		case "Color":
+			// Leave the color picker if the item is gone.
+			if (!InventoryGet(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName)) ItemColorCancelAndExit();
+			// Draw the color picker
+			ItemColorDraw(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
+			break;
+		case "Cloth":
+			// Draw the clothing top controls & buttons
+			if (!DialogItemPermissionMode && InventoryGet(C, C.FocusGroup.Name) && InventoryGet(C, C.FocusGroup.Name).Asset.Extended) DrawButton(1183, 25, 90, 90, "", "White", "Icons/Use.png", DialogFind(Player, "Use"));
+			if (C.ID == 0 && !DialogItemPermissionMode) DrawButton(1300, 25, 90, 90, "", "White", "Icons/WearRandom.png", TextGet("WearRandom"));
+			if (C.ID == 0) DrawButton(1417, 25, 90, 90, "", (Player.GetDifficulty() >= 3) ? "Pink" : "White", DialogItemPermissionMode ? "Icons/DialogNormalMode.png" : "Icons/DialogPermissionMode.png", DialogFind(Player, DialogItemPermissionMode ? "DialogNormalMode" : "DialogPermissionMode"));
+			if (!DialogItemPermissionMode) DrawButton(1534, 25, 90, 90, "", "White", "Icons/Naked.png", TextGet("Naked"));
+			if (DialogInventory.length > 9) DrawButton(1651, 25, 90, 90, "", "White", "Icons/Next.png", TextGet("Next"));
 		
-		// Prepares a 3x3 square of clothes to present all the possible options
-		var X = 1250;
-		var Y = 125;
-		for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
-			var Item = DialogInventory[I];
-			var Hover = (MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile;
-			var Block = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName);
-			var Limit = InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name);
-			var Unusable = DialogInventory[I].SortOrder.startsWith(DialogSortOrderUnusable.toString());
-			var Blocked = DialogInventory[I].SortOrder.startsWith(DialogSortOrderBlocked.toString());
-			DrawRect(X, Y, 225, 275, (DialogItemPermissionMode && C.ID == 0) ?
-				(Item.Worn ? "gray" : Block ? Hover ? "red" : "pink" : Limit ? Hover ? "orange" : "#fed8b1" : Hover ? "green" : "lime") :
-				((Hover && !Blocked) ? "cyan" : Item.Worn ? "pink" : Blocked ? "red" : Unusable ? "gray" : "white"));
-			if (Item.Worn && InventoryItemHasEffect(InventoryGet(C, Item.Asset.Group.Name), "Vibrating", true)) DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.Group.Name + "/Preview/" + Item.Asset.Name + ".png", X + Math.floor(Math.random() * 3) + 1, Y + Math.floor(Math.random() * 3) + 1, 221, 221);
-			else DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.DynamicGroupName + "/Preview/" + Item.Asset.Name + Item.Asset.DynamicPreviewIcon(CharacterGetCurrent()) + ".png", X + 2, Y + 2, 221, 221);
-			DrawTextFit(Item.Asset.DynamicDescription(Player), X + 112, Y + 250, 221, "black");
-			if (Item.Icon != "") DrawImage("Icons/" + Item.Icon + ".png", X + 2, Y + 110);
-			X = X + 250;
-			if (X > 1800) {
-				X = 1250;
-				Y = Y + 300;
+			// Prepares a 3x3 square of clothes to present all the possible options
+			var X = 1250;
+			var Y = 125;
+			for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
+				var Item = DialogInventory[I];
+				var Hover = (MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile;
+				var Block = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName);
+				var Limit = InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name);
+				var Unusable = DialogInventory[I].SortOrder.startsWith(DialogSortOrderUnusable.toString());
+				var Blocked = DialogInventory[I].SortOrder.startsWith(DialogSortOrderBlocked.toString());
+				DrawRect(X, Y, 225, 275, (DialogItemPermissionMode && C.ID == 0) ?
+					(Item.Worn ? "gray" : Block ? Hover ? "red" : "pink" : Limit ? Hover ? "orange" : "#fed8b1" : Hover ? "green" : "lime") :
+					((Hover && !Blocked) ? "cyan" : Item.Worn ? "pink" : Blocked ? "red" : Unusable ? "gray" : "white"));
+				if (Item.Worn && InventoryItemHasEffect(InventoryGet(C, Item.Asset.Group.Name), "Vibrating", true)) DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.Group.Name + "/Preview/" + Item.Asset.Name + ".png", X + Math.floor(Math.random() * 3) + 1, Y + Math.floor(Math.random() * 3) + 1, 221, 221);
+				else DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.DynamicGroupName + "/Preview/" + Item.Asset.Name + Item.Asset.DynamicPreviewIcon(CharacterGetCurrent()) + ".png", X + 2, Y + 2, 221, 221);
+				DrawTextFit(Item.Asset.DynamicDescription(Player), X + 112, Y + 250, 221, "black");
+				if (Item.Icon != "") DrawImage("Icons/" + Item.Icon + ".png", X + 2, Y + 110);
+				X = X + 250;
+				if (X > 1800) {
+					X = 1250;
+					Y = Y + 300;
+				}
 			}
-		}
-
-	}
+			break;
+	} // switch
 
 	// Draw the default buttons
 	if (!DialogItemPermissionMode && CharacterAppearanceMode !== "Color") {
@@ -848,9 +839,8 @@ function AppearanceClick() {
 						} else CharacterAppearanceNextItem(C, AssetGroup[A].Name, (MouseX > 1500));
 		}
 
-
 		// If we must switch to the next color in the assets
-		if (MouseIn(1725, 145, 165, 830));
+		if (MouseIn(1725, 145, 165, 830))
 			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
 				const Item = InventoryGet(C, AssetGroup[A].Name);
 				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
