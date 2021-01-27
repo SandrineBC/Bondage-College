@@ -904,18 +904,6 @@ function AppearanceClick() {
 						}
 					}
 			}
-
-		// If we must set back the default outfit or set a random outfit
-		if (MouseIn(1183, 25, 90, 90) && (C.ID == 0) && !LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceSetDefault(C);
-		if (MouseIn(1183, 25, 90, 90) && (C.ID == 0) && LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceWardrobeLoad(C);;
-		if (MouseIn(1300, 25, 90, 90) && (C.ID == 0)) CharacterAppearanceFullRandom(C, true);
-		if (MouseIn(1417, 25, 90, 90) && (C.ID == 0)) CharacterAppearanceFullRandom(C);
-		if (MouseIn(1417, 25, 90, 90) && (C.ID != 0) && LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceWardrobeLoad(C);
-		if (MouseIn(1534, 29, 90, 90)) CharacterAppearanceStripLayer(C);
-		if (MouseIn(1651, 25, 90, 90)) CharacterAppearanceMoveOffset(C, CharacterAppearanceNumPerPage);
-		if (MouseIn(1768, 25, 90, 90)) CharacterAppearanceExit(C);
-		if (MouseIn(1885, 25, 90, 90)) CharacterAppearanceReady(C);
-		return;
 	}
 
 	// In wardrobe mode
@@ -943,10 +931,6 @@ function AppearanceClick() {
 						CharacterAppearanceWardrobeText = TextGet("WardrobeNameError");
 					}
 				}
-		if (MouseIn(1417, 25, 90, 90)) { CharacterAppearanceMode = ""; ElementRemove("InputWardrobeName"); }
-		if (MouseIn(1534, 25, 90, 90)) CharacterAppearanceStripLayer(C);
-		if (MouseIn(1768, 25, 90, 90)) CharacterAppearanceExit(C);
-		if (MouseIn(1885, 25, 90, 90)) CharacterAppearanceReady(C);
 		return;
 	}
 
