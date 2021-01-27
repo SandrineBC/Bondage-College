@@ -904,8 +904,6 @@ function AppearanceClick() {
 						}
 					}
 			}
-
-		return;
 	}
 
 	// In wardrobe mode
