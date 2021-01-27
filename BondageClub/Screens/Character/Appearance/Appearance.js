@@ -19,6 +19,7 @@ var CharacterAppearancePreviousEmoticon = "";
 var CharacterAppearanceMode = "";
 var CharacterAppearanceMenuMode = "";
 var CharacterAppearanceCloth = null;
+var CharacterAppearanceLocking = false;
 var AppearanceMenu = [];
 
 const CanvasUpperOverflow = 700;
@@ -551,7 +552,18 @@ function AppearanceMenuBuild(C) {
 			break;
 		case "Cloth":
 			if (!DialogItemPermissionMode) {
-				if (InventoryGet(C, C.FocusGroup.Name) && InventoryGet(C, C.FocusGroup.Name).Asset.Extended) AppearanceMenu.push("Use");
+				let Clothing = InventoryGet(C, C.FocusGroup.Name);
+				if (Clothing) {
+					if (Clothing.Asset.Extended) AppearanceMenu.push("Use");
+					if (Clothing.Asset.AllowLock) {
+						AppearanceMenu.push("Lock");
+						let IsItemLocked = InventoryItemHasEffect(Clothing, "Lock", true);
+						let IsGroupBlocked = InventoryGroupIsBlocked(C);
+						if (IsItemLocked && (!Player.IsBlind() || (InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && !InventoryGroupIsBlocked(Player, "ItemHands") && InventoryItemIsPickable(Clothing)) && (C.ID == 0 || (C.OnlineSharedSettings && !C.OnlineSharedSettings.DisablePickingLocksOnSelf)))
+							&& (Clothing.Property != null) && (Clothing.Property.LockedBy != null) && (Clothing.Property.LockedBy != ""))
+							AppearanceMenu.push("Unlock");
+					} 
+				} 
 				if (C.ID === 0) AppearanceMenu.push("WearRandom");
 				if (C.ID === 0 && Player.GetDifficulty() < 3) AppearanceMenu.push("DialogPermissionMode");
 				AppearanceMenu.push("Naked");
@@ -562,7 +574,7 @@ function AppearanceMenuBuild(C) {
 	
 	// Add the exit buttons
 	if (CharacterAppearanceMode !== "Color") {
-		if (!DialogItemPermissionMode && CharacterAppearanceMode != "Wardrobe") AppearanceMenu.push("Cancel");
+		if (!DialogItemPermissionMode) AppearanceMenu.push("Cancel");
 		AppearanceMenu.push("Accept");
 	}
 }
@@ -724,7 +736,10 @@ function CharacterAppearanceSetItem(C, Group, ItemAsset, NewColor, DifficultyFac
 	}
 
 	// Draw the character canvas and calculate the effects on the character
-	if (Refresh == null || Refresh) CharacterRefresh(C);
+	if (Refresh == null || Refresh) {
+		CharacterRefresh(C);
+		AppearanceMenuBuild(C);
+	} 
 
 }
 
@@ -853,126 +868,127 @@ function AppearanceClick() {
 	// Selecting a button in the row at the top
 	if (MouseYIn(25, 90)) AppearanceMenuClick(C);
 	
-	// In regular dress-up mode
-	if (CharacterAppearanceMode == "") {
+	switch (CharacterAppearanceMode) {
+		case "":
+			// In regular dress-up mode
+			// If we must remove/restore to default the item
+			//if (MouseIn(1210, 145, 65, 830))
+			if (MouseXIn(1210, 65))
+				for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
+					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (InventoryGet(C, AssetGroup[A].Name) != null))
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)))
+							InventoryRemove(C, AssetGroup[A].Name);
 
-		// If we must remove/restore to default the item
-		if (MouseIn(1210, 145, 65, 830))
-			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
-				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (InventoryGet(C, AssetGroup[A].Name) != null))
-					if ((MouseY >= 145 + (A - CharacterAppearanceOffset) * 95) && (MouseY <= 210 + (A - CharacterAppearanceOffset) * 95))
-						InventoryRemove(C, AssetGroup[A].Name);
-
-		// If we must enter the cloth selection mode
-		if (MouseIn(1300, 145, 400, 830)) {
-			C.FocusGroup = null;
-			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
-				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && WardrobeGroupAccessible(C, AssetGroup[A]))
-					if ((MouseY >= 145 + (A - CharacterAppearanceOffset) * 95) && (MouseY <= 210 + (A - CharacterAppearanceOffset) * 95))
-						if (AssetGroup[A].AllowNone) {
-							C.FocusGroup = AssetGroup[A];
-							DialogInventoryBuild(C);
-							CharacterAppearanceCloth = InventoryGet(C, C.FocusGroup.Name);
-							CharacterAppearanceMode = "Cloth";
-						} else CharacterAppearanceNextItem(C, AssetGroup[A].Name, (MouseX > 1500));
-		}
-
-		// If we must switch to the next color in the assets
-		if (MouseIn(1725, 145, 165, 830))
-			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
-				const Item = InventoryGet(C, AssetGroup[A].Name);
-				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
-				    WardrobeGroupAccessible(C, AssetGroup[A]) && Item && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1))
-					if ((MouseY >= 145 + (A - CharacterAppearanceOffset) * 95) && (MouseY <= 210 + (A - CharacterAppearanceOffset) * 95))
-						CharacterAppearanceNextColor(C, AssetGroup[A].Name);
+			// If we must enter the cloth selection mode
+			if (MouseXIn(1300, 400)) {
+				C.FocusGroup = null;
+				for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
+					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && WardrobeGroupAccessible(C, AssetGroup[A]))
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)))
+							if (AssetGroup[A].AllowNone) {
+								C.FocusGroup = AssetGroup[A];
+								DialogInventoryBuild(C);
+								CharacterAppearanceCloth = InventoryGet(C, C.FocusGroup.Name);
+								CharacterAppearanceMode = "Cloth";
+							} else
+								CharacterAppearanceNextItem(C, AssetGroup[A].Name, (MouseX > 1500));
 			}
 
-		// If we must open the color panel
-		if (MouseIn(1910, 145, 65, 830))
-			for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
-				const Item = InventoryGet(C, AssetGroup[A].Name);
-				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
-				    WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowColorize && Item && Item.Asset.ColorableLayerCount > 0)
-					if ((MouseY >= 145 + (A - CharacterAppearanceOffset) * 95) && (MouseY <= 210 + (A - CharacterAppearanceOffset) * 95)) {
-						if (Item) {
-							// Keeps the previous color in backup and creates a text box to enter the color
-							CharacterAppearanceMode = "Color";
-							CharacterAppearanceColorPickerGroupName = AssetGroup[A].Name;
-							CharacterAppearanceColorPickerBackup = CharacterAppearanceGetCurrentValue(C, CharacterAppearanceColorPickerGroupName, "Color");
-							ItemColorLoad(C, Item, 1200, 25, 775, 950, true);
-							ItemColorOnExit(() => CharacterAppearanceMode = "");
+			// If we must switch to the next color in the assets
+			if (MouseXIn(1725, 165))
+				for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
+					const Item = InventoryGet(C, AssetGroup[A].Name);
+					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
+						WardrobeGroupAccessible(C, AssetGroup[A]) && Item && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1))
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)))
+							CharacterAppearanceNextColor(C, AssetGroup[A].Name);
+				}
+
+			// If we must open the color panel
+			if (MouseXIn(1910, 65))
+				for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++) {
+					const Item = InventoryGet(C, AssetGroup[A].Name);
+					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
+						WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowColorize && Item && Item.Asset.ColorableLayerCount > 0)
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65))) {
+							if (Item) {
+								// Keeps the previous color in backup and creates a text box to enter the color
+								CharacterAppearanceMode = "Color";
+								CharacterAppearanceColorPickerGroupName = AssetGroup[A].Name;
+								CharacterAppearanceColorPickerBackup = CharacterAppearanceGetCurrentValue(C, CharacterAppearanceColorPickerGroupName, "Color");
+								ItemColorLoad(C, Item, 1200, 25, 775, 950, true);
+								ItemColorOnExit(() => CharacterAppearanceMode = "");
+							}
+						}
+				}
+			break;
+		case "Wardrobe":
+			// In wardrobe mode
+			if (MouseXIn(1300, 500))
+				for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++)
+					if ((MouseYIn(430 + (W - CharacterAppearanceWardrobeOffset) * 95, 65))) WardrobeFastLoad(C, W, false);
+			if (MouseXIn(1820, 155))
+				for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++)
+					if ((MouseYIn(430 + (W - CharacterAppearanceWardrobeOffset) * 95, 65))) {
+						WardrobeFastSave(C, W);
+						var LS = /^[a-zA-Z ]+$/;
+						var Name = ElementValue("InputWardrobeName").trim();
+						if (Name.match(LS) || Name.length == 0) {
+							WardrobeSetCharacterName(W, Name);
+							CharacterAppearanceWardrobeText = TextGet("WardrobeNameInfo");
+						} else {
+							CharacterAppearanceWardrobeText = TextGet("WardrobeNameError");
 						}
 					}
-			}
-	}
-
-	// In wardrobe mode
-	if (CharacterAppearanceMode == "Wardrobe") {
-
-		// In wardrobe mode, we draw the 12 possible wardrobe slots for the character to save & load
-		if (MouseIn(1300, 430, 500, 540))
-			for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++)
-				if ((MouseY >= 430 + (W - CharacterAppearanceWardrobeOffset) * 95) && (MouseY <= 495 + (W - CharacterAppearanceWardrobeOffset) * 95))
-					WardrobeFastLoad(C, W, false);
-		if (MouseIn(1820, 430, 155, 540))
-			for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++)
-				if ((MouseY >= 430 + (W - CharacterAppearanceWardrobeOffset) * 95) && (MouseY <= 495 + (W - CharacterAppearanceWardrobeOffset) * 95)) {
-					WardrobeFastSave(C, W);
-					var LS = /^[a-zA-Z ]+$/;
-					var Name = ElementValue("InputWardrobeName").trim();
-					if (Name.match(LS) || Name.length == 0) {
-						WardrobeSetCharacterName(W, Name);
-						CharacterAppearanceWardrobeText = TextGet("WardrobeNameInfo");
+			break;
+		case "Color":
+			// In item coloring mode
+			ItemColorClick(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
+			break;
+		case "Cloth":
+			// In cloth selection mode
+			// Prepares a 3x3 square of clothes to present all the possible options
+			var X = 1250;
+			var Y = 125;
+			for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
+				if (MouseIn(X, Y, 225, 275)) {
+					let ClickItem = DialogInventory[I];
+					let CurrentItem = InventoryGet(C, C.FocusGroup.Name);
+					// In permission mode, we toggle the settings for an item
+					if (DialogItemPermissionMode) {
+						// You can't block the cloth you're wearing
+						if (CurrentItem && !(CurrentItem.Asset.Name == ClickItem.Asset.Name))
+							InventoryTogglePermission(Item, null);
 					} else {
-						CharacterAppearanceWardrobeText = TextGet("WardrobeNameError");
+						let Block = InventoryIsPermissionBlocked(C, ClickItem.Asset.DynamicName(Player), ClickItem.Asset.DynamicGroupName);
+						let CreatedItem = InventoryItemCreate(C, ClickItem.Asset.Group.Name, ClickItem.Asset.Name);
+						let Limited = !InventoryCheckLimitedPermission(C, CreatedItem);
+						
+						if (Block || Limited) return;
+						if (InventoryAllow(C, ClickItem.Asset.Prerequisite)) {
+							if (DialogItemToLock) {
+								InventoryLock(C, CurrentItem, ClickItem, Player.MemberNumber);
+								DialogItemToLock == null;
+								DialogInventoryBuild(C);
+								ChatRoomPublishAction(C, CurrentItem, ClickItem, true);					
+							} else {
+								CharacterAppearanceSetItem(C, C.FocusGroup.Name, DialogInventory[I].Asset);
+							}
+						} else {
+							CharacterAppearanceHeaderTextTime = DialogTextDefaultTimer;
+							CharacterAppearanceHeaderText = DialogText;
+						}
 					}
+					return;
 				}
-		return;
-	}
-
-	// In item coloring mode
-	if (CharacterAppearanceMode == "Color") {
-		ItemColorClick(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
-	}
-
-	// In cloth selection mode
-	if (CharacterAppearanceMode == "Cloth") {
-
-		// Prepares a 3x3 square of clothes to present all the possible options
-		var X = 1250;
-		var Y = 125;
-		for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
-			if (MouseIn(X, Y, 225, 275)) {
-				var Item = DialogInventory[I];
-				var Block = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName);
-				var CreatedItem = InventoryItemCreate(C, Item.Asset.Group.Name, Item.Asset.Name);
-				var Limited = !InventoryCheckLimitedPermission(C, CreatedItem);
-				// In permission mode, we toggle the settings for an item
-				if (DialogItemPermissionMode) {
-					
-					var CurrentItem = InventoryGet(C, C.FocusGroup.Name);
-					
-					if (CurrentItem && (CurrentItem.Asset.Name == Item.Asset.Name)) return;
-					InventoryTogglePermission(Item, null);
-					
-				} else {
-					if (Block || Limited) return;
-					if (InventoryAllow(C, Item.Asset.Prerequisite)) {
-						CharacterAppearanceSetItem(C, C.FocusGroup.Name, DialogInventory[I].Asset);
-					} else {
-						CharacterAppearanceHeaderTextTime = DialogTextDefaultTimer;
-						CharacterAppearanceHeaderText = DialogText;
-					}
+				X = X + 250;
+				if (X > 1800) {
+					X = 1250;
+					Y = Y + 300;
 				}
-				return;
 			}
-			X = X + 250;
-			if (X > 1800) {
-				X = 1250;
-				Y = Y + 300;
-			}
-		}
-	}
+			break;
+		} // switch
 }
 
 
@@ -988,14 +1004,16 @@ function AppearanceMenuClick(C) {
 			let Button = AppearanceMenu[B];
 			switch (CharacterAppearanceMode) {
 				case "":
-					if (Button === "Reset") CharacterAppearanceSetDefault(C);
-					if (Button === "Wardrobe") CharacterAppearanceWardrobeLoad(C);
-					if (Button === "WearRandom") CharacterAppearanceFullRandom(C, true);
-					if (Button === "Random") CharacterAppearanceFullRandom(C);
-					if (Button === "Naked") CharacterAppearanceStripLayer(C);
-					if (Button === "Next") CharacterAppearanceMoveOffset(C, CharacterAppearanceNumPerPage);
-					if (Button === "Cancel") CharacterAppearanceExit(C);
-					if (Button === "Accept") CharacterAppearanceReady(C);
+					switch (Button) {
+						case "Reset": CharacterAppearanceSetDefault(C); break;
+						case "Wardrobe": CharacterAppearanceWardrobeLoad(C); break;
+						case "WearRandom": CharacterAppearanceFullRandom(C, true); break;
+						case "Random": CharacterAppearanceFullRandom(C); break;
+						case "Naked": CharacterAppearanceStripLayer(C); break;
+						case "Next": CharacterAppearanceMoveOffset(C, CharacterAppearanceNumPerPage); break;
+						case "Cancel": CharacterAppearanceExit(C); break;
+						case "Accept": CharacterAppearanceReady(C); break;
+					} // switch
 					break;
 				case "Wardrobe":
 					if (Button === "Next") {
@@ -1006,55 +1024,57 @@ function AppearanceMenuClick(C) {
 					if (Button === "Accept") AppearanceExit();
 					break;
 				case "Cloth":
-					// Extends the current item
-					if (Button === "Use") {
-						var Item = InventoryGet(C, C.FocusGroup.Name);
-						if (Item && Item.Asset.Extended) DialogExtendItem(Item);
-					}
-
-					// Picks and colors a random item from the group
-					if (Button === "WearRandom") InventoryWearRandom(C, C.FocusGroup.Name, null, true, true);
-
-					// Opens permission mode
-					if (Button === "DialogPermissionMode") {
-						DialogItemPermissionMode = true;
-						AppearanceMenuBuild(C);
-						DialogInventoryBuild(C);
-					}
-
-					// Strips the current item
-					if (Button === "Naked") CharacterAppearanceSetItem(C, C.FocusGroup.Name, null);
-
-					// Jumps to the cloth page
-					if (Button === "Next") {
-						DialogInventoryOffset = DialogInventoryOffset + 9;
-						if (DialogInventoryOffset >= DialogInventory.length) DialogInventoryOffset = 0;
-					}
-
-					// Cancels the selected cloth and reverts it back
-					if (Button === "Cancel") {
-						CharacterAppearanceSetItem(C, C.FocusGroup.Name, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Asset != null)) ? CharacterAppearanceCloth.Asset : null, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Color != null)) ? CharacterAppearanceCloth.Color : null);
-						if (CharacterAppearanceCloth != null && CharacterAppearanceCloth.Property != null) {
-							InventoryGet(C, C.FocusGroup.Name).Property = CharacterAppearanceCloth.Property;
+					switch (Button) {
+						case "Lock":
+							DialogItemToLock = InventoryGet(C, C.FocusGroup.Name);
 							CharacterRefresh(C, false);
-						}
-						C.FocusGroup = null;
-						AppearanceExit();
-					}
-
-					// Accepts the new selection
-					if (Button === "Accept") {
-						if (DialogItemPermissionMode) {
-							DialogItemPermissionMode = false;
+							break;
+						case "Use":
+							// Extends the current item
+							var Item = InventoryGet(C, C.FocusGroup.Name);
+							if (Item && Item.Asset.Extended) DialogExtendItem(Item);
+							break;
+						case "WearRandom":
+							// Picks and colors a random item from the group
+							InventoryWearRandom(C, C.FocusGroup.Name, null, true, true);
+							break;
+						case "DialogPermissionMode":
+							// Opens permission mode
+							DialogItemPermissionMode = true;
 							AppearanceMenuBuild(C);
 							DialogInventoryBuild(C);
-						}
-						else {
+							break;
+						case "Naked":
+							// Strips the current item
+							CharacterAppearanceSetItem(C, C.FocusGroup.Name, null);
+							breeak;
+						case "Next":
+							// Jumps to the cloth page
+							DialogInventoryOffset = DialogInventoryOffset + 9;
+							if (DialogInventoryOffset >= DialogInventory.length) DialogInventoryOffset = 0;
+							break;
+						case "Cancel":
+							// Cancels the selected cloth and reverts it back
+							CharacterAppearanceSetItem(C, C.FocusGroup.Name, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Asset != null)) ? CharacterAppearanceCloth.Asset : null, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Color != null)) ? CharacterAppearanceCloth.Color : null);
+							if (CharacterAppearanceCloth != null && CharacterAppearanceCloth.Property != null) {
+								InventoryGet(C, C.FocusGroup.Name).Property = CharacterAppearanceCloth.Property;
+								CharacterRefresh(C, false);
+							}
 							C.FocusGroup = null;
 							AppearanceExit();
-						}
-					}
-
+							break;
+						case "Accept":
+							// Accepts the new selection
+							if (DialogItemPermissionMode) {
+								DialogItemPermissionMode = false;
+								AppearanceMenuBuild(C);
+								DialogInventoryBuild(C);
+							} else {
+								C.FocusGroup = null;
+								AppearanceExit();
+							}
+							break;
+					} // switch (Button)
 					break;
 			}
 		}
