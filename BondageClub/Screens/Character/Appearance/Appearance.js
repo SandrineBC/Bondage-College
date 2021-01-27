@@ -905,16 +905,6 @@ function AppearanceClick() {
 					}
 			}
 
-		// If we must set back the default outfit or set a random outfit
-		if (MouseIn(1183, 25, 90, 90) && (C.ID == 0) && !LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceSetDefault(C);
-		if (MouseIn(1183, 25, 90, 90) && (C.ID == 0) && LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceWardrobeLoad(C);;
-		if (MouseIn(1300, 25, 90, 90) && (C.ID == 0)) CharacterAppearanceFullRandom(C, true);
-		if (MouseIn(1417, 25, 90, 90) && (C.ID == 0)) CharacterAppearanceFullRandom(C);
-		if (MouseIn(1417, 25, 90, 90) && (C.ID != 0) && LogQuery("Wardrobe", "PrivateRoom")) CharacterAppearanceWardrobeLoad(C);
-		if (MouseIn(1534, 29, 90, 90)) CharacterAppearanceStripLayer(C);
-		if (MouseIn(1651, 25, 90, 90)) CharacterAppearanceMoveOffset(C, CharacterAppearanceNumPerPage);
-		if (MouseIn(1768, 25, 90, 90)) CharacterAppearanceExit(C);
-		if (MouseIn(1885, 25, 90, 90)) CharacterAppearanceReady(C);
 		return;
 	}
 
@@ -922,10 +912,6 @@ function AppearanceClick() {
 	if (CharacterAppearanceMode == "Wardrobe") {
 
 		// In wardrobe mode, we draw the 12 possible wardrobe slots for the character to save & load
-		if (MouseIn(1651, 25, 90, 90)) {
-			CharacterAppearanceWardrobeOffset += 6;
-			if (CharacterAppearanceWardrobeOffset >= Player.Wardrobe.length) CharacterAppearanceWardrobeOffset = 0;
-		}
 		if (MouseIn(1300, 430, 500, 540))
 			for (let W = CharacterAppearanceWardrobeOffset; W < Player.Wardrobe.length && W < CharacterAppearanceWardrobeOffset + 6; W++)
 				if ((MouseY >= 430 + (W - CharacterAppearanceWardrobeOffset) * 95) && (MouseY <= 495 + (W - CharacterAppearanceWardrobeOffset) * 95))
@@ -943,10 +929,6 @@ function AppearanceClick() {
 						CharacterAppearanceWardrobeText = TextGet("WardrobeNameError");
 					}
 				}
-		if (MouseIn(1417, 25, 90, 90)) { CharacterAppearanceMode = ""; ElementRemove("InputWardrobeName"); }
-		if (MouseIn(1534, 25, 90, 90)) CharacterAppearanceStripLayer(C);
-		if (MouseIn(1768, 25, 90, 90)) CharacterAppearanceExit(C);
-		if (MouseIn(1885, 25, 90, 90)) CharacterAppearanceReady(C);
 		return;
 	}
 
@@ -958,50 +940,6 @@ function AppearanceClick() {
 	// In cloth selection mode
 	if (CharacterAppearanceMode == "Cloth") {
 
-		// Extends the current item
-		if (MouseIn(1183, 25, 90, 90)) {
-			var Item = InventoryGet(C, C.FocusGroup.Name);
-			if (Item && Item.Asset.Extended) DialogExtendItem(Item);
-		}
-
-		// Picks and colors a random item from the group
-		if (C.ID == 0 && !DialogItemPermissionMode && MouseIn(1300, 25, 90, 90)) {
-			InventoryWearRandom(C, C.FocusGroup.Name, null, true, true);
-		}
-
-		// Swaps between normal and permission mode
-		if (C.ID == 0 && MouseIn(1417, 25, 90, 90) && (Player.GetDifficulty() <= 2)) {
-			DialogItemPermissionMode = !DialogItemPermissionMode;
-			DialogInventoryBuild(C);
-		}
-
-		// Strips the current item
-		if (!DialogItemPermissionMode && MouseIn(1534, 25, 90, 90))
-			CharacterAppearanceSetItem(C, C.FocusGroup.Name, null);
-
-		// Jumps to the cloth page
-		if (MouseIn(1651, 25, 90, 90)) {
-			DialogInventoryOffset = DialogInventoryOffset + 9;
-			if (DialogInventoryOffset >= DialogInventory.length) DialogInventoryOffset = 0;
-		}
-
-		// Cancels the selected cloth and reverts it back
-		if (!DialogItemPermissionMode && MouseIn(1768, 25, 90, 90)) {
-			CharacterAppearanceSetItem(C, C.FocusGroup.Name, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Asset != null)) ? CharacterAppearanceCloth.Asset : null, ((CharacterAppearanceCloth != null) && (CharacterAppearanceCloth.Color != null)) ? CharacterAppearanceCloth.Color : null);
-			if (CharacterAppearanceCloth != null && CharacterAppearanceCloth.Property != null) {
-				InventoryGet(C, C.FocusGroup.Name).Property = CharacterAppearanceCloth.Property;
-				CharacterRefresh(C, false);
-			}
-			C.FocusGroup = null;
-			AppearanceExit();
-		}
-
-		// Accepts the new cloth selection
-		if (!DialogItemPermissionMode && MouseIn(1885, 25, 90, 90)) {
-			C.FocusGroup = null;
-			AppearanceExit();
-		}
-		
 		// Prepares a 3x3 square of clothes to present all the possible options
 		var X = 1250;
 		var Y = 125;
