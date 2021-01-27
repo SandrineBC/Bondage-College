@@ -517,6 +517,7 @@ function CharacterAppearanceYOffset(C, HeightRatio) {
  * @returns {void} - Nothing
  */
 function AppearanceLoad() {
+	DialogItemToLock = null;
 	DialogFocusItem = null;
 	CharacterAppearanceOffset = 0;
 	if (!CharacterAppearanceSelection) CharacterAppearanceSelection = Player;
@@ -556,12 +557,15 @@ function AppearanceMenuBuild(C) {
 				if (Clothing) {
 					if (Clothing.Asset.Extended) AppearanceMenu.push("Use");
 					if (Clothing.Asset.AllowLock) {
-						AppearanceMenu.push("Lock");
 						let IsItemLocked = InventoryItemHasEffect(Clothing, "Lock", true);
-						let IsGroupBlocked = InventoryGroupIsBlocked(C);
-						if (IsItemLocked && (!Player.IsBlind() || (InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && !InventoryGroupIsBlocked(Player, "ItemHands") && InventoryItemIsPickable(Clothing)) && (C.ID == 0 || (C.OnlineSharedSettings && !C.OnlineSharedSettings.DisablePickingLocksOnSelf)))
-							&& (Clothing.Property != null) && (Clothing.Property.LockedBy != null) && (Clothing.Property.LockedBy != ""))
-							AppearanceMenu.push("Unlock");
+						if (!IsItemLocked) {
+							AppearanceMenu.push("Lock");
+						} else {
+							let IsGroupBlocked = InventoryGroupIsBlocked(C);
+							if (IsItemLocked && (!Player.IsBlind() || (InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && !InventoryGroupIsBlocked(Player, "ItemHands") && InventoryItemIsPickable(Clothing)) && (C.ID == 0 || (C.OnlineSharedSettings && !C.OnlineSharedSettings.DisablePickingLocksOnSelf)))
+								&& (Clothing.Property != null) && (Clothing.Property.LockedBy != null) && (Clothing.Property.LockedBy != ""))
+								AppearanceMenu.push("Unlock");
+						}
 					} 
 				} 
 				if (C.ID === 0) AppearanceMenu.push("WearRandom");
@@ -664,6 +668,7 @@ function AppearanceRun() {
 			var Y = 125;
 			for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
 				var Item = DialogInventory[I];
+				var IsLocked = InventoryItemHasEffect(InventoryGet(C, C.FocusGroup.Name), "Lock", true);
 				var Hover = (MouseX >= X) && (MouseX < X + 225) && (MouseY >= Y) && (MouseY < Y + 275) && !CommonIsMobile;
 				var Block = InventoryIsPermissionBlocked(C, Item.Asset.DynamicName(Player), Item.Asset.DynamicGroupName);
 				var Limit = InventoryIsPermissionLimited(C, Item.Asset.Name, Item.Asset.Group.Name);
@@ -671,7 +676,7 @@ function AppearanceRun() {
 				var Blocked = DialogInventory[I].SortOrder.startsWith(DialogSortOrderBlocked.toString());
 				DrawRect(X, Y, 225, 275, (DialogItemPermissionMode && C.ID == 0) ?
 					(Item.Worn ? "gray" : Block ? Hover ? "red" : "pink" : Limit ? Hover ? "orange" : "#fed8b1" : Hover ? "green" : "lime") :
-					((Hover && !Blocked) ? "cyan" : Item.Worn ? "pink" : Blocked ? "red" : Unusable ? "gray" : "white"));
+					((Hover && !Blocked) ? "cyan" : Item.Worn ? "pink" : Blocked ? "red" : (Unusable || IsLocked) ? "gray" : "white"));
 				if (Item.Worn && InventoryItemHasEffect(InventoryGet(C, Item.Asset.Group.Name), "Vibrating", true)) DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.Group.Name + "/Preview/" + Item.Asset.Name + ".png", X + Math.floor(Math.random() * 3) + 1, Y + Math.floor(Math.random() * 3) + 1, 221, 221);
 				else DrawImageResize("Assets/" + Item.Asset.Group.Family + "/" + Item.Asset.DynamicGroupName + "/Preview/" + Item.Asset.Name + Item.Asset.DynamicPreviewIcon(CharacterGetCurrent()) + ".png", X + 2, Y + 2, 221, 221);
 				DrawTextFit(Item.Asset.DynamicDescription(Player), X + 112, Y + 250, 221, "black");
@@ -963,16 +968,20 @@ function AppearanceClick() {
 						let Block = InventoryIsPermissionBlocked(C, ClickItem.Asset.DynamicName(Player), ClickItem.Asset.DynamicGroupName);
 						let CreatedItem = InventoryItemCreate(C, ClickItem.Asset.Group.Name, ClickItem.Asset.Name);
 						let Limited = !InventoryCheckLimitedPermission(C, CreatedItem);
+						let Locked = InventoryItemHasEffect(CurrentItem, "Lock", true);
 						
-						if (Block || Limited) return;
+						if (Block || Limited || Locked) return;
 						if (InventoryAllow(C, ClickItem.Asset.Prerequisite)) {
 							if (DialogItemToLock) {
 								InventoryLock(C, CurrentItem, ClickItem, Player.MemberNumber);
-								DialogItemToLock == null;
+								DialogItemToLock = null;
 								DialogInventoryBuild(C);
-								ChatRoomPublishAction(C, CurrentItem, ClickItem, true);					
+								ChatRoomPublishAction(C, CurrentItem, ClickItem, true);
+								AppearanceMenuBuild(C);
 							} else {
 								CharacterAppearanceSetItem(C, C.FocusGroup.Name, DialogInventory[I].Asset);
+								// Reset to first page after selecting an item
+								DialogInventoryOffset = 0;
 							}
 						} else {
 							CharacterAppearanceHeaderTextTime = DialogTextDefaultTimer;
@@ -1093,7 +1102,8 @@ function AppearanceExit() {
 	}
 
 	if (CharacterAppearanceMode === "Color") {
-		return ItemColorExitClick();
+		ItemColorExitClick();
+		return;
 	}
 
 	if (CharacterAppearanceMode != "") {
