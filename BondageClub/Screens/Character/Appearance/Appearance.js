@@ -558,13 +558,16 @@ function AppearanceMenuBuild(C) {
 					if (Clothing.Asset.Extended) AppearanceMenu.push("Use");
 					if (Clothing.Asset.AllowLock) {
 						let IsItemLocked = InventoryItemHasEffect(Clothing, "Lock", true);
+						let IsGroupBlocked = InventoryGroupIsBlocked(C);
 						if (!IsItemLocked) {
 							AppearanceMenu.push("Lock");
 						} else {
-							let IsGroupBlocked = InventoryGroupIsBlocked(C);
-							if (IsItemLocked && (!Player.IsBlind() || (InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && !InventoryGroupIsBlocked(Player, "ItemHands") && InventoryItemIsPickable(Clothing)) && (C.ID == 0 || (C.OnlineSharedSettings && !C.OnlineSharedSettings.DisablePickingLocksOnSelf)))
-								&& (Clothing.Property != null) && (Clothing.Property.LockedBy != null) && (Clothing.Property.LockedBy != ""))
+							console.log(Player.Name);
+							if (DialogCanUnlock(Player, Clothing))
+							// if (!Player.IsBlind() && DialogCanUnlock(C, Clothing) && InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && ((C.ID != 0) || Player.CanInteract())
+							// || ((Clothing != null) && (C.ID == 0) && !Player.CanInteract() && InventoryItemHasEffect(Clothing, "Block", true)  && DialogCanUnlock(C, Item) && InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked))
 								AppearanceMenu.push("Unlock");
+							if (!Player.IsBlind()) AppearanceMenu.push("InspectLock");
 						}
 					} 
 				} 
@@ -1033,10 +1036,26 @@ function AppearanceMenuClick(C) {
 					if (Button === "Accept") AppearanceExit();
 					break;
 				case "Cloth":
+					let Clothing = InventoryGet(C, C.FocusGroup.Name);
 					switch (Button) {
+						case "Unlock":
+							InventoryUnlock(C, C.FocusGroup.Name);
+							if (CurrentScreen == "ChatRoom") ChatRoomPublishAction(C, Clothing, null, true, "ActionUnlock");
+							DialogInventoryBuild(C);
+							break;
+						case "InspectLock":
+							let Lock = InventoryGetLock(Clothing);
+							if (Lock != null) DialogExtendItem(Lock, Clothing);
+							break;
 						case "Lock":
 							DialogItemToLock = InventoryGet(C, C.FocusGroup.Name);
-							CharacterRefresh(C, false);
+							DialogInventoryOffset = 0;
+							DialogInventory = [];
+							for (let A = 0; A < Player.Inventory.length; A++)
+								if ((Player.Inventory[A].Asset != null) && Player.Inventory[A].Asset.IsLock)
+									DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
+							DialogInventorySort();
+							CharacterRefresh(C, true);
 							break;
 						case "Use":
 							// Extends the current item
