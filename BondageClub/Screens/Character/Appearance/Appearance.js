@@ -542,7 +542,15 @@ function AppearanceMenuBuild(C) {
 	switch (CharacterAppearanceMode) {
 		case "":
 			if (C.ID === 0) {
-				AppearanceMenu.push((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset");
+				let ClothingLocked = false;
+				let A = 0;
+			
+				//Check if there is locked clothing somewhare on the character
+				while (A < AssetGroup.length && !ClothingLocked) {
+					ClothingLocked = InventoryLocked(C, AssetGroup[A].Name, true) && AssetGroup[A].Clothing;
+					A++;
+				}
+				if (!ClothingLocked) AppearanceMenu.push((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset");
 				if (!DialogItemPermissionMode) AppearanceMenu.push("WearRandom");
 				AppearanceMenu.push("Random");
 			} else if (LogQuery("Wardrobe", "PrivateRoom")) AppearanceMenu.push("Wardrobe");
@@ -558,14 +566,10 @@ function AppearanceMenuBuild(C) {
 					if (Clothing.Asset.Extended) AppearanceMenu.push("Use");
 					if (Clothing.Asset.AllowLock) {
 						let IsItemLocked = InventoryItemHasEffect(Clothing, "Lock", true);
-						let IsGroupBlocked = InventoryGroupIsBlocked(C);
 						if (!IsItemLocked) {
 							AppearanceMenu.push("Lock");
 						} else {
-							console.log(Player.Name);
-							if (DialogCanUnlock(Player, Clothing))
-							// if (!Player.IsBlind() && DialogCanUnlock(C, Clothing) && InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked && ((C.ID != 0) || Player.CanInteract())
-							// || ((Clothing != null) && (C.ID == 0) && !Player.CanInteract() && InventoryItemHasEffect(Clothing, "Block", true)  && DialogCanUnlock(C, Item) && InventoryAllow(C, Clothing.Asset.Prerequisite) && !IsGroupBlocked))
+							if (DialogCanUnlock(C, Clothing))
 								AppearanceMenu.push("Unlock");
 							if (!Player.IsBlind()) AppearanceMenu.push("InspectLock");
 						}
@@ -628,8 +632,12 @@ function AppearanceRun() {
 				if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && AssetGroup[A].AllowCustomize) {
 					const Item = InventoryGet(C, AssetGroup[A].Name);
 					const ButtonColor = WardrobeGroupAccessible(C, AssetGroup[A]) ? "White" : "#888";
-					if (AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (AssetGroup[A].Category == "Appearance") && (Item != null) && WardrobeGroupAccessible(C, AssetGroup[A]))
-						DrawButton(1210, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", ButtonColor, "Icons/Small/Naked.png", TextGet("StripItem"));
+					if (AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (AssetGroup[A].Category === "Appearance") && (Item != null) && WardrobeGroupAccessible(C, AssetGroup[A]))
+						if (InventoryItemHasEffect(Item, "Lock", true)) {
+							DrawButton(1210, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", ButtonColor, "Icons/Small/Lock.png", TextGet("Locked"));
+						} else {
+							DrawButton(1210, 145 + (A - CharacterAppearanceOffset) * 95, 65, 65, "", ButtonColor, "Icons/Small/Naked.png", TextGet("StripItem"));
+						}
 					if (!AssetGroup[A].AllowNone)
 						DrawBackNextButton(1300, 145 + (A - CharacterAppearanceOffset) * 95, 400, 65, AssetGroup[A].Description + ": " + CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Description"), ButtonColor, "",
 							() => WardrobeGroupAccessible(C, AssetGroup[A]) ? CharacterAppearanceNextItem(C, AssetGroup[A].Name, false, true) : "",
@@ -880,11 +888,10 @@ function AppearanceClick() {
 		case "":
 			// In regular dress-up mode
 			// If we must remove/restore to default the item
-			//if (MouseIn(1210, 145, 65, 830))
 			if (MouseXIn(1210, 65))
 				for (let A = CharacterAppearanceOffset; A < AssetGroup.length && A < CharacterAppearanceOffset + CharacterAppearanceNumPerPage; A++)
 					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") && WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowNone && !AssetGroup[A].KeepNaked && (InventoryGet(C, AssetGroup[A].Name) != null))
-						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)))
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)) && !InventoryItemHasEffect(InventoryGet(C, AssetGroup[A].Name), "Lock", true))
 							InventoryRemove(C, AssetGroup[A].Name);
 
 			// If we must enter the cloth selection mode
@@ -978,14 +985,13 @@ function AppearanceClick() {
 							if (DialogItemToLock) {
 								InventoryLock(C, CurrentItem, ClickItem, Player.MemberNumber);
 								DialogItemToLock = null;
-								DialogInventoryBuild(C);
-								ChatRoomPublishAction(C, CurrentItem, ClickItem, true);
-								AppearanceMenuBuild(C);
 							} else {
 								CharacterAppearanceSetItem(C, C.FocusGroup.Name, DialogInventory[I].Asset);
-								// Reset to first page after selecting an item
-								DialogInventoryOffset = 0;
 							}
+							// Reset to first page after selecting an item
+							DialogInventoryOffset = 0;
+							DialogInventoryBuild(C);
+							AppearanceMenuBuild(C);
 						} else {
 							CharacterAppearanceHeaderTextTime = DialogTextDefaultTimer;
 							CharacterAppearanceHeaderText = DialogText;
@@ -1042,6 +1048,7 @@ function AppearanceMenuClick(C) {
 							InventoryUnlock(C, C.FocusGroup.Name);
 							if (CurrentScreen == "ChatRoom") ChatRoomPublishAction(C, Clothing, null, true, "ActionUnlock");
 							DialogInventoryBuild(C);
+							CharacterRefresh(C, true);
 							break;
 						case "InspectLock":
 							let Lock = InventoryGetLock(Clothing);
@@ -1053,7 +1060,7 @@ function AppearanceMenuClick(C) {
 							DialogInventory = [];
 							for (let A = 0; A < Player.Inventory.length; A++)
 								if ((Player.Inventory[A].Asset != null) && Player.Inventory[A].Asset.IsLock)
-									DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
+								DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
 							DialogInventorySort();
 							CharacterRefresh(C, true);
 							break;

@@ -16,3 +16,7 @@ Wardrobe,Wardrobe
 DialogPermissionMode,Edit item permissions
 Use,Use this item
 Reset,Reset character
+Lock,Lock clothing
+InspectLock,Inspect the lock
+Unlock,Unlock clothing
+Locked,Clothing locked

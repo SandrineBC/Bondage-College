@@ -569,8 +569,11 @@ function DialogInventoryAdd(C, NewInv, NewInvWorn, SortOrder) {
 	};
 
 	// Loads the correct icon and push the item in the array
-	if (NewInvWorn && InventoryItemHasEffect(NewInv, "Lock", true)) DI.Icon = "Locked";
-	if (!NewInvWorn && InventoryItemHasEffect(NewInv, "Lock", true)) DI.Icon = "Unlocked";
+	if (InventoryItemHasEffect(NewInv, "Lock", true)) {
+		DI.Icon = NewInvWorn ? "Locked" : "Unlocked";
+	} else if (NewInv.Asset.AllowLock) {
+		DI.Icon = "Unlocked";
+	}
 	DialogInventory.push(DI);
 
 }
