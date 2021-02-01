@@ -681,7 +681,7 @@ function DialogMenuButtonBuild(C) {
 			
 		} else {
 		  if ((DialogInventory != null) && (DialogInventory.length > 12) && ((Player.CanInteract() && !IsGroupBlocked) || DialogItemPermissionMode)) DialogMenuButton.push("Next");
-				if (C.FocusGroup.Name == "ItemMouth" || C.FocusGroup.Name == "ItemMouth2" || C.FocusGroup.Name == "ItemMouth3") DialogMenuButton.push("ChangeLayersMouth");
+			if (C.FocusGroup.Name.startsWith("ItemMouth")) DialogMenuButton.push("ChangeLayersMouth");
 				if (IsItemLocked && DialogCanUnlock(C, Item) && InventoryAllow(C, Item.Asset.Prerequisite) && !IsGroupBlocked && ((C.ID != 0) || Player.CanInteract())) {  DialogMenuButton.push("Remove"); }
 				if (IsItemLocked && (!Player.IsBlind() || (InventoryAllow(C, Item.Asset.Prerequisite) && !IsGroupBlocked && !InventoryGroupIsBlocked(Player, "ItemHands") && InventoryItemIsPickable(Item))  && (C.ID == 0 || (C.OnlineSharedSettings && !C.OnlineSharedSettings.DisablePickingLocksOnSelf)))
 					&& (Item.Property != null) && (Item.Property.LockedBy != null) && (Item.Property.LockedBy != ""))

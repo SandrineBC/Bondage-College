@@ -21,6 +21,14 @@ var MaidQuartersOnlineDrinkValue = 0;
 var MaidQuartersOnlineDrinkCustomer = [];
 var MaidQuartersOnlineDrinkFromOwner = false;
 
+
+/**
+ * Checks, if the upper clothes of the player are locked
+ * @returns {boolean} - Returns true if the plyer is not able to change into the maid uniform
+ */
+function MaidQuartersCannotChangeIntoMaidUniform() {
+	return InventoryLocked(Player, "Cloth", true) && !CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name").startsWith("MaidOutfit");
+}
 /**
  * Checks if the player is helpless (maids disabled) or not.
  * @returns {boolean} - Returns true if the player still has time remaining after asking the maids to stop helping
@@ -41,29 +49,28 @@ function MaidQuartersCanDoWorkButMaidsDisabled() { return (DialogReputationGreat
  * @returns {boolean} - Returns true if the player wears a maid dress and a maid hair band, false otherwise
  */
 function MaidQuartersPlayerInMaidUniform() {
-	const clothes = CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name");
-	return ((clothes == "MaidOutfit1" || clothes == "MaidOutfit2") && (CharacterAppearanceGetCurrentValue(Player, "Hat", "Name") == "MaidHairband1"))
+	return (CharacterAppearanceGetCurrentValue(Player, "Cloth", "Name").startsWith("MaidOutfit") && CharacterAppearanceGetCurrentValue(Player, "Hat", "Name").startsWith("MaidHairband1"));
 }
 /**
  * Checks, if the player is able to do the 'serve drinks' job
  * @returns {boolean} - Returns true, if the player can do the job, false otherwise
  */
-function MaidQuartersAllowMaidDrinks() { return (!Player.IsRestrained() && !MaidQuartersMaid.IsRestrained() && !LogQuery("ClubMistress", "Management")) }
+function MaidQuartersAllowMaidDrinks() { return (!Player.IsRestrained() && !MaidQuartersCannotChangeIntoMaidUniform() && !MaidQuartersMaid.IsRestrained() && !LogQuery("ClubMistress", "Management")) }
 /**
  * Checks, if the player can do the 'clean room job'
  * @returns {boolean} - Returns true, if the player can do the job, false otherwise
  */
-function MaidQuartersAllowMaidCleaning() { return (!Player.IsRestrained() && !MaidQuartersMaid.IsRestrained() && !LogQuery("ClubMistress", "Management")) }
+function MaidQuartersAllowMaidCleaning() { return (!Player.IsRestrained() && !MaidQuartersCannotChangeIntoMaidUniform() && !MaidQuartersMaid.IsRestrained() && !LogQuery("ClubMistress", "Management")) }
 /**
  * Checks, if the player can do the 'play music' job
  * @returns {boolean} - Returns true, if the player can do the job, false otherwise
  */
-function MaidQuartersAllowMaidPlayMusic() { return (!Player.IsRestrained()) }
+function MaidQuartersAllowMaidPlayMusic() { return (!Player.IsRestrained() && !MaidQuartersCannotChangeIntoMaidUniform()) }
 /**
  * Checks, if the player can do a rescue mission
  * @returns {boolean} - Returns true, if the player can do the job, false otherwise
  */
-function MaidQuartersAllowRescue() { return (!Player.IsRestrained()) }
+function MaidQuartersAllowRescue() { return (!Player.IsRestrained() && !MaidQuartersCannotChangeIntoMaidUniform()) }
 /**
  * Checks, if the player is on a running rescue mission
  * @returns {boolean} - Returns true, if the player has a running but unfinished rescue mission, false otherwise
@@ -302,6 +309,17 @@ function MaidQuartersMaidReleasePlayer() {
 			MaidQuartersMaidReleasedPlayer = true;
 		}
 		CharacterReleaseNoLock(Player);
+	} else MaidQuartersMaid.CurrentDialog = DialogFind(MaidQuartersMaid, "CantReleasePlayer");
+}
+
+function MaidQuartersMaidUnlockCloth() {
+	let Clothing = InventoryGet(Player, "Cloth");
+	if (MaidQuartersMaid.CanInteract() && !Clothing.Property.LockedBy.startsWith("Owner") && !Clothing.Property.LockedBy.startsWith("Lovers")) {
+		if (!MaidQuartersMaidReleasedPlayer) {
+			ReputationProgress("Dominant", -1);
+			MaidQuartersMaidReleasedPlayer = true;
+		}
+		InventoryUnlock(Player, "Cloth");
 	} else MaidQuartersMaid.CurrentDialog = DialogFind(MaidQuartersMaid, "CantReleasePlayer");
 }
 
