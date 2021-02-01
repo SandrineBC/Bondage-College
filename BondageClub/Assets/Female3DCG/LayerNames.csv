@@ -264,6 +264,8 @@ ItemDevicesTransportWoodenBoxWheelholders,Wheel Holders
 ItemDevicesTransportWoodenBoxWheels,Wheels
 ItemDevicesWoodenBoxBack,Wood
 ItemDevicesWoodenBoxText,Text
+ItemDevicesPetBowlBowl,Bowl
+ItemDevicesPetBowlText,Text
 ItemAddonCoversOuter,Outer
 ItemAddonCoversInner,Inner
 ItemNoseNoseHookBand,Strap
@@ -507,3 +509,11 @@ CorsetCorset6Leather,Leather
 CorsetCorset6Buttons,Buttons
 ItemEarsHeadphonesDark,Dark
 ItemEarsHeadphonesLight,Light
+ItemHandsPaddedMittensGloves,Gloves
+ItemHandsPaddedMittensStraps,Straps
+ItemHandsPaddedMittensBuckles,Buckles
+ItemHandsPawMittensGloves,Gloves
+ItemHandsPawMittensStraps,Straps
+ItemHandsPawMittensBuckles,Buckles
+ItemHandsPawMittensPaws,Paws
+
