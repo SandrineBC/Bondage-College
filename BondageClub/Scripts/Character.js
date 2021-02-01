@@ -111,7 +111,17 @@ function CharacterReset(CharacterID, CharacterAssetFamily) {
 		IsNpc: function () { return (this.AccountName.substring(0, 4) === "NPC_" || this.AccountName.substring(0, 4) === "NPC-"); },
 		GetDifficulty: function () { return ((this.Difficulty == null) || (this.Difficulty.Level == null) || (typeof this.Difficulty.Level !== "number") || (this.Difficulty.Level < 0) || (this.Difficulty.Level > 3)) ? 1 : this.Difficulty.Level; },
 		IsInverted: function () { return this.Pose.indexOf("Suspension") >= 0; },
-		CanChangeToPose: function(Pose) { return CharacterCanChangeToPose(this, Pose); }
+		CanChangeToPose: function (Pose) { return CharacterCanChangeToPose(this, Pose); },
+		WearsLockedClothes: function () {
+			let ClothingLocked = false;
+			let A = 0;
+		
+			while (A < AssetGroup.length && !ClothingLocked) {
+				ClothingLocked = InventoryLocked(this, AssetGroup[A].Name, true) && AssetGroup[A].Clothing;
+				A++;
+			}
+			return ClothingLocked;
+		},
 	};
 
 	// If the character doesn't exist, we create it

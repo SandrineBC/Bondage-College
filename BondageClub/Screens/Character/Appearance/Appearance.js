@@ -550,20 +550,12 @@ function AppearanceMenuBuild(C) {
 	switch (CharacterAppearanceMode) {
 		case "":
 			if (C.ID === 0) {
-				let ClothingLocked = false;
-				let A = 0;
-			
-				//Check if there is locked clothing somewhare on the character
-				while (A < AssetGroup.length && !ClothingLocked) {
-					ClothingLocked = InventoryLocked(C, AssetGroup[A].Name, true) && AssetGroup[A].Clothing;
-					A++;
-				}
-				if (!ClothingLocked) {
+				if (!C.WearsLockedClothes()) {
 					AppearanceMenu.push((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset");
 					if (!DialogItemPermissionMode) AppearanceMenu.push("WearRandom");
 					AppearanceMenu.push("Random");
 					AppearanceMenu.push("Naked");
-				} // !ClothingLocked
+				} // WearsLockedClothes
 			} else if (LogQuery("Wardrobe", "PrivateRoom")) AppearanceMenu.push("Wardrobe", "Naked");
 			AppearanceMenu.push("Next");
 			break;
