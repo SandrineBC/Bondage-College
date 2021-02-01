@@ -419,3 +419,22 @@ function AssetCleanArray(AssetArray) {
 function AssetGroupGet(Family, Group) {
     return AssetGroup.find(g => g.Family === Family && g.Name === Group);
 }
+
+/**
+ * Utility function for retrieving the preview image directory path for an asset
+ * @param {Asset} A - The asset whose preview path to retrieve
+ * @returns {string} - The path to the asset's preview image directory
+ */
+function AssetGetPreviewPath(A) {
+	return `Assets/${A.Group.Family}/${A.DynamicGroupName}/Preview`;
+}
+
+/**
+ * Utility function for retrieving the base path of an asset's inventory directory, where extended item scripts are
+ * held
+ * @param {Asset} A - The asset whose inventory path to retrieve
+ * @returns {string} - The path to the asset's inventory directory
+ */
+function AssetGetInventoryPath(A) {
+	return `Screens/Inventory/${A.DynamicGroupName}/${A.Name}`;
+}

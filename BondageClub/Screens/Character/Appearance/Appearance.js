@@ -26,6 +26,12 @@ const CanvasUpperOverflow = 700;
 const CanvasLowerOverflow = 150;
 const CanvasDrawHeight = 1000 + CanvasUpperOverflow + CanvasLowerOverflow;
 
+const AppearancePermissionColors = {
+	red: ["pink", "red"],
+	amber: ["#fed8b1", "orange"],
+	green: ["lime", "green"],
+};
+
 /**
  * Builds all the assets that can be used to dress up the character
  * @param {Character} C - The character whose appearance is modified
@@ -348,7 +354,8 @@ function CharacterAppearanceSortLayers(C) {
  * @param {Character} C - The character whose assets are checked
  * @param {string} AssetName - The name of the asset to check
  * @param {string} GroupName - The name of the item group to check
- * @param {boolean} Recursive - If TRUE, then other items which are themselves hidden will not hide this item. Parameterising this prevents infinite loops.
+ * @param {boolean} Recursive - If TRUE, then other items which are themselves hidden will not hide this item. Parameterising this prevents
+ *     infinite loops.
  * @returns {boolean} - Returns TRUE if we can show the item or the item group
  */
 function CharacterAppearanceVisible(C, AssetName, GroupName, Recursive = true) {
@@ -502,8 +509,9 @@ function CharacterAppearanceXOffset(C, HeightRatio) {
 }
 
 /**
- * Repositions the character vertically towards the bottom of the canvas (the 'floor'), since shorter characters will be shrunk towards the top
- * HeightRatioProportion controls how much of this offset applies with 1 (max) positioning them on the "floor" and 0 (min) leaving them up at the 'ceiling'
+ * Repositions the character vertically towards the bottom of the canvas (the 'floor'), since shorter characters will be shrunk towards the
+ * top HeightRatioProportion controls how much of this offset applies with 1 (max) positioning them on the "floor" and 0 (min) leaving them
+ * up at the 'ceiling'
  * @param {Character} C - The character to reposition
  * @param {number} HeightRatio - The character's height ratio
  * @returns {number} - The amounnt to move the character along the Y co-ordinate
@@ -550,11 +558,14 @@ function AppearanceMenuBuild(C) {
 					ClothingLocked = InventoryLocked(C, AssetGroup[A].Name, true) && AssetGroup[A].Clothing;
 					A++;
 				}
-				if (!ClothingLocked) AppearanceMenu.push((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset");
-				if (!DialogItemPermissionMode) AppearanceMenu.push("WearRandom");
-				AppearanceMenu.push("Random");
-			} else if (LogQuery("Wardrobe", "PrivateRoom")) AppearanceMenu.push("Wardrobe");
-			AppearanceMenu.push("Naked", "Next");
+				if (!ClothingLocked) {
+					AppearanceMenu.push((LogQuery("Wardrobe", "PrivateRoom")) ? "Wardrobe" : "Reset");
+					if (!DialogItemPermissionMode) AppearanceMenu.push("WearRandom");
+					AppearanceMenu.push("Random");
+					AppearanceMenu.push("Naked");
+				} // !ClothingLocked
+			} else if (LogQuery("Wardrobe", "PrivateRoom")) AppearanceMenu.push("Wardrobe", "Naked");
+			AppearanceMenu.push("Next");
 			break;
 		case "Wardrobe":
 			AppearanceMenu.push("Naked", "Next");
@@ -578,6 +589,7 @@ function AppearanceMenuBuild(C) {
 				if (C.ID === 0) AppearanceMenu.push("WearRandom");
 				if (C.ID === 0 && Player.GetDifficulty() < 3) AppearanceMenu.push("DialogPermissionMode");
 				AppearanceMenu.push("Naked");
+				if (Clothing && DialogCanColor(C, Clothing)) AppearanceMenu.push(ItemColorIsSimple(Clothing) ? "ColorPick" : "MultiColorPick");
 			}
 			if (DialogInventory.length > 9) AppearanceMenu.push("Next");
 			break;
@@ -700,6 +712,30 @@ function AppearanceRun() {
 			} // for
 			break;
 	} // switch
+}
+
+/**
+ * Calculates the background color of the preview image for and item
+ * @param {Character} C - The character whose appearance we are viewing
+ * @param {Item} item - The item to calculate the color for
+ * @param {boolean} hover - Whether or not the item is currently hovering over the preview image
+ * @returns {string} - A CSS color string determining the color that the preview icon should be drawn in
+ */
+function AppearanceGetPreviewImageColor(C, item, hover) {
+	if (DialogItemPermissionMode && C.ID === 0) {
+		let permission = "green";
+		if (InventoryIsPermissionBlocked(C, item.Asset.DynamicName(Player), item.Asset.DynamicGroupName)) permission = "red";
+		else if (InventoryIsPermissionLimited(C, item.Asset.Name, item.Asset.Group.Name)) permission = "amber";
+		return item.Worn ? "gray" : AppearancePermissionColors[permission][hover ? 1 : 0];
+	} else {
+		const Unusable = item.SortOrder.startsWith(DialogSortOrderUnusable.toString());
+		const Blocked = item.SortOrder.startsWith(DialogSortOrderBlocked.toString());
+		if (hover && !Blocked) return "cyan";
+		else if (item.Worn) return "pink";
+		else if (Blocked) return "red";
+		else if (Unusable) return "gray";
+		else return "white";
+	}
 }
 
 /**
@@ -875,10 +911,15 @@ function CharacterAppearanceSetColorForGroup(C, Color, Group) {
 function AppearanceClick() {
 	var C = CharacterAppearanceSelection;
 
+	ClearButtons();
 	// When there is an extended item
 	if (DialogFocusItem != null) {
 		CommonDynamicFunction("Inventory" + DialogFocusItem.Asset.Group.Name + DialogFocusItem.Asset.Name + "Click()");
-		return;
+	}
+
+	// In item coloring mode
+	else if (CharacterAppearanceMode == "Color") {
+		ItemColorClick(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
 	}
 
 	// Selecting a button in the row at the top
@@ -965,6 +1006,7 @@ function AppearanceClick() {
 			// Prepares a 3x3 square of clothes to present all the possible options
 			var X = 1250;
 			var Y = 125;
+			console.log ("X: " + MouseX + " Y: " + MouseY);
 			for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
 				if (MouseIn(X, Y, 225, 275)) {
 					let ClickItem = DialogInventory[I];
@@ -975,12 +1017,9 @@ function AppearanceClick() {
 						if (CurrentItem && !(CurrentItem.Asset.Name == ClickItem.Asset.Name))
 							InventoryTogglePermission(Item, null);
 					} else {
-						let Block = InventoryIsPermissionBlocked(C, ClickItem.Asset.DynamicName(Player), ClickItem.Asset.DynamicGroupName);
-						let CreatedItem = InventoryItemCreate(C, ClickItem.Asset.Group.Name, ClickItem.Asset.Name);
-						let Limited = !InventoryCheckLimitedPermission(C, CreatedItem);
 						let Locked = InventoryItemHasEffect(CurrentItem, "Lock", true);
 						
-						if (Block || Limited || Locked) return;
+						if (InventoryBlockedOrLimited(C, ClickItem) || Locked) return;
 						if (InventoryAllow(C, ClickItem.Asset.Prerequisite)) {
 							if (DialogItemToLock) {
 								InventoryLock(C, CurrentItem, ClickItem, Player.MemberNumber);
@@ -1003,8 +1042,9 @@ function AppearanceClick() {
 				if (X > 1800) {
 					X = 1250;
 					Y = Y + 300;
+					return;
 				}
-			}
+			} // for
 			break;
 		} // switch
 }
@@ -1049,6 +1089,7 @@ function AppearanceMenuClick(C) {
 							if (CurrentScreen == "ChatRoom") ChatRoomPublishAction(C, Clothing, null, true, "ActionUnlock");
 							DialogInventoryBuild(C);
 							CharacterRefresh(C, true);
+							AppearanceMenuBuild(C);
 							break;
 						case "InspectLock":
 							let Lock = InventoryGetLock(Clothing);
@@ -1060,7 +1101,7 @@ function AppearanceMenuClick(C) {
 							DialogInventory = [];
 							for (let A = 0; A < Player.Inventory.length; A++)
 								if ((Player.Inventory[A].Asset != null) && Player.Inventory[A].Asset.IsLock)
-								DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
+									DialogInventoryAdd(C, Player.Inventory[A], false, DialogSortOrderUsable);
 							DialogInventorySort();
 							CharacterRefresh(C, true);
 							break;
@@ -1111,7 +1152,7 @@ function AppearanceMenuClick(C) {
 							break;
 					} // switch (Button)
 					break;
-			}
+			} // switch CharacterAppearanceMode
 		}
 	}
 }
@@ -1275,4 +1316,21 @@ function AppearanceItemParse(stringified) {
         }
         return value;
     });
+}
+
+/**
+ * Opens the color picker for a selected item
+ * @param {Character} C - The character the appearance is being changed for
+ * @param {Item} Item - The currently selected item
+ * @param {string} AssetGroup - The focused group
+ * @param {string} CurrentMode - The mode to revert to on exiting the color picker
+ * @returns {void}
+ */
+function AppearanceItemColor(C, Item, AssetGroup, CurrentMode) {
+	// Keeps the previous color in backup and creates a text box to enter the color
+	CharacterAppearanceMode = "Color";
+	CharacterAppearanceColorPickerGroupName = AssetGroup;
+	CharacterAppearanceColorPickerBackup = CharacterAppearanceGetCurrentValue(C, CharacterAppearanceColorPickerGroupName, "Color");
+	ItemColorLoad(C, Item, 1200, 25, 775, 950, true);
+	ItemColorOnExit(() => CharacterAppearanceMode = CurrentMode);
 }

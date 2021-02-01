@@ -20,3 +20,5 @@ Lock,Lock clothing
 InspectLock,Inspect the lock
 Unlock,Unlock clothing
 Locked,Clothing locked
+ColorPick,Select a colour
+MultiColorPick,Select colours
