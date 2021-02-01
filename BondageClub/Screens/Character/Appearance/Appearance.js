@@ -660,7 +660,7 @@ function AppearanceRun() {
 					var Color = CharacterAppearanceGetCurrentValue(C, AssetGroup[A].Name, "Color", "");
 					const ColorButtonText = ItemColorGetColorButtonText(Color);
 					const ColorButtonColor = ColorButtonText.startsWith("#") ? ColorButtonText : "#fff";
-					const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1);
+					const CanCycleColors = !!Item && WardrobeGroupAccessible(C, AssetGroup[A]) && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1) && !InventoryItemHasEffect(Item,"Lock", true);
 					const CanPickColor = CanCycleColors && AssetGroup[A].AllowColorize;
 					const ColorIsSimple = ItemColorIsSimple(Item);
 					DrawButton(1725, 145 + (A - CharacterAppearanceOffset) * 95, 160, 65, ColorButtonText, CanCycleColors ? ColorButtonColor : "#aaa", null, null, !CanCycleColors);
@@ -915,10 +915,8 @@ function AppearanceClick() {
 	// When there is an extended item
 	if (DialogFocusItem != null) {
 		CommonDynamicFunction("Inventory" + DialogFocusItem.Asset.Group.Name + DialogFocusItem.Asset.Name + "Click()");
-	}
-
-	// In item coloring mode
-	else if (CharacterAppearanceMode == "Color") {
+	} else if (CharacterAppearanceMode == "Color") {
+		// In item coloring mode
 		ItemColorClick(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1200, 25, 775, 950, true);
 	}
 
@@ -956,7 +954,7 @@ function AppearanceClick() {
 					const Item = InventoryGet(C, AssetGroup[A].Name);
 					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
 						WardrobeGroupAccessible(C, AssetGroup[A]) && Item && (Item.Asset.ColorableLayerCount > 0 || Item.Asset.Group.ColorSchema.length > 1))
-						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)))
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65)) && !InventoryItemHasEffect(Item, "Lock", true))
 							CharacterAppearanceNextColor(C, AssetGroup[A].Name);
 				}
 
@@ -966,7 +964,7 @@ function AppearanceClick() {
 					const Item = InventoryGet(C, AssetGroup[A].Name);
 					if ((AssetGroup[A].Family == C.AssetFamily) && (AssetGroup[A].Category == "Appearance") &&
 						WardrobeGroupAccessible(C, AssetGroup[A]) && AssetGroup[A].AllowColorize && Item && Item.Asset.ColorableLayerCount > 0)
-						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65))) {
+						if ((MouseYIn(145 + (A - CharacterAppearanceOffset) * 95, 65))&& !InventoryItemHasEffect(Item, "Lock", true)) {
 							if (Item) {
 								// Keeps the previous color in backup and creates a text box to enter the color
 								CharacterAppearanceMode = "Color";
@@ -1006,7 +1004,6 @@ function AppearanceClick() {
 			// Prepares a 3x3 square of clothes to present all the possible options
 			var X = 1250;
 			var Y = 125;
-			console.log ("X: " + MouseX + " Y: " + MouseY);
 			for (let I = DialogInventoryOffset; (I < DialogInventory.length) && (I < DialogInventoryOffset + 9); I++) {
 				if (MouseIn(X, Y, 225, 275)) {
 					let ClickItem = DialogInventory[I];
@@ -1042,7 +1039,6 @@ function AppearanceClick() {
 				if (X > 1800) {
 					X = 1250;
 					Y = Y + 300;
-					return;
 				}
 			} // for
 			break;
