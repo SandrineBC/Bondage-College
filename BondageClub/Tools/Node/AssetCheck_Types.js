@@ -128,8 +128,8 @@ const AssetType = {
 	AllowExpression: "[String]",
 	MirrorExpression: "String",
 	FixedPosition: "Boolean",
-	Layer: "[Object]",
 	CustomBlindBackground: "Object",
+	Layer: "[{Effect: Maby [String], Timer: Number}]"
 };
 
 const AssetLayerType = {
