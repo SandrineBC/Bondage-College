@@ -19,9 +19,9 @@ BribeInfoRetrieveFull,,,I think I saw that object before.  Try the LevelName lev
 10,20,This club sucks.,"Don't be too harsh.  The place is improving, I'm sure it will get better with time.",,
 20,30,Have you heard of the Bondage Club?,"I've heard about it, but never went.  They have good BDSM events?",,
 20,0,Maybe you're right.,"Yep, there are worse places to spend our free time.",,
-30,0,It depends on the day.,Just like here I guess.  There are worse places to spend our free time.,,
+30,0,It depends on the day.,"Just like here, I guess.  There are worse places to spend our free time.",,
 30,40,It's the kinkiest place in town.,Now that's interesting!  Are they recruiting new members?,,CanRecruit()
-30,0,It's the kinkiest place in town.,That's very interesting!  Sadly I don't have enough time for a second club.  But maybe I'll visit someday.,,!CanRecruit()
+30,0,It's the kinkiest place in town.,"That's very interesting!  Sadly, I don't have enough time for a second BDSM club.  But maybe I'll visit someday.",,!CanRecruit()
 30,0,Pandora's Box is better.,"I agree, there are worse places to spend our free time.",,
 40,50,Yes!  You could go right now.,"Great idea!  Thanks for the tip, I will go see the Bondage Club right now.  (Your infiltration skill has increased.)",InfiltrationChange(15),
 40,60,Yes!  I have a room there that we could share.,"Perfect!  I will meet you in your room, see you later.  (Your infiltration skill has increased.)",InfiltrationChange(15),CanJoinPrivateRoom()

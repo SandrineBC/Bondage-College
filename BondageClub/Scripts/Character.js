@@ -371,7 +371,7 @@ function CharacterOnlineRefresh(Char, data, SourceMemberNumber) {
 	Char.LimitedItems = Array.isArray(data.LimitedItems) ? data.LimitedItems : [];
 	if (Char.ID != 0 && Array.isArray(data.WhiteList)) Char.WhiteList = data.WhiteList;
 	if (Char.ID != 0 && Array.isArray(data.BlackList)) Char.BlackList = data.BlackList;
-	Char.Appearance = ServerAppearanceLoadFromBundle(Char, "Female3DCG", data.Appearance, SourceMemberNumber).appearance;
+	ServerAppearanceLoadFromBundle(Char, "Female3DCG", data.Appearance, SourceMemberNumber);
 	if (Char.ID == 0) LoginValidCollar();
 	if ((Char.ID != 0) && ((Char.MemberNumber == SourceMemberNumber) || (Char.Inventory == null) || (Char.Inventory.length == 0))) InventoryLoad(Char, data.Inventory);
 	CharacterLoadEffect(Char);
@@ -1267,8 +1267,10 @@ function CharacterGetDarkFactor(C, eyesOnly = false) {
  */
 function CharacterGetClumsiness(C) {
 	let clumsiness = 0;
-	if (!C.CanInteract()) clumsiness += 2;
+	if (!C.CanInteract()) clumsiness += 1;
+	const armItem = InventoryGet(C, "ItemArms");
+	if (armItem && armItem.Asset.IsRestraint && InventoryItemHasEffect(armItem, "Block")) clumsiness += 2;
 	const handItem = InventoryGet(C, "ItemHands");
-	if (handItem && handItem.Asset.IsRestraint) clumsiness += 3;
+	if (handItem && handItem.Asset.IsRestraint && InventoryItemHasEffect(handItem, "Block")) clumsiness += 3;
 	return Math.min(clumsiness, 5);
 }

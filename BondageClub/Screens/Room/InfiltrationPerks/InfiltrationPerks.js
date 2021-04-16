@@ -1,6 +1,7 @@
 "use strict";
 var InfiltrationPerksBackground = "Sheet";
-var InfiltrationPerksList = ["Strength", "Charisma", "Agility", "Resilience", "Endurance", "Lockpicking", "KeenEye", "Running", "Mapping", "Forgery", "Begging", "Bribery", "Negotiation", "Recruiter"];
+//var InfiltrationPerksList = ["Strength", "Charisma", "Agility", "Resilience", "Endurance", "Lockpicking", "Investigation", "Running", "Mapping", "Forgery", "Begging", "Bribery", "Negotiation", "Recruiter"];
+var InfiltrationPerksList = ["Strength", "Charisma", "Agility", "Resilience", "Endurance", "Investigation", "Bribery", "Negotiation", "Recruiter"];
 
 /**
  * Checks if a named perk is activated or not
@@ -66,8 +67,6 @@ function InfiltrationPerksRun() {
 	MainCanvas.textAlign = "center";
 	DrawText(TextGet("Perks") + " " + InfiltrationPerksTaken().toString() + " / " + InfiltrationPerksAvail().toString(), 1430, 845, (InfiltrationPerksAvail() > InfiltrationPerksTaken()) ? "Blue" : "Black", "Gray");
 	DrawButton(1815, 75, 90, 90, "", "White", "Icons/Exit.png");
-	
-	DrawText("UNDER CONSTRUCTION", 1430, 750, "Red", "Gray");
 
 }
 

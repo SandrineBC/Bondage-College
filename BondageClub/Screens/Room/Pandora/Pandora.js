@@ -45,7 +45,8 @@ function PandoraRun() {
 	// In search mode
 	if (PandoraSeachMode) {
 		DrawButton(1885, 885, 90, 90, "", "White", "Icons/Search.png", TextGet("SearchStop"));
-		if (PandoraSeachSquare != null) DrawEmptyRect(PandoraSeachSquare.X - 100, PandoraSeachSquare.Y - 100, 200, 200, "Cyan", 3);
+		let Radius = InfiltrationPerksActive("Investigation") ? 150 : 100;
+		if (PandoraSeachSquare != null) DrawEmptyRect(PandoraSeachSquare.X - Radius, PandoraSeachSquare.Y - Radius, Radius * 2, Radius * 2, "Cyan", 3);
 		return;
 	}
 
@@ -94,9 +95,10 @@ function PandoraClick() {
 
 	// In search mode, we can click anywhere on the screen
 	if (PandoraSeachMode) {
-		if (MouseIn(0, 0, 1800, 1000)) {
+		if (MouseIn(0, 0, 1850, 1000)) {
 			PandoraSeachSquare = { X: MouseX, Y: MouseY };
-			if ((PandoraCurrentRoom.ItemX != null) && (PandoraCurrentRoom.ItemY != null) && MouseIn(PandoraCurrentRoom.ItemX - 100, PandoraCurrentRoom.ItemY - 100, 200, 200)) {
+			let Radius = InfiltrationPerksActive("Investigation") ? 150 : 100;
+			if ((PandoraCurrentRoom.ItemX != null) && (PandoraCurrentRoom.ItemY != null) && MouseIn(PandoraCurrentRoom.ItemX - Radius, PandoraCurrentRoom.ItemY - Radius, Radius * 2, Radius * 2)) {
 				InfiltrationTarget.Found = true;
 				PandoraSeachMode = false;
 				PandoraMsgBox(TextGet("FoundItem").replace("TargetName", InfiltrationTarget.Name));
@@ -238,16 +240,20 @@ function PandoraEnterRoom(Room, Direction) {
 			return;
 		}
 
-	// 3% odds of spawning a new random NPC in the room
+	// 5% odds of spawning a new random NPC in the room
 	if ((PandoraCurrentRoom.Background.indexOf("Entrance") < 0) && (PandoraCurrentRoom.Character.length == 0) && (Math.random() > 0.95)) {
 		let Type = CommonRandomItemFromList("", PandoraRandomNPCList);
+		CharacterDelete("NPC_Pandora_Random" + Type);
+		delete CommonCSVCache["Screens/Room/Pandora/Dialog_NPC_Pandora_Random" + Type + ".csv"];
 		let Char = CharacterLoadNPC("NPC_Pandora_Random" + Type);
 		CharacterRandomName(Char);
 		CharacterAppearanceFullRandom(Char);
-		Char.AllowItem = false;
+		Char.Type = Type;
+		Char.AllowItem = (Type === "Slave");
 		Char.AllowMove = false;
 		Char.Stage = "0";
 		Char.Recruit = 0;
+		Char.RecruitOdds = (Type === "Slave") ? 1 : 0.75;
 		PandoraDress(Char, Type);
 		Room.Character.push(Char);
 	}
@@ -551,7 +557,7 @@ function PandoraCanStartRecruit() { return ((CurrentCharacter.Recruit == null) |
  * Returns TRUE if the NPC would be recruited by the player to join the Bondage Club.  The recruiter perks helps by 20%
  * @returns {boolean} - TRUE if the NPC would join
  */
-function PandoraCanRecruit() { return (CurrentCharacter.Recruit + (InfiltrationPerksActive("Recruiter") ? 0.25 : 0) >= 0.75) }
+function PandoraCanRecruit() { return (CurrentCharacter.Recruit + (InfiltrationPerksActive("Recruiter") ? 0.25 : 0) >= CurrentCharacter.RecruitOdds) }
 
 /**
  * Increases the infiltration skill on some events
@@ -574,7 +580,7 @@ function PandoraCanJoinPrivateRoom() { return (LogQuery("RentRoom", "PrivateRoom
  */
 function PandoraCharacterJoinPrivateRoom() {
 	CurrentScreen = "Private";
-	PrivateAddCharacter(CurrentCharacter);
+	PrivateAddCharacter(CurrentCharacter, (CurrentCharacter.Type === "Slave") ? "Submissive" : null);
 	CurrentScreen = "Pandora";
 	PandoraRemoveCurrentCharacter();
 }
@@ -610,4 +616,13 @@ function PandoraBribeInfo(Amount, Type) {
 	let Dir = Room.DirectionMap[0];
 	Dir = PandoraDirectionListFrom[PandoraDirectionList.indexOf(Dir)];
 	CurrentCharacter.CurrentDialog = CurrentCharacter.CurrentDialog.replace("FirstDirection", TextGet("FirstDirection" + Dir));
+}
+
+/**
+ * When an activity is done on a slave, it gives a 5% boost in odds to recruit her later, works up to 5 fives
+ * @returns {void} - Nothing
+ */
+function PandoraSlaveActivity() {
+	if (CurrentCharacter.RecruitOdds >= 0.75)
+		CurrentCharacter.RecruitOdds = CurrentCharacter.RecruitOdds - 0.05;
 }

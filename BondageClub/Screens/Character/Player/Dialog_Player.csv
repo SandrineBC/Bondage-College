@@ -1944,8 +1944,8 @@ SpreaderMetalPoseWide,,,Wide,,
 SelectPetBedType,,,Change blanket,,
 PetBedTypeBlanket,,,Add blanket
 PetBedTypeNoBlanket,,,Remove blanket
-PetBedSetBlanket,,,SourceCharacter adds a blanket onto DestinationCharacter.,,
-PetBedSetNoBlanket,,,SourceCharacter removes the blanket from DestinationCharacter.,,
+PetBedSetBlanket,,,SourceCharacter gives TargetCharacter a blanket.,,
+PetBedSetNoBlanket,,,SourceCharacter removes the blanket from TargetCharacter.,,
 NotificationTitleChatMessage,,,Chat Message,,
 NotificationTitleChatJoin,,,Joined Room,,
 NotificationTitleBeep,,,Beep,,
