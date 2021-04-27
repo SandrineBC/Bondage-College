@@ -11,9 +11,9 @@ This changelog follows the format outlined in [keepachangelog.com](https://keepa
 
 **Note to contributors:** To avoid merge conflicts, please don't update this file yourself in your PRs - one of the developers will update the changelog with your change before your PR is merged.
 
-Changelog last updated: 2021-04-14
+Changelog last updated: 2021-04-16
 
-Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
+Last recorded PR: [#2336](https://github.com/Ben987/Bondage-College/pull/2336)
 
 ## [R67]
 
@@ -36,7 +36,7 @@ Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
 * Jomshir/Claudia - Added a new Large Dildo item in the mouth slot ([#2268](https://github.com/Ben987/Bondage-College/pull/2268))
 * Buizel333 - Added 3 new rear hairstyles ([#2270](https://github.com/Ben987/Bondage-College/pull/2270))
 * Ada - Added a new Padded Blindfold item ([#2269](https://github.com/Ben987/Bondage-College/pull/2269))
-* fleisch11 - Added the ability to save/load up to 10 facial expression presets from the expression menu ([#2265](https://github.com/Ben987/Bondage-College/pull/2265))
+* fleisch11 - Added the ability to save/load up to 5 facial expression presets from the expression menu ([#2265](https://github.com/Ben987/Bondage-College/pull/2265))
 * Jomshir - Added a display of your position in the queue to the login screen when logging in whilst the server is under heavy load ([#2259](https://github.com/Ben987/Bondage-College/pull/2259))
 * Emily R - Added a new Cushion item ([#2280](https://github.com/Ben987/Bondage-College/pull/2280))
 * fleisch11 - Added a new exposed variant of the duct tape arms item ([#2282](https://github.com/Ben987/Bondage-College/pull/2282), [#2287](https://github.com/Ben987/Bondage-College/pull/2287))
@@ -55,6 +55,9 @@ Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
 * Ada - Modified the VR Headset item to allow players to play the new Kinky Dungeon minigame when wearing one ([#2271](https://github.com/Ben987/Bondage-College/pull/2271))
 * Ada - Changed the VR Headset's "Virtual World" option to allow players to see and whisper to other players that are also in the Virtual World ([#2283](https://github.com/Ben987/Bondage-College/pull/2283))
 * fleisch11 - Modified NPCs so that they react to being put in chastity belts other than the metal one ([#2296](https://github.com/Ben987/Bondage-College/pull/2296))
+* Ada - Renamed some sensory deprivation settings ([#2321](https://github.com/Ben987/Bondage-College/pull/2321))
+    * "Total" is now "Heavy"
+    * "Total (no whispers)" is now "Total"
 
 ### [Fixed]
 
@@ -67,6 +70,8 @@ Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
 * Ada - Fixed an issue where a missing text message is displayed after the stand up/kneel minigame ([#2291](https://github.com/Ben987/Bondage-College/pull/2291))
 * Ada - Fixed an issue with the VR Headset for players on light sensory deprivation settings ([#2290](https://github.com/Ben987/Bondage-College/pull/2290), [#2293](https://github.com/Ben987/Bondage-College/pull/2293))
 * Ellie - Fixed a longstanding issue where the player's expression wouldn't get reset to default after expression changes triggered by items ([#2322](https://github.com/Ben987/Bondage-College/pull/2322))
+* Sekkmer - Fixed an issue with the handling of chatroom enter/leave messages ([#2329](https://github.com/Ben987/Bondage-College/pull/2329))
+* Ellie - Fixed an issue where the player's expression could get automatically reset to default after a manual expression change ([#2332](https://github.com/Ben987/Bondage-College/pull/2332))
 
 ### [Technical]
 
@@ -84,7 +89,7 @@ Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
 
 * Ellie - Fixed some issues with the behavior of the extended item menu for the Bunny Girl Accessories item ([#2301](https://github.com/Ben987/Bondage-College/pull/2301))
 * Ellie - Fixed issues with missing assets in the Kinky Dungeon minigame ([#2302](https://github.com/Ben987/Bondage-College/pull/2302))
-* Ellie - Fixed a bug where appearance changes (in extended items or via the wardrobe) incorrectly get reverted in some cases ([#2304](https://github.com/Ben987/Bondage-College/pull/2304), [#2322](https://github.com/Ben987/Bondage-College/pull/2322))
+* Ellie - Fixed a bug where appearance changes (in extended items or via the wardrobe) incorrectly get reverted in some cases ([#2304](https://github.com/Ben987/Bondage-College/pull/2304), [#2322](https://github.com/Ben987/Bondage-College/pull/2322), [#2326](https://github.com/Ben987/Bondage-College/pull/2326), [#2330](https://github.com/Ben987/Bondage-College/pull/2330))
 * Nina - Fixed an issue where the text on the custom and electronic collar tags would occasionally revert to "Tag" ([#2305](https://github.com/Ben987/Bondage-College/pull/2305))
 * Nina - Fixed several issues with the Sci-Fi Pleasure Panties ([#2306](https://github.com/Ben987/Bondage-College/pull/2306))
 * Nina - Fixed an issue where timer locks would display NaN time remaining ([#2307](https://github.com/Ben987/Bondage-College/pull/2307))
@@ -96,6 +101,8 @@ Last recorded PR: [#2322](https://github.com/Ben987/Bondage-College/pull/2322)
 * Ellie - Fixed an issue with appearance validation rollback ([#2317](https://github.com/Ben987/Bondage-College/pull/2317))
 * Ellie - Fixed a bug where interacting with combination padlocks while wearing Futuristic Mittens in glove mode would prevent players from being able to manipulate the lock properly ([#2318](https://github.com/Ben987/Bondage-College/pull/2318))
 * Ellie - Fixed an issue where the pet bed was not displaying chat messages when switching between blanket/no blanket ([#2320](https://github.com/Ben987/Bondage-College/pull/2320))
+* Jomshir - Reverted a change to the friend list that sorted friends in alphabetical order ([#2335](https://github.com/Ben987/Bondage-College/pull/2335))
+* Nina - Fixed an issue with the password screen of the Sci-Fi Pleasure Panties ([#2336](https://github.com/Ben987/Bondage-College/pull/2336))
 
 ## [R66]
 

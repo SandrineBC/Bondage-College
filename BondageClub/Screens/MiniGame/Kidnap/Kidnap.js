@@ -356,9 +356,13 @@ function KidnapStart(Opponent, Background, Difficulty, ReturnFunction) {
 	KidnapBackground = Background;
 	MiniGameCheatAvailable = (CheatFactor("MiniGameBonus", 0) == 0);
 	CurrentCharacter = null;
-	Player.KidnapMaxWillpower = 20 + (SkillGetLevel(Player, "Willpower") * 2);
-	if (KidnapReturnFunction.indexOf("Pandora") == 0) Player.KidnapMaxWillpower = Player.KidnapMaxWillpower + (InfiltrationPerksActive("Resilience") ? 5 : 0) + (InfiltrationPerksActive("Endurance") ? 5 : 0);
-	Player.KidnapWillpower = Player.KidnapMaxWillpower;
+	if (KidnapReturnFunction.indexOf("Pandora") == 0) {
+		Player.KidnapMaxWillpower = PandoraMaxWillpower;
+		Player.KidnapWillpower = PandoraWillpower;
+	} else {
+		Player.KidnapMaxWillpower = 20 + (SkillGetLevel(Player, "Willpower") * 2);
+		Player.KidnapWillpower = Player.KidnapMaxWillpower;
+	}
 	KidnapOpponent.KidnapMaxWillpower = 20 + (KidnapDifficulty * 2);
 	KidnapOpponent.KidnapWillpower = KidnapOpponent.KidnapMaxWillpower;
 	KidnapLoadStats(Player, 0);

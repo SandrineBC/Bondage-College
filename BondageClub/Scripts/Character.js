@@ -1070,6 +1070,8 @@ function CharacterSetFacialExpression(C, AssetGroup, Expression, Timer, Color) {
 		if ((C.Appearance[A].Asset.Group.Name == AssetGroup) && (C.Appearance[A].Asset.Group.AllowExpression)) {
 			if ((Expression == null) || (C.Appearance[A].Asset.Group.AllowExpression.indexOf(Expression) >= 0)) {
 				if (!C.Appearance[A].Property) C.Appearance[A].Property = {};
+				// Delete any existing removal timer
+				delete C.Appearance[A].Property.RemoveTimer;
 				if (C.Appearance[A].Property.Expression != Expression) {
 					C.Appearance[A].Property.Expression = Expression;
 					if (Color && CommonColorIsValid(Color)) C.Appearance[A].Color = Color;

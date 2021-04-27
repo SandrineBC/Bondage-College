@@ -215,3 +215,7 @@ function InventoryItemPelvisSciFiPleasurePantiesShockTrigger() {
     CharacterSetFacialExpression(C, "Blush", "ShockLow", 15);
     CharacterSetFacialExpression(C, "Eyes", "Closed", 5);
 }
+
+function InventoryItemPelvisSciFiPleasurePantiesExit() {
+	InventoryItemMouthFuturisticPanelGagExitAccessDenied()
+}
