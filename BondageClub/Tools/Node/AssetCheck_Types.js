@@ -131,7 +131,7 @@ const AssetType = {
 	MirrorExpression: "String",
 	FixedPosition: "Boolean",
 	CustomBlindBackground: "Object",
-	Layer: "[{Effect: Maby [String], Timer: Number}]"
+	Layer: "[Object]"
 };
 
 const AssetLayerType = {
