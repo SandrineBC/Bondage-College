@@ -114,27 +114,22 @@ var AssetFemale3DCGExtended = {
 			Config: {
 				Options: [
 					{
-						Name: "Latex", Key: "z",
+						Name: "Latex",
 						Property: {
 							Type: null,
 							Block: ["ItemBreast", "ItemNipples", "ItemNipplesPiercings", "ItemVulva", "ItemVulvaPiercings", "ItemButt"],				
 						},
 					},
 					{
-						Name: "UnZip", Key: "u",
+						Name: "UnZip",
 						Property: {
 							Type: "UnZip",
 							Block: [],
 						},
 					},
 				],
-				Dialog: {
-					Load: "ItemArmsSelectBitchSuitType",
-					TypePrefix: "ItemArmsBitchSuitType",
-					ChatPrefix: "ItemArmsBitchSuitSet",
-				},
 			},
-		},
+		}, // BitchSuit
 	}, // ItemArms
 	ItemHood: {
 		KirugumiMask: {
