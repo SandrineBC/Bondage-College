@@ -177,6 +177,31 @@ var AssetFemale3DCGExtended = {
 				],
 			},
 		}, // BitchSuit
+		SturdyLeatherBelts: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				ChatTags: [CommonChatTags.SOURCE_CHAR, CommonChatTags.TARGET_CHAR],
+				Dialog: {
+					Load: "SturdyLeatherBeltsSelectTightness",
+					TypePrefix: "SturdyLeatherBeltsPose",
+					ChatPrefix: "SturdyLeatherBeltsRestrain",
+				},
+				Options: [
+					{
+						Name: "One",
+						Property: { Type: null, },
+					},
+					{
+						Name: "Two",
+						Property: { Type: "Two", Difficulty: 2, },
+					},
+					{
+						Name: "Three",
+						Property: { Type: "Three", Difficulty: 4, },
+					},
+				],
+			}
+		}, // SturdyLeatherBelts
 	}, // ItemArms
 	ItemNeck: {
 		ShinySteelCollar: {
@@ -807,6 +832,24 @@ var AssetFemale3DCGExtended = {
 			}
 		} // BunnyMask1
 	}, // Mask
+	ItemLegs: {
+		SturdyLeatherBelts: {
+			Archetype: ExtendedArchetype.TYPED,
+			CopyConfig: { GroupName: "ItemArms", AssetName: "SturdyLeatherBelts" },
+			Config: {
+				Options: [
+					{
+						Name: "One",
+						Property: { Type: null, },
+					},
+					{
+						Name: "Two",
+						Property: { Type: "Two", Difficulty: 2, },
+					},
+				],
+			}
+		}, // SturdyLeatherBelts
+	}, // ItemLegs
 	ItemFeet: {
 		SteelAnkleCuffs: {
 			Archetype: ExtendedArchetype.TYPED,
@@ -830,7 +873,11 @@ var AssetFemale3DCGExtended = {
 					Load: "SelectBondagePosition"
 				}
 			}
-		} // SteelAnkleCuffs
+		}, // SteelAnkleCuffs
+		SturdyLeatherBelts: {
+			Archetype: ExtendedArchetype.TYPED,
+			CopyConfig: { GroupName: "ItemArms", AssetName: "SturdyLeatherBelts" },
+		}, // SturdyLeatherBelts 
 	}, // ItemFeet
 	ItemMisc: {
 		ServingTray: {
