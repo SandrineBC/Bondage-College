@@ -6,6 +6,7 @@ var InfiltrationMission = "";
 var InfiltrationMissionType = ["Rescue", "Kidnap", "Retrieve"];
 var InfiltrationObjectType = ["USBKey", "BDSMPainting", "GoldCollar", "GeneralLedger", "SilverVibrator", "DiamondRing", "SignedPhoto"];
 var InfiltrationTarget = {};
+var InfiltrationCollectRansom = false;
 
 /**
  * Returns TRUE if the mission can complete as a success
@@ -31,11 +32,13 @@ function InfiltrationCanGoBack() { return (((InfiltrationTarget == null) || (Inf
  */
 function InfiltrationLoad() {
 
-	// If there's a party coming with the player, it can complete the mission
+	// If there's a party coming with the player, it can complete the mission or trigger a ransom
+	InfiltrationCollectRansom = false;
 	if ((PandoraParty != null) && (PandoraParty.length > 0)) {
-		for (let P = 0; P < PandoraParty.length; P++)
-			if (PandoraParty[P].Name == InfiltrationTarget.Name)
-				InfiltrationTarget.Found = true;
+		for (let P = 0; P < PandoraParty.length; P++) {
+			if (PandoraParty[P].Name == InfiltrationTarget.Name) InfiltrationTarget.Found = true;
+			if (PandoraParty[P].AccountName.indexOf("RandomMistress") >= 0) InfiltrationCollectRansom = true;
+		}
 		PandoraParty = [];
 	}
 
@@ -74,7 +77,10 @@ function InfiltrationRun() {
  * @returns {void} - Nothing
  */
 function InfiltrationClick() {
-	if (MouseIn(1000, 0, 500, 1000)) CharacterSetCurrent(InfiltrationSupervisor);
+	if (MouseIn(1000, 0, 500, 1000)) {
+		if (InfiltrationCollectRansom) InfiltrationSupervisor.Stage = "Ransom0";
+		CharacterSetCurrent(InfiltrationSupervisor);
+	}
 	if ((InfiltrationSupervisor.Stage !== "End") && MouseIn(1885, 25, 90, 90) && Player.CanWalk()) CommonSetScreen("Room", "MainHall");
 	if (MouseIn(1885, 145, 90, 90)) InformationSheetLoadCharacter(Player);
 	if (MouseIn(1885, 265, 90, 90)) CommonSetScreen("Room", "InfiltrationPerks");
@@ -85,7 +91,7 @@ function InfiltrationClick() {
  * @returns {void} - Nothing
  */
 function InfiltrationSelectChallenge(Difficulty) {
-	InfiltrationDifficulty = Difficulty;
+	InfiltrationDifficulty = parseInt(Difficulty);
 }
 
 /**
@@ -155,4 +161,25 @@ function InfiltrationRandomClothes() {
 	CharacterRelease(Player);
 	InventoryRemove(Player, "ItemHands");
 	PandoraClothes = "Random";
+}
+
+/**
+ * When the infiltration supervisor pays the player for ransoming a Dominatrix
+ * @param {string} Type - The ransom type to be paid (Money, Skill or None)
+ * @returns {void} - Nothing
+ */
+function InfiltrationPayRansom(Type) {
+	InfiltrationCollectRansom = false;
+	if (Type == "Money") {
+		let Money = 10 + (InfiltrationDifficulty * 4);
+		if (InfiltrationPerksActive("Negotiation")) Money = Math.round(Money * 1.2);
+		CharacterChangeMoney(Player, Money);
+	}
+	if (Type == "Skill") {
+		if (InfiltrationDifficulty == 0) SkillProgress("Infiltration", 100);
+		if (InfiltrationDifficulty == 1) SkillProgress("Infiltration", 150);
+		if (InfiltrationDifficulty == 2) SkillProgress("Infiltration", 225);
+		if (InfiltrationDifficulty == 3) SkillProgress("Infiltration", 300);
+		if (InfiltrationDifficulty == 4) SkillProgress("Infiltration", 400);
+	}
 }

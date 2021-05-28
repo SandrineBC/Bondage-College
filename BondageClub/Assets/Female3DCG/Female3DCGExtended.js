@@ -164,7 +164,7 @@ var AssetFemale3DCGExtended = {
 						Name: "Latex",
 						Property: {
 							Type: null,
-							Block: ["ItemBreast", "ItemNipples", "ItemNipplesPiercings", "ItemVulva", "ItemVulvaPiercings", "ItemButt"],				
+							Block: ["ItemBreast", "ItemNipples", "ItemNipplesPiercings", "ItemVulva", "ItemVulvaPiercings", "ItemButt"],
 						},
 					},
 					{
@@ -724,7 +724,7 @@ var AssetFemale3DCGExtended = {
 				]
 			},
 		}, // DentalGag
-    Ribbons: {
+		Ribbons: {
 			Archetype: ExtendedArchetype.TYPED,
 			Config: {
 				Options: [
@@ -742,7 +742,7 @@ var AssetFemale3DCGExtended = {
 							Effect: ["BlockMouth", "GagLight"],
 						},
 					},
-                ],
+				],
 				Dialog: {
 					Load: "SelectRibbonType",
 					TypePrefix: "RibbonType",
@@ -777,8 +777,8 @@ var AssetFemale3DCGExtended = {
 			CopyConfig: { GroupName: "ItemMouth", AssetName: "CupholderGag" },
 		},
 		Ribbons: {
-            Archetype: ExtendedArchetype.TYPED,
-            CopyConfig: { GroupName: "ItemMouth", AssetName: "Ribbons" },
+			Archetype: ExtendedArchetype.TYPED,
+			CopyConfig: { GroupName: "ItemMouth", AssetName: "Ribbons" },
 		},
 	}, // ItemMouth2
 	ItemMouth3: {
@@ -807,8 +807,8 @@ var AssetFemale3DCGExtended = {
 			CopyConfig: { GroupName: "ItemMouth", AssetName: "CupholderGag" },
 		},
 		Ribbons: {
-            Archetype: ExtendedArchetype.TYPED,
-            CopyConfig: { GroupName: "ItemMouth", AssetName: "Ribbons" },
+			Archetype: ExtendedArchetype.TYPED,
+			CopyConfig: { GroupName: "ItemMouth", AssetName: "Ribbons" },
 		},
 	}, // ItemMouth3
 	Mask: {
@@ -890,6 +890,30 @@ var AssetFemale3DCGExtended = {
 			},
 		}, // WoodenMaidTray
 	}, // ItemMisc
+	ItemPelvis: {
+		SilkStraps: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{ Name: "Crotch",
+				Property: { Type: null }
+					},
+
+					{ Name: "OverPanties",
+				Property: { Type: "OverPanties", OverridePriority: 21 }
+			},
+			{ Name: "SwissSeat",
+			Property: { Type: "SwissSeat" }
+				},
+
+				{ Name: "KikkouHip",
+			Property: { Type: "KikkouHip" }
+				},
+
+				]				
+			},
+		}, // SilkStraps
+	}, // ItemPelvis
 };
 
 /**
@@ -900,7 +924,7 @@ var AssetFemale3DCGExtended = {
  * @property {ExtendedArchetype} Archetype - The extended item archetype that this asset uses.
  * @property {ModularItemConfig|TypedItemConfig} Config - The specific configuration for the item (type will vary based
  * on the item's archetype)
- * @property {{[GroupName]: string, AssetName: string}} [CopyConfig] - The group name and asset name of a configuration
+ * @property {{GroupName?: string, AssetName: string}} [CopyConfig] - The group name and asset name of a configuration
  *     to copy - useful if multiple items share the same config
  *
  * An object containing extended item definitions for a group. Maps asset names within the group to their extended item

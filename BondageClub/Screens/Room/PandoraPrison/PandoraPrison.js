@@ -6,12 +6,14 @@ var PandoraPrisonGuard = null;
 var PandoraPrisonCharacter = null;
 var PandoraPrisonCharacterTimer = 0;
 var PandoraPrisonEscaped = false;
+var PandoraPrisonBribeEnabled = true;
 
 /**
  * Loads the Pandora's Box prison screen
  * @returns {void} - Nothing
  */
 function PandoraPrisonLoad() {
+	PandoraParty = [];
 	if (!PandoraPrisonEscaped) PandoraPrisonCharacter = null;
 	if (PandoraPrisonMaid == null) {
 		PandoraPrisonMaid = CharacterLoadNPC("NPC_PandoraPrison_Maid");
@@ -51,6 +53,7 @@ function PandoraPrisonRun() {
 	
 	// When the character timer ticks, the guard can come in or leave
 	if ((Player.Infiltration.Punishment.Timer >= CurrentTime) && (PandoraPrisonCharacterTimer < CommonTime()) && (CurrentCharacter == null) && !PandoraPrisonEscaped) {
+		PandoraPrisonBribeEnabled = true;
 		PandoraPrisonCharacter = (PandoraPrisonCharacter == null) ? PandoraPrisonGuard : null;
 		PandoraPrisonCharacterTimer = CommonTime() + 30000 + Math.floor(Math.random() * 30000);
 	}
@@ -103,6 +106,7 @@ function PandoraPrisonReleasePlayer() {
  * @returns {void} - Nothing
  */
 function PandoraPrisonExitPrison() {
+	CharacterRelease(Player);
 	CharacterRelease(PandoraPrisonGuard);
 	PandoraDress(PandoraPrisonGuard, "Guard");	
 	PandoraPrisonGuard.AllowItem = false;
@@ -219,4 +223,46 @@ function PandoraPrisonEscape() {
 	CharacterSetActivePose(Player, null);
 	PandoraInfiltrationChange(75);
 	PandoraPrisonExitPrison();
+}
+
+/**
+ * When the player starts bribing the guard
+ * @returns {void} - Nothing
+ */
+function PandoraPrisonBribeStart() {
+	PandoraPrisonBribeEnabled = false;
+}
+
+/**
+ * A guard can only bribed once on every round
+ * @returns {boolean} - TRUE if bribing the guard is allowed
+ */
+function PandoraPrisonBribeAllowed() {
+	return (PandoraPrisonBribeEnabled && (Player.Infiltration.Punishment.Timer > CurrentTime + 60000) && (Player.Money >= 10));
+}
+
+/**
+ * Checks if the perk specified is currently selected
+ * @param {string} Type - The perk type
+ * @returns {boolean} - Returns TRUE if it's selected
+ */
+function PandoraPrisonHasPerk(Type) {
+	return InfiltrationPerksActive(Type);
+}
+
+/**
+ * When the player bribes the guard to lower her sentence
+ * @param {string} Money - The amount of money spent
+ * @param {string} Minutes - The number of minutes to remove from the sentence
+ * @returns {void} - Nothing
+ */
+function PandoraPrisonBribeProcess(Money, Minutes) {
+	Money = parseInt(Money);
+	Minutes = parseInt(Minutes);
+	if (Money != 0) CharacterChangeMoney(Player, Money * -1);
+	if (Minutes != 0) {
+		Player.Infiltration.Punishment.Timer = Player.Infiltration.Punishment.Timer - (Minutes * 60000);
+		if (Player.Infiltration.Punishment.Timer < CurrentTime + 60000) Player.Infiltration.Punishment.Timer = CurrentTime + 60000;
+		ServerSend("AccountUpdate", { Infiltration: Player.Infiltration });
+	}
 }

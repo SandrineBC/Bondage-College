@@ -143,9 +143,6 @@ function PandoraClick() {
 	let Pos = 690 - (PandoraCurrentRoom.Character.length + PandoraParty.length) * 230;
 	if (MouseIn(Pos, 0, 500, 1000)) return CharacterSetCurrent(Player);
 	let AllowMove = true;
-	for (let C = 0; C < PandoraParty.length; C++)
-		if (MouseIn(Pos + ((C + 1) * 460), 0, 500, 1000))
-			return CharacterSetCurrent(PandoraParty[C]);
 	for (let C = 0; C < PandoraCurrentRoom.Character.length; C++) {
 		if (MouseIn(Pos + ((C + 1 + PandoraParty.length) * 460), 0, 500, 1000)) return CharacterSetCurrent(PandoraCurrentRoom.Character[C]);
 		if ((PandoraCurrentRoom.Character[C].AllowMove != null) && (PandoraCurrentRoom.Character[C].AllowMove == false)) AllowMove = false;
@@ -153,6 +150,9 @@ function PandoraClick() {
 
 	// If we allow moving, we can switch room
 	if (AllowMove) {
+		for (let C = 0; C < PandoraParty.length; C++)
+			if (MouseIn(Pos + ((C + 1) * 460), 0, 500, 1000))
+				return CharacterSetCurrent(PandoraParty[C]);
 		for (let P = 0; P < PandoraCurrentRoom.Path.length; P++)
 			if (MouseIn(1900, 25 + P * 115, 90, 90)) {
 				if (PandoraCurrentRoom.Path[P].Floor == "Exit") return CommonSetScreen("Room", "Infiltration");
@@ -240,7 +240,7 @@ function PandoraDress(C, Type) {
 		else InventoryGet(C, "Panties").Color = "#222222";
 		if (InventoryGet(C, "Shoes") == null) InventoryWear(C, "Shoes1", "Shoes", "#222222");
 		else InventoryGet(C, "Shoes").Color = "#222222";
-		InventoryWear(C, "MaidCollar", "ItemNeck", "#804040");
+		if (C.ID != 0) InventoryWear(C, "MaidCollar", "ItemNeck", "#804040");
 		CharacterRefresh(C, false);
 		return;
 	}
@@ -324,6 +324,7 @@ function PandoraEnterRoom(Room, Direction) {
 		if ((InfiltrationMission == "Retrieve") && (InfiltrationTarget.Found)) StartDialog = InfiltrationMission + ((PandoraClothes == "Maid") ? "Maid" : "Random") + "0";
 		if ((InfiltrationMission == "Rescue") && (PandoraParty.length == 1) && (PandoraParty[0].Name == InfiltrationTarget.Name)) StartDialog = InfiltrationMission + ((PandoraClothes == "Guard") ? "Guard" : "Random") + "0";
 		if ((InfiltrationMission == "Kidnap") && (PandoraParty.length == 1) && (PandoraParty[0].Name == InfiltrationTarget.Name) && PandoraParty[0].CanTalk()) StartDialog = InfiltrationMission + "Random" + "0";
+		if ((PandoraCurrentRoom.Character[0].AccountName.indexOf("EntranceMaid") >= 0) && (PandoraParty.length == 1) && (PandoraParty[0].AccountName.indexOf("RandomMistress") >= 0) && (InventoryGet(PandoraCurrentRoom.Character[0], "ItemHood") == null)) StartDialog = "MistressArrest0";
 		if (StartDialog != "") {
 			CharacterRelease(PandoraCurrentRoom.Character[0]);
 			PandoraCurrentRoom.Character[0].RandomOdds = Math.random() + 0.2 - (InfiltrationDifficulty * 0.1);
@@ -338,6 +339,7 @@ function PandoraEnterRoom(Room, Direction) {
 		if (!PandoraCurrentRoom.Character[0].AllowMove && (SkillGetLevel(Player, "Infiltration") >= Math.floor(Math.random() * 10))) ArrestDialog = "InfiltrationArrest";
 		if ((InfiltrationMission == "Kidnap") && (PandoraParty.length == 1) && (PandoraParty[0].Name == InfiltrationTarget.Name) && PandoraParty[0].CanTalk()) ArrestDialog = "KidnapArrest";
 		if ((PandoraParty.length == 1) && (PandoraParty[0].AccountName.indexOf("RandomGuard") >= 0)) ArrestDialog = "GuardArrest";
+		if ((PandoraParty.length == 1) && (PandoraParty[0].AccountName.indexOf("RandomMistress") >= 0) && PandoraParty[0].CanTalk()) ArrestDialog = "MistressArrest";
 		if (ArrestDialog != "") {
 			CharacterRelease(PandoraCurrentRoom.Character[0]);
 			PandoraCurrentRoom.Character[0].AllowMove = false;
@@ -616,6 +618,7 @@ function PandoraCharacterFightEnd() {
 	CharacterRelease(KidnapVictory ? Player : CurrentCharacter);
 	CurrentCharacter.AllowItem = KidnapVictory;
 	if (KidnapVictory) CurrentCharacter.AllowMove = true;
+	if (KidnapVictory && (PandoraClothes != "Random")) PandoraDress(Player, PandoraClothes);
 	CommonSetScreen("Room", "Pandora");
 	CurrentCharacter.CurrentDialog = DialogFind(CurrentCharacter, (KidnapVictory) ? "FightVictory" : "FightDefeat");
 }

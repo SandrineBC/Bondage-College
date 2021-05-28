@@ -179,3 +179,17 @@ GuardArrest,,,(The guard seems to recognize the other guard you're carrying.)  Y
 GuardArrest,,She lost a bet against me.,(Your victim shakes her head no and whimpers for help.)  This is against the law.  Surrender right now!,DialogRemove(),
 GuardArrest,,(Fight her.),,CharacterFight(),
 GuardArrest,WaitDominatrix,(Surrender.),(You surrender as she quickly restrains you.)  A Dominatrix will come to interrogate you.,RestrainPlayer(),
+MistressArrest,,,"(As soon as you cross the guard, the Dominatrix explains who she is and her current kidnapping.)  Stop!  What's going on?",,
+MistressArrest,MistressArrest10,I'm in charge.  I will explain everything.,(The Dominatrix starts to argue and the guard stops you both.)  You!  (She points at you.)  What's going on?,CharacterGenerateRandomOdds(),"CostumeIs(""Mistress"")"
+MistressArrest,,She's lying.,(The Dominatrix repeats her name and how she's getting kidnapped.)  Enough!  You're under arrest!,DialogRemove(),
+MistressArrest,,(Fight her.),,CharacterFight(),
+MistressArrest,WaitDominatrix,(Surrender.),(You surrender as she quickly restrains you.)  Unbelievable!  A Dominatrix will come to interrogate you.,RestrainPlayer(),
+MistressArrest10,MistressArrest30,This girl is a spy from the Bondage Club.,(She takes a step back.)  Oh my!  Please take her to our prison Miss Dominatrix.  You could gag her to prevent this misunderstanding.,,Odds25()
+MistressArrest10,MistressArrest20,This girl is a spy from the Bondage Club.,(She seems alerted.)  This is serious!  You're under arrest for now.  A Dominatrix will come to sort this situation.,,!Odds25()
+MistressArrest10,MistressArrest30,This brat is simply trying to get punished.,"(She starts to laugh.)  Of course!   I should have guessed it.  Please carry on Miss Dominatrix, sorry for the trouble.",,Odds50()
+MistressArrest10,MistressArrest20,This brat is simply trying to get punished.,"(She doesn't seem to believe you.)  This is fishy, you're under arrest for now.  A Dominatrix will come to sort this situation.",,!Odds50()
+MistressArrest10,MistressArrest20,I can't tell you or I'll have to kill you.,Very funny.  (She doesn't seem amused.)  You're under arrest!  A Dominatrix will come to sort this situation.,,
+MistressArrest20,,(Fight her.),,CharacterFight(),
+MistressArrest20,WaitDominatrix,(Surrender.),(You surrender as she quickly restrains you.)  Unbelievable!  A Dominatrix will come to interrogate you.,RestrainPlayer(),
+MistressArrest30,,,Have a wonderful day Miss Dominatrix.  I will keep this place safe.,,
+MistressArrest30,,Take care.  (Go explore.),,CharacterAllowMove(),

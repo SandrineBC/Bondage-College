@@ -84,11 +84,11 @@ IntroChangeBondage,,,"(Guard DialogCharacterName steps inside and looks at you.)
 IntroRestrainedChangeBondage,,,"(Guard DialogCharacterName steps inside and looks at your bondage.)  Prisoner DialogPlayerName, it's time to change your bondage.",,
 ChangeBondage,ChangeBondageStart,Why restrain me again?,"Don't argue prisoner, and don't give me any trouble while I restrain you.",,Player.CanTalk()
 ChangeBondage,ChangeBondageStart,"Fine, you can strap me up.",(She nods.)  Don't give me any trouble while I restrain you.,,Player.CanTalk()
+ChangeBondage,ChangeBondageBribe,Wait!  Are you interested in money?,(She ponders.)  I might.  Are you offering me a bribe to get a shorter sentence?,BribeStart(),BribeAllowed()
 ChangeBondage,,(Mumble some words.),"Fine, let me help you.  (She removes your gag.)  Don't worry, I have other gags for you.  It's time for new restraints.",PlayerUngag(),!Player.CanTalk()
 ChangeBondage,,(Try to shake your gag off.),Calm down.  (She removes your gag.)  Try to scream and that gag will pop right back.  It's time for new restraints.,PlayerUngag(),!Player.CanTalk()
 ChangeBondage,ChangeBondageFight,No!  You won't restrain me again.,(She raises her fists.)  Girl!  Either you comply or get crushed.  Pick your poison.,,CanStartFight()
-ChangeBondage,,(Leave her.),,DialogLeave(),
-ChangeBondageFight,,(Fight her.),TO DO,StartFight(),
+ChangeBondageFight,,(Fight her.),,StartFight(),
 ChangeBondageFight,ChangeBondageRestrain,(Let her restrain you.),"(She grabs you and uses all her items on you.  Restraining you tight.)  So, who's the boss around here?","PlayerRestrain(""ALL"")",
 ChangeBondageStart,ChangeBondageRestrain,(Thrash and give her a hard time.),"(She struggles to restrain you but finally uses all her items on you.)  So, who's the boss around here?","PlayerRestrain(""ALL"")",
 ChangeBondageStart,ChangeBondageRestrain,(Make it a little harder to restrain you.),"(She grumbles and restrains you with many of her items.)  So, who's the boss around here?","PlayerRestrain(""LOT"")",
@@ -100,6 +100,11 @@ ChangeBondageRestrain,ChangeBondageLeave,(Stay silent.),"I'm leaving, prisoner D
 ChangeBondageLeave,,Hold on.  Can we talk some more?,Not now.  I'll be back later.  (She starts to walk away.),DialogRemove(),Player.CanTalk()
 ChangeBondageLeave,,(Struggle in your bondage.),Have fun struggling.  (She starts to walk away.),DialogRemove(),!Player.CanTalk()
 ChangeBondageLeave,,(Leave her.),,CharacterRemove(),
+ChangeBondageBribe,ChangeBondage,Here you go.  (Give her 5$.),"(She smiles and takes the money.)  I'll lower your jail time a little, but you still need new restraints.","BribeProcess(5, 3)","!HasPerk(""Bribery"")"
+ChangeBondageBribe,ChangeBondage,Here you go.  (Give her 3$.),"(She smiles and takes the money.)  I'll lower your jail time a little, but you still need new restraints.","BribeProcess(3, 3)","HasPerk(""Bribery"")"
+ChangeBondageBribe,ChangeBondage,Here you go.  (Give her 10$.),"(She smiles and takes the money.)  I'll lower your jail time a little, but you still need new restraints.","BribeProcess(10, 5)","!HasPerk(""Bribery"")"
+ChangeBondageBribe,ChangeBondage,Here you go.  (Give her 6$.),"(She smiles and takes the money.)  I'll lower your jail time a little, but you still need new restraints.","BribeProcess(6, 5)","HasPerk(""Bribery"")"
+ChangeBondageBribe,ChangeBondage,Forget it.,(She sighs.)  It's time to get some fresh restraints on you then.,"BribeProcess(0, 0)",
 IntroStrip,,,"(Guard DialogCharacterName steps inside and looks at you.)  Prisoner DialogPlayerName, since you're not restrained, let's get you naked.",,
 IntroRestrainedStrip,,,"(Guard DialogCharacterName steps inside and looks at your bondage.)  Prisoner DialogPlayerName, It's time to strip you naked.",,
 Strip,,(UNDER CONSTRUCTION.),"(This area of the club is under construction.  Lots of features still need to be coded, please wait for the next version for a more complete experience.)",,
