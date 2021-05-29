@@ -182,6 +182,7 @@ var AssetFemale3DCGExtended = {
 			Archetype: ExtendedArchetype.TYPED,
 			Config: {
 				ChatTags: [CommonChatTags.SOURCE_CHAR, CommonChatTags.TARGET_CHAR],
+				ChangeWhenLocked: false,
 				Dialog: {
 					Load: "SturdyLeatherBeltsSelectTightness",
 					TypePrefix: "SturdyLeatherBeltsPose",
