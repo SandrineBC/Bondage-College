@@ -370,10 +370,10 @@ function PandoraEnterRoom(Room, Direction) {
  * @param {number} RoomLevel - The room level, the higher it goes, the higher the chances it will be a dead-end
  * @returns {void} - Nothing
  */
-function PandoraGenerateRoom(EntryRoom, DirectionFrom, RoomLevel) {
+function PandoraGenerateRoom(EntryRoom, DirectionFrom, RoomLevel, MaxRoom) {
 
-	// Over 100, the dungeon layout is always invalid
-	if (PandoraRoom.length >= 100) return;
+	// Over the max number of rooms, the dungeon layout is always invalid
+	if (PandoraRoom.length >= MaxRoom) return;
 
 	// The higher the room level, the less paths there will be
 	let PathCount = 0;
@@ -400,7 +400,7 @@ function PandoraGenerateRoom(EntryRoom, DirectionFrom, RoomLevel) {
 		Continue = false;
 		while (!Continue) {
 			RoomBack = "Cell";
-			let DeadEndOdds = (RoomLevel - InfiltrationDifficulty) * 0.2;
+			let DeadEndOdds = (RoomLevel - InfiltrationDifficulty) * 0.25;
 			if (RoomLevel <= 2) DeadEndOdds = 0;
 			let TunnelOdds = 0.25 + (RoomLevel * 0.1);
 			if (TunnelOdds > 0.75) TunnelOdds = 0.75;
@@ -437,7 +437,7 @@ function PandoraGenerateRoom(EntryRoom, DirectionFrom, RoomLevel) {
 				Room.Path.push(SearchRoom);
 				Room.Direction.push("Search");
 			}
-		} else PandoraGenerateRoom(Room, PandoraDirectionListFrom[PathNum], RoomLevel + 1);
+		} else PandoraGenerateRoom(Room, PandoraDirectionListFrom[PathNum], RoomLevel + 1, MaxRoom);
 
 	}
 
@@ -451,7 +451,7 @@ function PandoraGenerateRoom(EntryRoom, DirectionFrom, RoomLevel) {
  * @param {string} DirectionTo - The opposite direction
  * @returns {void} - Nothing
  */
-function PandoraGenerateFloor(FloorName, EntryRoom, DirectionFrom, DirectionTo) {
+function PandoraGenerateFloor(FloorName, EntryRoom, DirectionFrom, DirectionTo, MaxRoom) {
 
 	// Always create the same entrance room
 	let Room = {};
@@ -469,7 +469,7 @@ function PandoraGenerateFloor(FloorName, EntryRoom, DirectionFrom, DirectionTo) 
 	EntryRoom.Direction.push(DirectionTo);
 
 	// Starts the room generation
-	PandoraGenerateRoom(Room, DirectionFrom, 1);
+	PandoraGenerateRoom(Room, DirectionFrom, 1, MaxRoom);
 
 }
 
@@ -495,12 +495,12 @@ function PandoraBuildMainHall() {
 	Room.DirectionMap = [];
 
 	// Generates the floors and sets the starting room, there's a min-max number of rooms based on difficulty
-	let MinRoom = 15;
-	let MaxRoom = 24;
-	if (InfiltrationDifficulty == 1) { MinRoom = 25; MaxRoom = 39; }
-	if (InfiltrationDifficulty == 2) { MinRoom = 40; MaxRoom = 54; }
-	if (InfiltrationDifficulty == 3) { MinRoom = 55; MaxRoom = 74; }
-	if (InfiltrationDifficulty == 4) { MinRoom = 75; MaxRoom = 99; }
+	let MinRoom = 25;
+	let MaxRoom = 39;
+	if (InfiltrationDifficulty == 1) { MinRoom = 35; MaxRoom = 59; }
+	if (InfiltrationDifficulty == 2) { MinRoom = 50; MaxRoom = 79; }
+	if (InfiltrationDifficulty == 3) { MinRoom = 70; MaxRoom = 109; }
+	if (InfiltrationDifficulty == 4) { MinRoom = 100; MaxRoom = 149; }
 	PandoraRoom = [];
 	while ((PandoraRoom.length < MinRoom) || (PandoraRoom.length > MaxRoom)) {
 		PandoraRoom = [];
@@ -509,7 +509,8 @@ function PandoraBuildMainHall() {
 		Room.Direction = [];
 		Room.Direction.push("Exit");
 		PandoraRoom.push(Room);
-		PandoraGenerateFloor("Underground", Room, "StairsUp", "StairsDown");
+		PandoraGenerateFloor("Second", Room, "StairsDown", "StairsUp", MaxRoom);
+		PandoraGenerateFloor("Underground", Room, "StairsUp", "StairsDown", MaxRoom);
 	}
 	PandoraCurrentRoom = Room;
 	PandoraPreviousRoom = null;

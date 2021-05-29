@@ -78,6 +78,7 @@ var AssetFemale3DCGExtended = {
 						],
 					},
 				],
+				ChangeWhenLocked: false,
 			},
 		}, // HighSecurityStraitJacket
 		LatexButterflyLeotard: {
@@ -254,6 +255,7 @@ var AssetFemale3DCGExtended = {
 						], // Opacity
 					},
 				],
+				ChangeWhenLocked: false,
 			},
 		}, // KirugumiMask
 	}, // ItemHood
@@ -914,7 +916,35 @@ var AssetFemale3DCGExtended = {
 			},
 		}, // SilkStraps
 	}, // ItemPelvis
+	Bra: {
+		SilkStraps: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{ Name: "Strip", Property: { Type: null } },
+					{ Name: "Wrap", Property: { Type: "Wrap" } },
+					{ Name: "Bra1", Property: { Type: "Bra1" } },
+					{ Name: "Bra2", Property: { Type: "Bra2" } },
+					{ Name: "Swimsuit", Property: { Type: "Swimsuit" } },
+				]
+			}
+		}, // SilkStraps
+	}, // Bra
+	Panties: {
+		SilkStraps: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{ Name: "Strips", Property: { Type: null } },
+					{ Name: "Wrap", Property: { Type: "Wrap" } },
+					{ Name: "Thong", Property: { Type: "Thong" } },
+					{ Name: "Panties1", Property: { Type: "Panties1" } },
+				]				
+			},
+		}, // SilkStraps
+	}, // Panties
 };
+
 
 /**
  *
