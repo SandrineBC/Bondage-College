@@ -178,6 +178,40 @@ var AssetFemale3DCGExtended = {
 				],
 			},
 		}, // BitchSuit
+		WristShackles: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{
+						Name: "InFront",
+						Property: {
+							Type: null
+						},
+					},
+					{
+						Name: "Behind",
+						Property: {
+							Type: "Behind",
+							SetPose: ["BackCuffs"],
+							Effect: ["Block", "Prone"],
+							Difficulty: 3
+						},
+					},
+					{
+						Name: "Overhead",
+						Property: {
+							Type: "Overhead",
+							SetPose: ["OverTheHead"],
+							Effect: ["Block", "Prone"],
+							Difficulty: 3
+						},
+					},
+				],
+				Dialog: {
+					Load: "SelectBondagePosition",
+				}
+			},
+		}, // WristShackles
 	}, // ItemArms
 	ItemNeck: {
 		ShinySteelCollar: {

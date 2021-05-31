@@ -2156,8 +2156,6 @@ var AssetFemale3DCG = [
 				Name: "WristShackles", Fetish: ["Metal"], Top: 0, Value: 80, Difficulty: 6, Time: 20, Random: false, AllowLock: true, Audio: "CuffsMetal", Extended: true, ParentGroup: null, HasType: false,
 				AllowPose: ["BackCuffs", "OverTheHead"],
 				Effect: ["Prone"],
-				AllowEffect: ["Block", "Prone"],
-				AllowType: ["Behind", "Overhead"],
 				SetPose: ["BaseUpper"],
 				Layer: [
 					{ Name: "Cuffs" },
