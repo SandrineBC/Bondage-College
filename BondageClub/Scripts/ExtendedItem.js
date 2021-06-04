@@ -321,8 +321,13 @@ function ExtendedItemSetType(C, Options, Option) {
 	const IsCloth = DialogFocusItem.Asset.Group.Clothing;
 	CharacterRefresh(C, !IsCloth); // Does not sync appearance while in the wardrobe
 
-	// For a restraint, we might publish an action or change the dialog of a NPC
+	// For a restraint, we might publish an action, change the expression or change the dialog of a NPC
 	if (!IsCloth) {
+		// If the item triggers an expression, start the expression change
+		if (Option.Expression) {
+			const E = Option.Expression[0];
+			CharacterSetFacialExpression(C, E.Group, E.Name, E.Timer);
+		}
 		ChatRoomCharacterUpdate(C);
 		if (CurrentScreen === "ChatRoom") {
 			// If we're in a chatroom, call the item's publish function to publish a message to the chatroom
