@@ -582,6 +582,18 @@ var AssetFemale3DCGExtended = {
 				}
 			},
 		}, // Zipties
+		ThinLeatherStraps: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{ Name: "Wrist", Property: { Type: null, SetPose: ["BackBoxTie"] } },
+					{ Name: "Boxtie", Property: { Type: "Boxtie", SetPose: ["BackBoxTie"] } },
+					{ Name: "WristElbow", Property: { Type: "WristElbow", SetPose: ["BackElbowTouch"] } },
+					{ Name: "WristElbowHarness", Property: { Type: "WristElbowHarness", SetPose: ["BackElbowTouch"] } },
+					{ Name: "Hogtie", Property: { Type: "Hogtie", SetPose: ["Hogtied"], Effect: ["Block", "Freeze", "Prone"] } }
+				]
+			}
+		}, //ThinLeatherStraps
 	}, // ItemArms
 	ItemNeck: {
 		ShinySteelCollar: {

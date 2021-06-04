@@ -103,12 +103,14 @@ var ServerAccountUpdate = new class AccountUpdater {
 			return;
 		}
 
-		if (this.Timeout && (this.Start - Date.now()) < 30000) {
-			clearTimeout(this.Timeout);
-			this.Timeout = null;
+		if (this.Timeout) {
+			if (Date.now() - this.Start <= 8000) {
+				clearTimeout(this.Timeout);
+				this.Timeout = null;
+			}
 		} else this.Start = Date.now();
 
-		if (!this.Timeout) this.Timeout = setTimeout(this.SyncToServer.bind(this), 10000);
+		if (!this.Timeout) this.Timeout = setTimeout(this.SyncToServer.bind(this), 2000);
 	}
 };
 
