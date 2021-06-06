@@ -712,6 +712,25 @@ var AssetFemale3DCGExtended = {
 				],
 			},
 		}, // WrappedBlanket
+		Ribbons: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{
+						Name: "Cross",
+						Property: { Type: null, Difficulty: 1 },
+					},
+					{
+						Name: "Heavy",
+						SelfBondageLevel: 4,
+						Property: { Type: "Heavy", Difficulty: 2 }
+					},
+				],
+				Dialog: {
+					Load: "SelectRibbonType",
+				},
+			},
+		}, // Ribbons
 	}, // ItemArms
 	ItemNeck: {
 		ShinySteelCollar: {
