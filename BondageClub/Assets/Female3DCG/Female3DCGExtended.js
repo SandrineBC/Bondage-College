@@ -594,6 +594,124 @@ var AssetFemale3DCGExtended = {
 				]
 			}
 		}, //ThinLeatherStraps
+		MermaidSuit: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{
+						Name: "Zipped",
+						Property: {
+							Type: null,
+							Difficulty: 0,
+							Block: ["ItemBreast", "ItemNipples", "ItemNipplesPiercings", "ItemVulva", "ItemVulvaPiercings", "ItemButt"],
+						},
+					},
+					{
+						Name: "UnZip",
+						Property: {
+							Type: "UnZip",
+							Block: [],
+						},
+					},
+				],
+			},
+		}, // MermaidSuit
+		TightJacket: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				Options: [
+					{
+						Name: "Basic",
+						Property: {
+							Type: null,
+							Difficulty: 1,
+						},
+					},
+					{
+						Name: "PulledStraps",
+						Property: {
+							Type: "PulledStraps",
+							Difficulty: 1,
+						},
+					},
+					{
+						Name: "LiningStraps",
+						Property: {
+							Type: "LiningStraps",
+							Difficulty: 2,
+						},
+					},
+					{
+						Name: "ExtraPadding",
+						Property: {
+							Type: "ExtraPadding",
+							Difficulty: 2,
+						},
+					},
+					{
+						Name: "PulledLining",
+						Property: {
+							Type: "PulledLining",
+							Difficulty: 3,
+						},
+					},
+					{
+						Name: "PulledPadding",
+						Property: {
+							Type: "PulledPadding",
+							Difficulty: 3,
+						},
+					},
+					{
+						Name: "PaddedLining",
+						Property: {
+							Type: "PaddedLining",
+							Difficulty: 3,
+						},
+					},
+					{
+						Name: "FullJacket",
+						Property: {
+							Type: "FullJacket",
+							Difficulty: 4,
+						},
+					},
+				],
+				Dialog: {
+					Load: "ItemArmsTightJacketSelect",
+					TypePrefix: "ItemArmsTightJacket",
+					ChatPrefix: "ItemArmsTightJacketSet",
+				},
+			},
+		}, // TightJacket
+		TightJacketCrotch: {
+			Archetype: ExtendedArchetype.TYPED,
+			CopyConfig: { AssetName: "TightJacket" },
+		}, // TightJacketCrotch
+		WrappedBlanket: {
+			Archetype: ExtendedArchetype.TYPED,
+			Config: {
+				ChatTags: [CommonChatTags.SOURCE_CHAR, CommonChatTags.TARGET_CHAR],
+				Options: [
+					{
+						Name: "NormalWrapped",
+						Property: { Type: null, },
+					},
+					{
+						Name: "ShouldersWrapped",
+						Property: { Type: "ShouldersWrapped", },
+					},
+					{
+						Name: "FeetWrapped",
+						Property: { Type: "FeetWrapped", },
+					},
+					{
+						Name: "FullWrapped",
+						Property: { Type: "FullWrapped", },
+					},
+				],
+			},
+		}, // WrappedBlanket
 	}, // ItemArms
 	ItemNeck: {
 		ShinySteelCollar: {
