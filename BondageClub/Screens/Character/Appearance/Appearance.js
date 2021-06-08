@@ -387,8 +387,8 @@ function CharacterAppearanceVisible(C, AssetName, GroupName, Recursive = true) {
 			HidingItem = item.Asset.HideItemAttribute.some((val) => assetToCheck.Attribute.indexOf(val) !== -1);
 		}
 		else if (item.Property != null) {
-			if (((item.Property.Hide != null) && (item.Property.Hide.indexOf(GroupName) >= 0)) ||
-				((item.Property.HideItem != null) && (item.Property.HideItem.indexOf(GroupName + AssetName) >= 0)))
+			if (((Array.isArray(item.Property.Hide)) && (item.Property.Hide.indexOf(GroupName) >= 0)) ||
+				((Array.isArray(item.Property.HideItem)) && (item.Property.HideItem.indexOf(GroupName + AssetName) >= 0)))
 				HidingItem = true;
 		}
 		else if ((item.Asset.HideItem != null) && (item.Asset.HideItem.indexOf(GroupName + AssetName) >= 0)) HidingItem = true;
